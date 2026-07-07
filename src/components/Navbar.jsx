@@ -1,66 +1,88 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { useScroll } from '../hooks/useScrollProgress'
+
+const SECTIONS = [
+  { id: 'hero', label: 'Home', num: '00' },
+  { id: 'about', label: 'About', num: '01' },
+  { id: 'skills', label: 'Skills', num: '02' },
+  { id: 'playground', label: 'Playground', num: '03' },
+  { id: 'projects', label: 'Work', num: '04' },
+  { id: 'experience', label: 'Experience', num: '05' },
+  { id: 'contact', label: 'Contact', num: '06' },
+]
 
 export default function Navbar() {
-  const [scrolled, setScrolled] = useState(false)
+  const { scrollTo, progressRef } = useScroll()
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [activeSection, setActiveSection] = useState('hero')
+  const [active, setActive] = useState(SECTIONS[0])
+  const progressFillRef = useRef(null)
 
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 50)
+    let raf
+    const loop = () => {
+      if (progressFillRef.current) {
+        progressFillRef.current.style.transform = `scaleX(${progressRef.current})`
+      }
+      raf = requestAnimationFrame(loop)
+    }
+    raf = requestAnimationFrame(loop)
 
-      const sections = ['hero', 'about', 'skills', 'projects', 'experience', 'contact']
-      for (let i = sections.length - 1; i >= 0; i--) {
-        const el = document.getElementById(sections[i])
-        if (el && el.getBoundingClientRect().top <= 200) {
-          setActiveSection(sections[i])
+    const onScroll = () => {
+      for (let i = SECTIONS.length - 1; i >= 0; i--) {
+        const el = document.getElementById(SECTIONS[i].id)
+        if (el && el.getBoundingClientRect().top <= window.innerHeight * 0.4) {
+          setActive(SECTIONS[i])
           break
         }
       }
     }
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => {
+      cancelAnimationFrame(raf)
+      window.removeEventListener('scroll', onScroll)
+    }
+  }, [progressRef])
 
   const handleClick = (e, id) => {
     e.preventDefault()
     setMobileOpen(false)
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
+    scrollTo(`#${id}`)
   }
 
-  const links = [
-    { id: 'about', label: 'About' },
-    { id: 'skills', label: 'Skills' },
-    { id: 'projects', label: 'Projects' },
-    { id: 'experience', label: 'Experience' },
-    { id: 'contact', label: 'Contact' },
-  ]
-
   return (
-    <nav className={`navbar${scrolled ? ' scrolled' : ''}`}>
-      <div className="nav-logo">
-        <span className="gradient-text">PM</span>
+    <>
+      <div className="nav-progress">
+        <div className="nav-progress-fill" ref={progressFillRef} />
       </div>
-      <ul className={`nav-links${mobileOpen ? ' open' : ''}`}>
-        {links.map(({ id, label }) => (
-          <li key={id}>
-            <a
-              href={`#${id}`}
-              className={activeSection === id ? 'active' : ''}
-              onClick={(e) => handleClick(e, id)}
-            >
-              {label}
-            </a>
-          </li>
-        ))}
-      </ul>
-      <button
-        className="mobile-toggle"
-        onClick={() => setMobileOpen(!mobileOpen)}
-        aria-label="Toggle navigation"
-      >
-        {mobileOpen ? '✕' : '☰'}
-      </button>
-    </nav>
+      <nav className="navbar">
+        <div className="nav-logo" data-hover onClick={(e) => handleClick(e, 'hero')}>
+          PM<span className="dot">.</span>
+        </div>
+        <div className="nav-indicator">
+          {active.num} — {active.label}
+        </div>
+        <ul className={`nav-links${mobileOpen ? ' open' : ''}`}>
+          {SECTIONS.slice(1).map(({ id, label }) => (
+            <li key={id}>
+              <a
+                href={`#${id}`}
+                className={active.id === id ? 'active' : ''}
+                data-hover
+                onClick={(e) => handleClick(e, id)}
+              >
+                {label}
+              </a>
+            </li>
+          ))}
+        </ul>
+        <button
+          className="mobile-toggle"
+          onClick={() => setMobileOpen(!mobileOpen)}
+          aria-label="Toggle navigation"
+        >
+          {mobileOpen ? 'Close' : 'Menu'}
+        </button>
+      </nav>
+    </>
   )
 }

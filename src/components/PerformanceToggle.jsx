@@ -6,12 +6,12 @@ export default function PerformanceToggle() {
   return (
     <button
       className="perf-toggle"
+      data-hover
       onClick={() => setLowPower(!lowPower)}
       title={lowPower ? 'Enable 3D effects' : 'Disable 3D effects'}
       aria-label={lowPower ? 'Enable 3D effects' : 'Disable 3D effects'}
     >
-      <span className="perf-toggle-icon">{lowPower ? '⚡' : '🔋'}</span>
-      <span className="perf-toggle-label">{lowPower ? '3D Off' : '3D On'}</span>
+      <span className="ind">{lowPower ? '○' : '●'}</span> 3D {lowPower ? 'Off' : 'On'}
     </button>
   )
 }

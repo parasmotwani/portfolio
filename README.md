@@ -1,6 +1,6 @@
 # Paras Motwani — Portfolio
 
-An interactive 3D portfolio website built with React, Three.js, and Framer Motion.
+A cinematic, scroll-driven 3D portfolio. One persistent particle scene morphs through data-science-themed states as you scroll — neural network → data cloud → k-means clusters → grid → wave → convergence.
 
 🔗 **Live:** [paras-portfolio.vercel.app](https://paras-portfolio-5thwzbdny-paras-projects-92cb4789.vercel.app)
 
@@ -11,27 +11,32 @@ An interactive 3D portfolio website built with React, Three.js, and Framer Motio
 | Layer | Tools |
 |---|---|
 | Framework | React 18 + Vite |
-| 3D / WebGL | Three.js, React Three Fiber, Drei |
-| Animations | Framer Motion |
-| Styling | Vanilla CSS (custom design system) |
+| 3D / WebGL | Three.js, React Three Fiber (custom GLSL point shader) |
+| Scroll | Lenis (smooth scroll) + GSAP ScrollTrigger (scrubbed/pinned timelines) |
+| Micro-animation | Framer Motion |
+| Styling | Vanilla CSS design system (monochrome + red accent, Archivo/Inter/JetBrains Mono) |
 | Deployment | Vercel |
 
 ---
 
-## Features
+## The Experience
 
-- **3D Hero Scene** — Animated particle field and floating wireframe geometry with distortion shaders
-- **Scroll-triggered Animations** — Every section fades in using Framer Motion + `useInView`
-- **Low Power Mode** — Toggle button (bottom-right) to disable 3D effects for smooth performance on any device; preference saved to `localStorage`
-- **Dark Futuristic Theme** — Cyan/purple gradient palette, glassmorphism cards, Space Grotesk typography
-- **Fully Responsive** — Works on mobile, tablet, and desktop
-- **Contact Form** — mailto-powered form opens native email client
+- **Preloader** — mono percent counter, then the curtain lifts
+- **Hero** — a neural network assembles from chaos behind the name; typed role line
+- **About** — particles scatter into a 3D data cloud; stats count up on scroll
+- **Skills** — particles form k-means-style clusters; hovering a category highlights its cluster in red
+- **Playground** — live, dependency-free k-means: click to add points, watch centroids converge
+- **Selected Work** — pinned horizontal gallery, scroll moves it sideways
+- **Experience** — timeline draws itself as you scroll
+- **Contact** — every particle converges to a single pulsing core
+- **Custom cursor** with magnetic buttons (desktop only)
 
-## Sections
+## Performance & Accessibility
 
-`Hero` → `About` → `Skills` → `Projects` → `Experience & Certifications` → `Contact`
-
----
+- Single WebGL context, one particle draw call (~4000 pts desktop / 1500 mobile), dpr ≤ 1.5
+- **3D toggle** (bottom-right) disables the scene entirely; saved to `localStorage`
+- `prefers-reduced-motion` respected — smoothing and scrubs collapse to simple fades
+- Mobile: vertical project stack, no pinning, no custom cursor
 
 ## Running Locally
 
@@ -43,39 +48,27 @@ npm run dev
 
 ## Deploying
 
-Pushes to `main` on GitHub auto-deploy to Vercel.
-
-To deploy manually:
-
-```bash
-npx vercel --prod
-```
-
----
+Pushes to `main` auto-deploy to Vercel, or `npx vercel --prod`.
 
 ## Project Structure
 
 ```
 src/
-├── components/
-│   ├── HeroScene.jsx        # Three.js canvas wrapper
-│   ├── ParticleField.jsx    # Animated particle system
-│   ├── FloatingGeometry.jsx # Floating 3D wireframe shapes
-│   ├── Navbar.jsx
-│   ├── Hero.jsx
-│   ├── About.jsx
-│   ├── Skills.jsx
-│   ├── Projects.jsx
-│   ├── Experience.jsx
-│   ├── Contact.jsx
-│   └── PerformanceToggle.jsx # Low power mode button
+├── scene/                    # persistent 3D layer
+│   ├── SceneCanvas.jsx       # fixed Canvas + low-power fallback
+│   ├── MorphingParticles.jsx # morphing particle system + neural-net lines
+│   ├── CameraRig.jsx         # scroll-driven camera path + mouse parallax
+│   ├── targets.js            # per-state position generators
+│   └── sceneState.js         # DOM ↔ scene shared refs
+├── hooks/
+│   └── useScrollProgress.jsx # Lenis + ScrollTrigger provider
+├── components/               # Preloader, Cursor, Navbar, sections
 ├── context/
 │   └── PerformanceContext.jsx
 ├── App.jsx
-├── main.jsx
-└── index.css
+└── index.css                 # entire design system
 ```
 
 ---
 
-© 2025 Paras Motwani
+© 2026 Paras Motwani

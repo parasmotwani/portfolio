@@ -1,81 +1,121 @@
-import { useState, useEffect, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import HeroScene from './HeroScene'
-import { usePerformance } from '../context/PerformanceContext'
+import { useScroll } from '../hooks/useScrollProgress'
+
+const ROLES = [
+  'AI & Data Science Engineer',
+  'Building agentic AI systems',
+  'Turning data into decisions',
+]
+
+const lineReveal = {
+  hidden: { y: '110%' },
+  visible: (i) => ({
+    y: 0,
+    transition: { delay: 0.15 + i * 0.12, duration: 0.9, ease: [0.16, 1, 0.3, 1] },
+  }),
+}
 
 export default function Hero() {
-  const [visible, setVisible] = useState(true)
-  const heroRef = useRef(null)
-  const { lowPower } = usePerformance()
+  const { started, scrollTo } = useScroll()
+  const [typed, setTyped] = useState('')
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => setVisible(entry.isIntersecting),
-      { threshold: 0 }
-    )
-    if (heroRef.current) observer.observe(heroRef.current)
-    return () => observer.disconnect()
-  }, [])
+    if (!started) return
+    let role = 0
+    let char = 0
+    let deleting = false
+    let timer
+
+    const tick = () => {
+      const full = ROLES[role]
+      if (!deleting) {
+        char++
+        setTyped(full.slice(0, char))
+        if (char === full.length) {
+          deleting = true
+          timer = setTimeout(tick, 2200)
+          return
+        }
+        timer = setTimeout(tick, 45)
+      } else {
+        char--
+        setTyped(full.slice(0, char))
+        if (char === 0) {
+          deleting = false
+          role = (role + 1) % ROLES.length
+        }
+        timer = setTimeout(tick, 22)
+      }
+    }
+    timer = setTimeout(tick, 600)
+    return () => clearTimeout(timer)
+  }, [started])
 
   return (
-    <section className="hero" id="hero" ref={heroRef}>
-      <div className="hero-canvas">
-        {visible && !lowPower && <HeroScene />}
-      </div>
-      {lowPower && <div className="hero-static-bg" />}
+    <section className="hero" id="hero" data-scene>
       <motion.div
-        className="hero-content"
-        initial={{ opacity: 0, y: 40 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+        className="hero-topline"
+        initial={{ opacity: 0 }}
+        animate={started ? { opacity: 1 } : {}}
+        transition={{ delay: 0.1, duration: 0.8 }}
       >
-        <motion.div
-          className="hero-badge"
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.3, duration: 0.6 }}
-        >
-          <span className="dot" />
-          Employed
-        </motion.div>
-
-        <h1 className="hero-name">
-          <span className="gradient-text">Paras</span> Motwani
-        </h1>
-
-        <motion.p
-          className="hero-title"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5, duration: 0.8 }}
-        >
-          AI & Data Science Engineer
-        </motion.p>
-
-        <motion.div
-          className="hero-cta-group"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7, duration: 0.6 }}
-        >
-          <a href="#projects" className="btn-primary" onClick={(e) => {
-            e.preventDefault()
-            document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth' })
-          }}>
-            View Projects ↓
-          </a>
-          <a href="#contact" className="btn-secondary" onClick={(e) => {
-            e.preventDefault()
-            document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })
-          }}>
-            Get In Touch
-          </a>
-        </motion.div>
+        <span className="status-dot" />
+        <span>Available for opportunities</span>
+        <span style={{ color: 'var(--text-mute)' }}>/ Jaipur, IN</span>
       </motion.div>
 
-      <div className="scroll-indicator">
-        <span>Scroll</span>
-        <div className="line" />
+      <h1 className="hero-name">
+        <span className="line">
+          <motion.span
+            variants={lineReveal}
+            custom={0}
+            initial="hidden"
+            animate={started ? 'visible' : 'hidden'}
+          >
+            Paras
+          </motion.span>
+        </span>
+        <span className="line">
+          <motion.span
+            variants={lineReveal}
+            custom={1}
+            initial="hidden"
+            animate={started ? 'visible' : 'hidden'}
+          >
+            Motwani<span className="red">.</span>
+          </motion.span>
+        </span>
+      </h1>
+
+      <p className="hero-role">
+        <span className="red">&gt;</span> {typed}
+        <span className="caret" />
+      </p>
+
+      <motion.div
+        style={{ display: 'flex', gap: 16, marginTop: 48, flexWrap: 'wrap' }}
+        initial={{ opacity: 0, y: 20 }}
+        animate={started ? { opacity: 1, y: 0 } : {}}
+        transition={{ delay: 0.7, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+      >
+        <button className="btn solid" data-hover data-magnetic onClick={() => scrollTo('#projects')}>
+          View Work
+        </button>
+        <button className="btn" data-hover data-magnetic onClick={() => scrollTo('#contact')}>
+          Get in Touch
+        </button>
+      </motion.div>
+
+      <div className="hero-bottom">
+        <div className="hero-meta">
+          <div>Databricks · AWS · LLMs</div>
+          <div>B.Tech CSE — Manipal University Jaipur</div>
+        </div>
+        <div className="scroll-hint">
+          <span>Scroll to explore</span>
+          <div className="track" />
+        </div>
       </div>
     </section>
   )

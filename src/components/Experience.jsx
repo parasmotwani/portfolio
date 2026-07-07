@@ -1,19 +1,22 @@
+import { useEffect, useRef } from 'react'
 import { motion, useInView } from 'framer-motion'
-import { useRef } from 'react'
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+
+gsap.registerPlugin(ScrollTrigger)
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 40 },
+  hidden: { opacity: 0, y: 32 },
   visible: (i) => ({
     opacity: 1, y: 0,
-    transition: { delay: i * 0.15, duration: 0.6, ease: [0.16, 1, 0.3, 1] }
-  })
+    transition: { delay: i * 0.12, duration: 0.7, ease: [0.16, 1, 0.3, 1] },
+  }),
 }
 
 const experiences = [
   {
     role: 'Data Science Intern',
-    company: 'Celebal Technologies',
-    type: 'On-Site',
+    company: 'Celebal Technologies · On-Site',
     date: 'Oct 2025 – Present',
     points: [
       'Developed a Databricks-based contract intelligence system supporting large-scale document ingestion, metadata processing, and search pipelines.',
@@ -22,8 +25,7 @@ const experiences = [
   },
   {
     role: 'AI Research Intern',
-    company: 'Coding Jr',
-    type: 'Remote',
+    company: 'Coding Jr · Remote',
     date: 'Feb 2025 – Jun 2025',
     points: [
       'Delivered backend features for 3+ AI copilot workflows, including code assistance and documentation querying.',
@@ -46,73 +48,77 @@ const certifications = [
 
 export default function Experience() {
   const ref = useRef(null)
+  const lineRef = useRef(null)
   const isInView = useInView(ref, { once: true, margin: '-100px' })
 
-  return (
-    <section className="section" id="experience" ref={ref}>
-      <motion.h2
-        className="section-title gradient-text"
-        variants={fadeUp}
-        custom={0}
-        initial="hidden"
-        animate={isInView ? 'visible' : 'hidden'}
-      >
-        Experience
-      </motion.h2>
-      <motion.p
-        className="section-subtitle"
-        variants={fadeUp}
-        custom={1}
-        initial="hidden"
-        animate={isInView ? 'visible' : 'hidden'}
-      >
-        My professional journey in AI and data science.
-      </motion.p>
+  useEffect(() => {
+    if (!lineRef.current) return
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (reduced) {
+      lineRef.current.style.transform = 'scaleY(1)'
+      return
+    }
+    const tween = gsap.fromTo(
+      lineRef.current,
+      { scaleY: 0 },
+      {
+        scaleY: 1,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: ref.current,
+          start: 'top 70%',
+          end: 'bottom 60%',
+          scrub: 0.5,
+        },
+      }
+    )
+    return () => {
+      tween.scrollTrigger?.kill()
+      tween.kill()
+    }
+  }, [])
 
-      <div className="timeline">
+  return (
+    <section className="section" id="experience" ref={ref} data-scene>
+      <div className="section-head">
+        <span className="section-num">05</span>
+        <h2 className="section-title">Experience</h2>
+        <span className="section-sub">The professional timeline</span>
+      </div>
+
+      <div className="xp-list">
+        <div
+          className="xp-line"
+          ref={lineRef}
+          style={{ background: 'linear-gradient(180deg, #e63946, #262626)', transformOrigin: 'top', transform: 'scaleY(0)' }}
+        />
         {experiences.map((exp, i) => (
           <motion.div
-            key={exp.role}
-            className="timeline-item"
-            variants={fadeUp}
-            custom={2 + i}
-            initial="hidden"
+            className="xp-item" key={exp.role}
+            variants={fadeUp} custom={i} initial="hidden"
             animate={isInView ? 'visible' : 'hidden'}
           >
-            <div className="timeline-dot" />
-            <div className="timeline-date">{exp.date}</div>
-            <div className="timeline-content">
-              <h3>{exp.role}</h3>
-              <span className="company">{exp.company} · {exp.type}</span>
-              <ul>
-                {exp.points.map((point, j) => (
-                  <li key={j}>{point}</li>
-                ))}
-              </ul>
-            </div>
+            <div className="xp-date">{exp.date}</div>
+            <h3>{exp.role}</h3>
+            <span className="xp-company">{exp.company}</span>
+            <ul>
+              {exp.points.map((point, j) => <li key={j}>{point}</li>)}
+            </ul>
           </motion.div>
         ))}
       </div>
 
-      <motion.div
-        className="certifications-section"
-        variants={fadeUp}
-        custom={5}
-        initial="hidden"
-        animate={isInView ? 'visible' : 'hidden'}
-      >
-        <h3 style={{ fontSize: '1.4rem', marginBottom: 24 }}>
-          <span className="gradient-text">Certifications</span>
-        </h3>
-        <div className="cert-grid">
+      <div className="certs">
+        <div className="certs-head">Certifications — 09</div>
+        <div className="cert-rows">
           {certifications.map((cert) => (
-            <span key={cert.name} className="cert-badge">
-              {cert.name}
-              <span className="cert-issuer">· {cert.issuer}</span>
-            </span>
+            <div className="cert-row" key={cert.name} data-hover>
+              <span className="cert-name">{cert.name}</span>
+              <span className="cert-issuer">{cert.issuer}</span>
+            </div>
           ))}
         </div>
-      </motion.div>
+      </div>
     </section>
   )
 }

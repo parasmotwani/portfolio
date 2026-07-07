@@ -1,13 +1,21 @@
-import { motion, useInView } from 'framer-motion'
 import { useRef, useState } from 'react'
+import { motion, useInView } from 'framer-motion'
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 40 },
+  hidden: { opacity: 0, y: 32 },
   visible: (i) => ({
     opacity: 1, y: 0,
-    transition: { delay: i * 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }
-  })
+    transition: { delay: i * 0.1, duration: 0.7, ease: [0.16, 1, 0.3, 1] },
+  }),
 }
+
+const contactLinks = [
+  { label: 'Email', value: 'parasmotwani@gmail.com', href: 'mailto:parasmotwani@gmail.com' },
+  { label: 'LinkedIn', value: 'linkedin.com/in/parasmotwani', href: 'https://www.linkedin.com/in/parasmotwani' },
+  { label: 'GitHub', value: 'github.com/parasmotwani', href: 'https://github.com/parasmotwani' },
+  { label: 'Phone', value: '+91 7000 439 613', href: 'tel:+917000439613' },
+  { label: 'Résumé', value: 'Paras_Motwani.pdf', href: '/Paras_Motwani.pdf' },
+]
 
 export default function Contact() {
   const ref = useRef(null)
@@ -25,117 +33,69 @@ export default function Contact() {
     setTimeout(() => setSent(false), 3000)
   }
 
-  const contactLinks = [
-    {
-      icon: '✉️',
-      label: 'Email',
-      value: 'parasmotwani@gmail.com',
-      href: 'mailto:parasmotwani@gmail.com',
-    },
-    {
-      icon: '💼',
-      label: 'LinkedIn',
-      value: 'linkedin.com/in/parasmotwani',
-      href: 'https://www.linkedin.com/in/parasmotwani',
-    },
-    {
-      icon: '🐙',
-      label: 'GitHub',
-      value: 'github.com/parasmotwani',
-      href: 'https://github.com/parasmotwani',
-    },
-    {
-      icon: '📞',
-      label: 'Phone',
-      value: '+91-7000439613',
-      href: 'tel:+917000439613',
-    },
-  ]
-
   return (
-    <section className="section" id="contact" ref={ref}>
-      <motion.h2
-        className="section-title gradient-text"
-        variants={fadeUp}
-        custom={0}
-        initial="hidden"
-        animate={isInView ? 'visible' : 'hidden'}
-      >
-        Get In Touch
-      </motion.h2>
-      <motion.p
-        className="section-subtitle"
-        variants={fadeUp}
-        custom={1}
-        initial="hidden"
-        animate={isInView ? 'visible' : 'hidden'}
-      >
-        Have a project in mind or want to chat about AI? Let's connect.
-      </motion.p>
+    <section className="section" id="contact" ref={ref} data-scene>
+      <div className="section-head">
+        <span className="section-num">06</span>
+        <h2 className="section-title">Contact</h2>
+        <span className="section-sub">Signal converged — say hello</span>
+      </div>
 
-      <div className="contact-wrapper">
+      <motion.h3
+        className="contact-huge"
+        variants={fadeUp} custom={0} initial="hidden"
+        animate={isInView ? 'visible' : 'hidden'}
+      >
+        Let's build<br />something<br /><span className="red">intelligent.</span>
+      </motion.h3>
+
+      <div className="contact-grid">
         <motion.div
-          className="contact-info"
-          variants={fadeUp}
-          custom={2}
-          initial="hidden"
+          className="contact-links"
+          variants={fadeUp} custom={1} initial="hidden"
           animate={isInView ? 'visible' : 'hidden'}
         >
-          <h3>Let's build something <span className="gradient-text">amazing</span> together.</h3>
-          <p>
-            I'm always open to discussing new opportunities, interesting projects,
-            or collaborations in AI and data science.
-          </p>
-          <div className="contact-links">
-            {contactLinks.map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="contact-link-item"
-              >
-                <span className="icon">{link.icon}</span>
-                <div>
-                  <div className="label">{link.label}</div>
-                  <div className="value">{link.value}</div>
-                </div>
-              </a>
-            ))}
-          </div>
+          {contactLinks.map((link) => (
+            <a
+              key={link.label}
+              href={link.href}
+              target={link.href.startsWith('http') || link.href.endsWith('.pdf') ? '_blank' : undefined}
+              rel="noopener noreferrer"
+              className="contact-link-item"
+              data-hover
+            >
+              <span className="label">{link.label}</span>
+              <span className="value">{link.value}</span>
+            </a>
+          ))}
         </motion.div>
 
         <motion.form
           className="contact-form"
           onSubmit={handleSubmit}
-          variants={fadeUp}
-          custom={3}
-          initial="hidden"
+          variants={fadeUp} custom={2} initial="hidden"
           animate={isInView ? 'visible' : 'hidden'}
         >
           <input
-            type="text"
-            placeholder="Your Name"
+            type="text" placeholder="Name"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             required
           />
           <input
-            type="email"
-            placeholder="Your Email"
+            type="email" placeholder="Email"
             value={formData.email}
             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
             required
           />
           <textarea
-            placeholder="Your Message"
-            rows={5}
+            placeholder="Message" rows={4}
             value={formData.message}
             onChange={(e) => setFormData({ ...formData, message: e.target.value })}
             required
           />
-          <button type="submit" className="btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
-            {sent ? '✓ Opening Email Client' : 'Send Message →'}
+          <button type="submit" className="btn solid" data-hover data-magnetic>
+            {sent ? '✓ Opening email client' : 'Send message →'}
           </button>
         </motion.form>
       </div>

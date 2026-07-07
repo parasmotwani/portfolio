@@ -1,68 +1,73 @@
-import { motion, useInView } from 'framer-motion'
 import { useRef } from 'react'
+import { motion, useInView } from 'framer-motion'
+import { sceneState } from '../scene/sceneState'
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 40 },
+  hidden: { opacity: 0, y: 32 },
   visible: (i) => ({
     opacity: 1, y: 0,
-    transition: { delay: i * 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }
-  })
+    transition: { delay: i * 0.1, duration: 0.7, ease: [0.16, 1, 0.3, 1] },
+  }),
 }
 
+// cluster index maps to particle clusters in the 3D scene (hover = highlight)
 const skillCategories = [
   {
-    icon: '⚡',
+    cluster: 0,
     title: 'Languages & Frameworks',
-    skills: ['Python', 'SQL', 'FastAPI', 'Go'],
+    skills: ['Python', 'SQL', 'Go', 'FastAPI'],
   },
   {
-    icon: '📊',
-    title: 'Libraries & Data',
-    skills: ['NumPy', 'Pandas', 'Scikit-learn', 'Matplotlib', 'Seaborn', 'BeautifulSoup', 'MySQL', 'PostgreSQL'],
+    cluster: 1,
+    title: 'ML & Data',
+    skills: ['NumPy', 'Pandas', 'Scikit-learn', 'TensorFlow', 'Matplotlib', 'Seaborn'],
   },
   {
-    icon: '☁️',
+    cluster: 2,
+    title: 'GenAI & Agents',
+    skills: ['LLMs', 'AI Agents', 'RAG', 'Amazon Bedrock', 'Hugging Face'],
+  },
+  {
+    cluster: 3,
+    title: 'Data Engineering',
+    skills: ['Databricks', 'Delta Lake', 'MySQL', 'PostgreSQL', 'ETL Pipelines'],
+  },
+  {
+    cluster: 4,
     title: 'Cloud & DevOps',
-    skills: ['AWS', 'Docker', 'Git', 'Jenkins', 'Databricks'],
+    skills: ['AWS', 'Docker', 'Git', 'Jenkins', 'Vercel'],
   },
 ]
+
+const CLUSTER_DOTS = ['#f2f2ed', '#c9c9c2', '#e63946', '#a3a39c', '#7a7a73']
 
 export default function Skills() {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: '-100px' })
 
   return (
-    <section className="section" id="skills" ref={ref}>
-      <motion.h2
-        className="section-title gradient-text"
-        variants={fadeUp}
-        custom={0}
-        initial="hidden"
-        animate={isInView ? 'visible' : 'hidden'}
-      >
-        Skills & Tools
-      </motion.h2>
-      <motion.p
-        className="section-subtitle"
-        variants={fadeUp}
-        custom={1}
-        initial="hidden"
-        animate={isInView ? 'visible' : 'hidden'}
-      >
-        Technologies I work with daily to build intelligent systems.
-      </motion.p>
+    <section className="section" id="skills" ref={ref} data-scene>
+      <div className="section-head">
+        <span className="section-num">02</span>
+        <h2 className="section-title">Skills</h2>
+        <span className="section-sub">Hover a category — watch the clusters respond</span>
+      </div>
 
-      <div className="skills-grid">
+      <div className="skills-rows">
         {skillCategories.map((cat, i) => (
           <motion.div
+            className="skill-row"
             key={cat.title}
-            className="skill-category"
-            variants={fadeUp}
-            custom={2 + i}
-            initial="hidden"
+            data-hover
+            variants={fadeUp} custom={i} initial="hidden"
             animate={isInView ? 'visible' : 'hidden'}
+            onMouseEnter={() => { sceneState.highlightCluster = cat.cluster }}
+            onMouseLeave={() => { sceneState.highlightCluster = -1 }}
           >
-            <span className="skill-icon">{cat.icon}</span>
+            <span
+              className="skill-cluster-dot"
+              style={{ background: CLUSTER_DOTS[cat.cluster] }}
+            />
             <h3>{cat.title}</h3>
             <div className="skill-tags">
               {cat.skills.map((skill) => (
