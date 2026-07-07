@@ -1,23 +1,10 @@
-import { useEffect, useRef } from 'react'
-import { motion, useInView } from 'framer-motion'
-import gsap from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
-
-gsap.registerPlugin(ScrollTrigger)
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 32 },
-  visible: (i) => ({
-    opacity: 1, y: 0,
-    transition: { delay: i * 0.1, duration: 0.7, ease: [0.16, 1, 0.3, 1] },
-  }),
-}
+import Chapter from './Chapter'
 
 const stats = [
-  { value: 16, suffix: '+', label: 'Projects' },
-  { value: 2, suffix: '', label: 'Internships' },
-  { value: 9, suffix: '+', label: 'Certifications' },
-  { value: 2025, suffix: '', label: 'B.Tech Graduate' },
+  { value: '16+', label: 'Works Completed' },
+  { value: 'II', label: 'Apprenticeships' },
+  { value: '9+', label: 'Seals Earned' },
+  { value: 'MMXXV', label: 'B.Tech Graduate' },
 ]
 
 const education = [
@@ -34,92 +21,47 @@ const education = [
 ]
 
 export default function About() {
-  const ref = useRef(null)
-  const statsRef = useRef(null)
-  const isInView = useInView(ref, { once: true, margin: '-100px' })
-
-  useEffect(() => {
-    if (!statsRef.current) return
-    const values = statsRef.current.querySelectorAll('.stat-value .num')
-    const triggers = []
-    values.forEach((el) => {
-      const target = Number(el.dataset.target)
-      const obj = { v: 0 }
-      triggers.push(
-        gsap.to(obj, {
-          v: target,
-          duration: 1.6,
-          ease: 'power3.out',
-          scrollTrigger: { trigger: el, start: 'top 85%' },
-          onUpdate: () => { el.textContent = Math.round(obj.v) },
-        })
-      )
-    })
-    return () => triggers.forEach((t) => t.scrollTrigger?.kill())
-  }, [])
-
   return (
-    <section className="section" id="about" ref={ref} data-scene>
-      <div className="section-head">
-        <span className="section-num">01</span>
-        <h2 className="section-title">About</h2>
-        <span className="section-sub">The data behind the developer</span>
-      </div>
-
+    <Chapter
+      id="about"
+      numeral="Chapter I"
+      title="The Scholar"
+      subtitle="Of the author, his studies, and his craft"
+    >
       <div className="about-grid">
         <div>
-          <motion.p
-            className="about-lede"
-            variants={fadeUp} custom={0} initial="hidden"
-            animate={isInView ? 'visible' : 'hidden'}
-          >
-            I build <span className="red">intelligent systems</span> — from agentic
-            AI workflows to real-time data pipelines that move at production scale.
-          </motion.p>
-          <motion.p
-            className="about-body"
-            variants={fadeUp} custom={1} initial="hidden"
-            animate={isInView ? 'visible' : 'hidden'}
-          >
-            Computer Science graduate from Manipal University Jaipur, focused on
+          <p className="about-lede" data-reveal>
+            I build <span className="gold">intelligent systems</span> — from agentic
+            AI workflows to data pipelines that move at production scale.
+          </p>
+          <p className="about-body" data-reveal>
+            Computer Science graduate from Manipal University Jaipur, devoted to
             Artificial Intelligence, Data Science, and Generative AI. From contract
             intelligence on Databricks to autonomous SAP workflows on AWS, I turn
             complex problems into clean, automated solutions. Co-founded a gamified
             ed-tech startup; won top honors at The Startup Mela 2.0, Jaipur.
-          </motion.p>
+          </p>
 
-          <motion.div
-            className="stats-row"
-            ref={statsRef}
-            variants={fadeUp} custom={2} initial="hidden"
-            animate={isInView ? 'visible' : 'hidden'}
-          >
+          <div className="stats-row" data-reveal>
             {stats.map((s) => (
               <div className="stat" key={s.label}>
-                <div className="stat-value">
-                  <span className="num" data-target={s.value}>0</span>
-                  <span className="plus">{s.suffix}</span>
-                </div>
+                <div className="stat-value">{s.value}</div>
                 <div className="stat-label">{s.label}</div>
               </div>
             ))}
-          </motion.div>
+          </div>
         </div>
 
         <div className="edu-list">
-          {education.map((edu, i) => (
-            <motion.div
-              className="edu-item" key={edu.degree}
-              variants={fadeUp} custom={2 + i} initial="hidden"
-              animate={isInView ? 'visible' : 'hidden'}
-            >
+          {education.map((edu) => (
+            <div className="edu-item" key={edu.degree} data-reveal>
               <h4>{edu.degree}</h4>
               <div className="edu-school">{edu.school}</div>
               <div className="edu-date">{edu.date}</div>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>
-    </section>
+    </Chapter>
   )
 }

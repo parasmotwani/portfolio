@@ -1,82 +1,63 @@
-import { useRef } from 'react'
-import { motion, useInView } from 'framer-motion'
-import { sceneState } from '../scene/sceneState'
+import Chapter from './Chapter'
+import Sigil from './Sigil'
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 32 },
-  visible: (i) => ({
-    opacity: 1, y: 0,
-    transition: { delay: i * 0.1, duration: 0.7, ease: [0.16, 1, 0.3, 1] },
-  }),
-}
-
-// cluster index maps to particle clusters in the 3D scene (hover = highlight)
-const skillCategories = [
+const schools = [
   {
-    cluster: 0,
-    title: 'Languages & Frameworks',
+    sigil: 'tongue',
+    title: 'Tongues & Frameworks',
+    school: 'the spoken forms',
     skills: ['Python', 'SQL', 'Go', 'FastAPI'],
   },
   {
-    cluster: 1,
-    title: 'ML & Data',
+    sigil: 'lens',
+    title: 'Machine Learning',
+    school: 'the seeing lens',
     skills: ['NumPy', 'Pandas', 'Scikit-learn', 'TensorFlow', 'Matplotlib', 'Seaborn'],
   },
   {
-    cluster: 2,
-    title: 'GenAI & Agents',
+    sigil: 'spark',
+    title: 'Generative Arts',
+    school: 'the summoned minds',
     skills: ['LLMs', 'AI Agents', 'RAG', 'Amazon Bedrock', 'Hugging Face'],
   },
   {
-    cluster: 3,
-    title: 'Data Engineering',
+    sigil: 'vessel',
+    title: 'Data Alchemy',
+    school: 'the great work',
     skills: ['Databricks', 'Delta Lake', 'MySQL', 'PostgreSQL', 'ETL Pipelines'],
   },
   {
-    cluster: 4,
-    title: 'Cloud & DevOps',
+    sigil: 'tower',
+    title: 'Cloud & Keep',
+    school: 'the high towers',
     skills: ['AWS', 'Docker', 'Git', 'Jenkins', 'Vercel'],
   },
 ]
 
-const CLUSTER_DOTS = ['#f2f2ed', '#c9c9c2', '#e63946', '#a3a39c', '#7a7a73']
-
 export default function Skills() {
-  const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, margin: '-100px' })
-
   return (
-    <section className="section" id="skills" ref={ref} data-scene>
-      <div className="section-head">
-        <span className="section-num">02</span>
-        <h2 className="section-title">Skills</h2>
-        <span className="section-sub">Hover a category — watch the clusters respond</span>
-      </div>
-
-      <div className="skills-rows">
-        {skillCategories.map((cat, i) => (
-          <motion.div
-            className="skill-row"
-            key={cat.title}
-            data-hover
-            variants={fadeUp} custom={i} initial="hidden"
-            animate={isInView ? 'visible' : 'hidden'}
-            onMouseEnter={() => { sceneState.highlightCluster = cat.cluster }}
-            onMouseLeave={() => { sceneState.highlightCluster = -1 }}
-          >
-            <span
-              className="skill-cluster-dot"
-              style={{ background: CLUSTER_DOTS[cat.cluster] }}
-            />
-            <h3>{cat.title}</h3>
-            <div className="skill-tags">
+    <Chapter
+      id="skills"
+      numeral="Chapter II"
+      title="The Grimoire"
+      subtitle="Five schools of practice, mastered by study"
+    >
+      <div className="grimoire-rows">
+        {schools.map((cat) => (
+          <div className="spell-row" key={cat.title} data-reveal data-hover>
+            <Sigil name={cat.sigil} />
+            <h3>
+              {cat.title}
+              <span className="school">{cat.school}</span>
+            </h3>
+            <div className="spell-tags">
               {cat.skills.map((skill) => (
-                <span key={skill} className="skill-tag">{skill}</span>
+                <span key={skill} className="spell-tag">{skill}</span>
               ))}
             </div>
-          </motion.div>
+          </div>
         ))}
       </div>
-    </section>
+    </Chapter>
   )
 }

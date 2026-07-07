@@ -77,6 +77,17 @@ export function ScrollProvider({ children }) {
   }, [measure])
 
   const scrollTo = useCallback((target) => {
+    // If the target is a pinned scrub chapter, land at the END of its pin
+    // span so the content arrives fully inscribed — landing at the start
+    // would show a blank page (reveal timeline at progress 0).
+    const el = typeof target === 'string' ? document.querySelector(target) : target
+    if (el) {
+      const st = ScrollTrigger.getAll().find((s) => s.trigger === el && s.pin)
+      if (st && el.querySelector('[data-reveal]')) {
+        lenisRef.current?.scrollTo(st.end - 1)
+        return
+      }
+    }
     lenisRef.current?.scrollTo(target, { offset: 0 })
   }, [])
 

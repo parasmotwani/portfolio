@@ -2,13 +2,13 @@ import { useState, useEffect, useRef } from 'react'
 import { useScroll } from '../hooks/useScrollProgress'
 
 const SECTIONS = [
-  { id: 'hero', label: 'Home', num: '00' },
-  { id: 'about', label: 'About', num: '01' },
-  { id: 'skills', label: 'Skills', num: '02' },
-  { id: 'playground', label: 'Playground', num: '03' },
-  { id: 'projects', label: 'Work', num: '04' },
-  { id: 'experience', label: 'Experience', num: '05' },
-  { id: 'contact', label: 'Contact', num: '06' },
+  { id: 'hero', label: 'Frontispiece', num: '·' },
+  { id: 'about', label: 'The Scholar', num: 'I' },
+  { id: 'skills', label: 'The Grimoire', num: 'II' },
+  { id: 'playground', label: 'Divination', num: 'III' },
+  { id: 'artifacts', label: 'Artifacts', num: 'IV' },
+  { id: 'chronicle', label: 'Chronicle', num: 'V' },
+  { id: 'summoning', label: 'Summoning', num: 'VI' },
 ]
 
 export default function Navbar() {
@@ -56,13 +56,13 @@ export default function Navbar() {
       </div>
       <nav className="navbar">
         <div className="nav-logo" data-hover onClick={(e) => handleClick(e, 'hero')}>
-          PM<span className="dot">.</span>
+          P<span className="dot">✦</span>M
         </div>
         <div className="nav-indicator">
           {active.num} — {active.label}
         </div>
         <ul className={`nav-links${mobileOpen ? ' open' : ''}`}>
-          {SECTIONS.slice(1).map(({ id, label }) => (
+          {SECTIONS.slice(1).map(({ id, label, num }) => (
             <li key={id}>
               <a
                 href={`#${id}`}
@@ -70,7 +70,7 @@ export default function Navbar() {
                 data-hover
                 onClick={(e) => handleClick(e, id)}
               >
-                {label}
+                {num} · {label}
               </a>
             </li>
           ))}
@@ -80,7 +80,7 @@ export default function Navbar() {
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label="Toggle navigation"
         >
-          {mobileOpen ? 'Close' : 'Menu'}
+          {mobileOpen ? 'Close' : 'Index'}
         </button>
       </nav>
     </>

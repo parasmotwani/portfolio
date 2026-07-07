@@ -29,8 +29,8 @@ export default function App() {
           <Experience />
           <Contact />
           <footer className="footer">
-            <span>© 2026 Paras Motwani</span>
-            <span>Designed & built in React + Three.js</span>
+            <p className="colophon">Here ends the codex.</p>
+            <p className="fine">© MMXXVI Paras Motwani · Inscribed in React & Three.js</p>
           </footer>
         </div>
         <PerformanceToggle />

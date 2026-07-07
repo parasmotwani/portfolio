@@ -1,31 +1,48 @@
-import { useEffect, useState } from 'react'
-import { motion } from 'framer-motion'
+import { useEffect, useRef, useState } from 'react'
+import gsap from 'gsap'
+import MagicCircle from './MagicCircle'
 import { useScroll } from '../hooks/useScrollProgress'
 
 const ROLES = [
   'AI & Data Science Engineer',
-  'Building agentic AI systems',
-  'Turning data into decisions',
+  'Practitioner of data alchemy',
+  'Builder of thinking machines',
 ]
-
-const lineReveal = {
-  hidden: { y: '110%' },
-  visible: (i) => ({
-    y: 0,
-    transition: { delay: 0.15 + i * 0.12, duration: 0.9, ease: [0.16, 1, 0.3, 1] },
-  }),
-}
 
 export default function Hero() {
   const { started, scrollTo } = useScroll()
   const [typed, setTyped] = useState('')
+  const circleRef = useRef(null)
+  const contentRef = useRef(null)
+
+  // inscribe the magic circle + fade in content once the preloader lifts
+  useEffect(() => {
+    if (!started || !circleRef.current) return
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const strokes = circleRef.current.querySelectorAll('[data-inscribe]')
+    strokes.forEach((s) => {
+      const len = s.getTotalLength ? s.getTotalLength() : 300
+      s.style.strokeDasharray = len
+      s.style.strokeDashoffset = reduced ? 0 : len
+    })
+    const items = contentRef.current.querySelectorAll('[data-hero-reveal]')
+    if (reduced) {
+      gsap.set(items, { opacity: 1, y: 0 })
+      return
+    }
+    const tl = gsap.timeline()
+    tl.to(strokes, { strokeDashoffset: 0, duration: 2.2, stagger: 0.04, ease: 'power2.inOut' }, 0)
+    tl.fromTo(items,
+      { opacity: 0, y: 26, filter: 'blur(4px)' },
+      { opacity: 1, y: 0, filter: 'blur(0px)', duration: 1, stagger: 0.14, ease: 'power3.out' },
+      0.4
+    )
+    return () => tl.kill()
+  }, [started])
 
   useEffect(() => {
     if (!started) return
-    let role = 0
-    let char = 0
-    let deleting = false
-    let timer
+    let role = 0, char = 0, deleting = false, timer
 
     const tick = () => {
       const full = ROLES[role]
@@ -34,10 +51,10 @@ export default function Hero() {
         setTyped(full.slice(0, char))
         if (char === full.length) {
           deleting = true
-          timer = setTimeout(tick, 2200)
+          timer = setTimeout(tick, 2400)
           return
         }
-        timer = setTimeout(tick, 45)
+        timer = setTimeout(tick, 48)
       } else {
         char--
         setTyped(full.slice(0, char))
@@ -48,74 +65,41 @@ export default function Hero() {
         timer = setTimeout(tick, 22)
       }
     }
-    timer = setTimeout(tick, 600)
+    timer = setTimeout(tick, 900)
     return () => clearTimeout(timer)
   }, [started])
 
   return (
-    <section className="hero" id="hero" data-scene>
-      <motion.div
-        className="hero-topline"
-        initial={{ opacity: 0 }}
-        animate={started ? { opacity: 1 } : {}}
-        transition={{ delay: 0.1, duration: 0.8 }}
-      >
-        <span className="status-dot" />
-        <span>Available for opportunities</span>
-        <span style={{ color: 'var(--text-mute)' }}>/ Jaipur, IN</span>
-      </motion.div>
+    <section className="hero" id="hero">
+      <div ref={circleRef}>
+        <MagicCircle className="hero-circle" />
+      </div>
 
-      <h1 className="hero-name">
-        <span className="line">
-          <motion.span
-            variants={lineReveal}
-            custom={0}
-            initial="hidden"
-            animate={started ? 'visible' : 'hidden'}
-          >
-            Paras
-          </motion.span>
-        </span>
-        <span className="line">
-          <motion.span
-            variants={lineReveal}
-            custom={1}
-            initial="hidden"
-            animate={started ? 'visible' : 'hidden'}
-          >
-            Motwani<span className="red">.</span>
-          </motion.span>
-        </span>
-      </h1>
-
-      <p className="hero-role">
-        <span className="red">&gt;</span> {typed}
-        <span className="caret" />
-      </p>
-
-      <motion.div
-        style={{ display: 'flex', gap: 16, marginTop: 48, flexWrap: 'wrap' }}
-        initial={{ opacity: 0, y: 20 }}
-        animate={started ? { opacity: 1, y: 0 } : {}}
-        transition={{ delay: 0.7, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-      >
-        <button className="btn solid" data-hover data-magnetic onClick={() => scrollTo('#projects')}>
-          View Work
-        </button>
-        <button className="btn" data-hover data-magnetic onClick={() => scrollTo('#contact')}>
-          Get in Touch
-        </button>
-      </motion.div>
-
-      <div className="hero-bottom">
-        <div className="hero-meta">
-          <div>Databricks · AWS · LLMs</div>
-          <div>B.Tech CSE — Manipal University Jaipur</div>
+      <div className="hero-content" ref={contentRef}>
+        <p className="hero-epigraph" data-hero-reveal>✦ The Codex of ✦</p>
+        <h1 className="hero-name" data-hero-reveal>
+          Paras <span className="gold">Motwani</span>
+        </h1>
+        <p className="hero-role" data-hero-reveal>
+          {typed}<span className="caret" />
+        </p>
+        <div className="hero-status" data-hero-reveal>
+          <span className="wax" />
+          Available for opportunities · Jaipur, IN
         </div>
-        <div className="scroll-hint">
-          <span>Scroll to explore</span>
-          <div className="track" />
+        <div className="hero-cta" data-hero-reveal>
+          <button className="btn solid" data-hover data-magnetic onClick={() => scrollTo('#artifacts')}>
+            The Artifacts
+          </button>
+          <button className="btn" data-hover data-magnetic onClick={() => scrollTo('#summoning')}>
+            The Summoning
+          </button>
         </div>
+      </div>
+
+      <div className="hero-foot">
+        <span>Scroll to turn the page</span>
+        <div className="quill" />
       </div>
     </section>
   )

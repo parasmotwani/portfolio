@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
+import Chapter from './Chapter'
 
-const COLORS = ['#e63946', '#f2f2ed', '#a3a39c', '#c9c9c2', '#7a7a73', '#8d99ae']
-const BG = '#141414'
+const COLORS = ['#d4a94e', '#b04040', '#e8e0cf', '#8a6f38', '#a89f8a', '#6e8a5e']
+const BG = '#16120c'
 
 function seedPoints(w, h) {
   const pts = []
@@ -26,7 +27,7 @@ export default function Playground() {
   const assignRef = useRef([])
   const animRef = useRef(null)
   const [k, setK] = useState(3)
-  const [status, setStatus] = useState('Click canvas to add points')
+  const [status, setStatus] = useState('Cast points upon the table')
   const kRef = useRef(k)
   kRef.current = k
 
@@ -38,8 +39,8 @@ export default function Playground() {
     ctx.fillStyle = BG
     ctx.fillRect(0, 0, w, h)
 
-    // grid
-    ctx.strokeStyle = 'rgba(255,255,255,0.04)'
+    // faint grid, like ruled vellum
+    ctx.strokeStyle = 'rgba(212, 169, 78, 0.05)'
     ctx.lineWidth = 1
     for (let x = 0; x < w; x += 40) {
       ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke()
@@ -53,7 +54,7 @@ export default function Playground() {
     const assign = assignRef.current
 
     pts.forEach((p, i) => {
-      const c = assign[i] !== undefined && cents.length ? COLORS[assign[i] % COLORS.length] : '#62625c'
+      const c = assign[i] !== undefined && cents.length ? COLORS[assign[i] % COLORS.length] : '#6e6757'
       ctx.fillStyle = c
       ctx.globalAlpha = 0.9
       ctx.beginPath()
@@ -62,16 +63,18 @@ export default function Playground() {
     })
     ctx.globalAlpha = 1
 
+    // centroids as wax seals: ring + diamond
     cents.forEach((c, i) => {
       ctx.strokeStyle = COLORS[i % COLORS.length]
-      ctx.lineWidth = 2
-      const s = 9
+      ctx.lineWidth = 1.5
       ctx.beginPath()
-      ctx.moveTo(c.x - s, c.y - s); ctx.lineTo(c.x + s, c.y + s)
-      ctx.moveTo(c.x + s, c.y - s); ctx.lineTo(c.x - s, c.y + s)
+      ctx.arc(c.x, c.y, 13, 0, Math.PI * 2)
       ctx.stroke()
+      const s = 6
       ctx.beginPath()
-      ctx.arc(c.x, c.y, 14, 0, Math.PI * 2)
+      ctx.moveTo(c.x, c.y - s); ctx.lineTo(c.x + s, c.y)
+      ctx.lineTo(c.x, c.y + s); ctx.lineTo(c.x - s, c.y)
+      ctx.closePath()
       ctx.stroke()
     })
   }, [])
@@ -101,7 +104,7 @@ export default function Playground() {
     const rect = canvasRef.current.getBoundingClientRect()
     pointsRef.current.push({ x: e.clientX - rect.left, y: e.clientY - rect.top })
     draw()
-    setStatus(`${pointsRef.current.length} points — press RUN`)
+    setStatus(`${pointsRef.current.length} points cast — invoke the rite`)
   }
 
   const run = () => {
@@ -109,17 +112,15 @@ export default function Playground() {
     const pts = pointsRef.current
     const kk = kRef.current
     if (pts.length < kk) {
-      setStatus('Need more points than k')
+      setStatus('More points than seals required')
       return
     }
-    // init centroids at random points
     const chosen = [...pts].sort(() => Math.random() - 0.5).slice(0, kk)
     centroidsRef.current = chosen.map((p) => ({ x: p.x, y: p.y, tx: p.x, ty: p.y }))
     let iter = 0
 
     const step = () => {
       const cents = centroidsRef.current
-      // assign
       assignRef.current = pts.map((p) => {
         let best = 0, bd = Infinity
         cents.forEach((c, i) => {
@@ -128,7 +129,6 @@ export default function Playground() {
         })
         return best
       })
-      // new targets = cluster means
       let moved = 0
       cents.forEach((c, i) => {
         const mine = pts.filter((_, j) => assignRef.current[j] === i)
@@ -139,9 +139,8 @@ export default function Playground() {
         c.tx = mx; c.ty = my
       })
       iter++
-      setStatus(`Iteration ${String(iter).padStart(2, '0')} — shift ${moved.toFixed(1)}px`)
+      setStatus(`Divination ${String(iter).padStart(2, '0')} — seals shift ${moved.toFixed(1)}px`)
 
-      // animate centroids toward targets, then next iteration
       const animate = () => {
         let settling = 0
         cents.forEach((c) => {
@@ -155,7 +154,7 @@ export default function Playground() {
         } else if (moved > 0.5 && iter < 30) {
           animRef.current = requestAnimationFrame(step)
         } else {
-          setStatus(`Converged in ${iter} iterations · k=${kk}`)
+          setStatus(`The seals have settled — ${iter} passes · k=${kk}`)
         }
       }
       animRef.current = requestAnimationFrame(animate)
@@ -165,46 +164,44 @@ export default function Playground() {
 
   const reset = () => {
     cancelAnimationFrame(animRef.current)
-    pointsRef.current = []
     centroidsRef.current = []
     assignRef.current = []
     const canvas = canvasRef.current
     pointsRef.current = seedPoints(canvas.width, canvas.height)
     draw()
-    setStatus('Reset — click to add points')
+    setStatus('The table is cleared')
   }
 
   return (
-    <section className="section" id="playground" data-scene>
-      <div className="section-head">
-        <span className="section-num">03</span>
-        <h2 className="section-title">Playground</h2>
-        <span className="section-sub">Live k-means clustering — no libraries, just math</span>
-      </div>
-
-      <div className="playground-wrap">
-        <div>
-          <p className="playground-desc">
-            Click the canvas to drop data points, pick <em>k</em>, and watch
-            k-means converge in real time — assignments and centroid updates,
-            animated step by step.
+    <Chapter
+      id="playground"
+      numeral="Chapter III"
+      title="The Divination Table"
+      subtitle="A working of k-means, cast by hand — no libraries, only arithmetic"
+    >
+      <div className="divination-wrap">
+        <div data-reveal>
+          <p className="divination-desc">
+            Click the table to cast data points, choose <em>k</em> seals, and
+            invoke the rite. Watch each pass of k-means assign the points and
+            draw the seals toward their centers, until all is settled.
           </p>
-          <div className="playground-controls">
-            <div className="playground-k">
-              <span>k =</span>
+          <div className="divination-controls">
+            <div className="divination-k">
+              <span>Seals, k =</span>
               <button data-hover onClick={() => setK((v) => Math.max(2, v - 1))}>−</button>
               <span className="kval">{k}</span>
               <button data-hover onClick={() => setK((v) => Math.min(6, v + 1))}>+</button>
             </div>
-            <div style={{ display: 'flex', gap: 10 }}>
-              <button className="btn solid" data-hover onClick={run}>Run</button>
-              <button className="btn" data-hover onClick={reset}>Reset</button>
+            <div style={{ display: 'flex', gap: 12 }}>
+              <button className="btn solid" data-hover onClick={run}>Invoke</button>
+              <button className="btn" data-hover onClick={reset}>Clear</button>
             </div>
-            <div className="playground-status">{status}</div>
+            <div className="divination-status">{status}</div>
           </div>
         </div>
-        <canvas className="playground-canvas" ref={canvasRef} onClick={addPoint} />
+        <canvas className="divination-canvas" ref={canvasRef} onClick={addPoint} data-reveal />
       </div>
-    </section>
+    </Chapter>
   )
 }

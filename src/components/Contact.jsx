@@ -1,13 +1,6 @@
-import { useRef, useState } from 'react'
-import { motion, useInView } from 'framer-motion'
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 32 },
-  visible: (i) => ({
-    opacity: 1, y: 0,
-    transition: { delay: i * 0.1, duration: 0.7, ease: [0.16, 1, 0.3, 1] },
-  }),
-}
+import { useState } from 'react'
+import Chapter from './Chapter'
+import MagicCircle from './MagicCircle'
 
 const contactLinks = [
   { label: 'Email', value: 'parasmotwani@gmail.com', href: 'mailto:parasmotwani@gmail.com' },
@@ -18,8 +11,6 @@ const contactLinks = [
 ]
 
 export default function Contact() {
-  const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, margin: '-100px' })
   const [formData, setFormData] = useState({ name: '', email: '', message: '' })
   const [sent, setSent] = useState(false)
 
@@ -34,27 +25,21 @@ export default function Contact() {
   }
 
   return (
-    <section className="section" id="contact" ref={ref} data-scene>
-      <div className="section-head">
-        <span className="section-num">06</span>
-        <h2 className="section-title">Contact</h2>
-        <span className="section-sub">Signal converged — say hello</span>
-      </div>
+    <Chapter
+      id="summoning"
+      numeral="Chapter VI"
+      title="The Summoning"
+      subtitle="Speak, and the author shall answer"
+      className="summoning"
+    >
+      <MagicCircle className="summoning-circle" nodes={false} />
 
-      <motion.h3
-        className="contact-huge"
-        variants={fadeUp} custom={0} initial="hidden"
-        animate={isInView ? 'visible' : 'hidden'}
-      >
-        Let's build<br />something<br /><span className="red">intelligent.</span>
-      </motion.h3>
+      <h3 className="contact-huge" data-reveal>
+        Let us build something<br /><span className="gold">intelligent.</span>
+      </h3>
 
       <div className="contact-grid">
-        <motion.div
-          className="contact-links"
-          variants={fadeUp} custom={1} initial="hidden"
-          animate={isInView ? 'visible' : 'hidden'}
-        >
+        <div className="contact-links" data-reveal>
           {contactLinks.map((link) => (
             <a
               key={link.label}
@@ -68,37 +53,32 @@ export default function Contact() {
               <span className="value">{link.value}</span>
             </a>
           ))}
-        </motion.div>
+        </div>
 
-        <motion.form
-          className="contact-form"
-          onSubmit={handleSubmit}
-          variants={fadeUp} custom={2} initial="hidden"
-          animate={isInView ? 'visible' : 'hidden'}
-        >
+        <form className="contact-form" onSubmit={handleSubmit} data-reveal>
           <input
-            type="text" placeholder="Name"
+            type="text" placeholder="Your name"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             required
           />
           <input
-            type="email" placeholder="Email"
+            type="email" placeholder="Your email"
             value={formData.email}
             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
             required
           />
           <textarea
-            placeholder="Message" rows={4}
+            placeholder="Your message" rows={4}
             value={formData.message}
             onChange={(e) => setFormData({ ...formData, message: e.target.value })}
             required
           />
           <button type="submit" className="btn solid" data-hover data-magnetic>
-            {sent ? '✓ Opening email client' : 'Send message →'}
+            {sent ? '✓ The raven is sent' : 'Send word →'}
           </button>
-        </motion.form>
+        </form>
       </div>
-    </section>
+    </Chapter>
   )
 }

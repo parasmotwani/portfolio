@@ -6,20 +6,29 @@ export default function Preloader() {
   const [count, setCount] = useState(0)
   const [done, setDone] = useState(false)
   const [gone, setGone] = useState(false)
-  const fillRef = useRef(null)
+  const sigilRef = useRef(null)
 
   useEffect(() => {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    const duration = reduced ? 200 : 1800
+    const duration = reduced ? 200 : 1900
     const t0 = performance.now()
     let raf
 
+    const strokes = sigilRef.current?.querySelectorAll('circle, polygon') || []
+    strokes.forEach((s) => {
+      const len = s.getTotalLength ? s.getTotalLength() : 300
+      s.style.strokeDasharray = len
+      s.style.strokeDashoffset = len
+    })
+
     const tick = (now) => {
       const t = Math.min(1, (now - t0) / duration)
-      // ease-out so the counter decelerates like a loading model converging
       const eased = 1 - Math.pow(1 - t, 3)
       setCount(Math.round(eased * 100))
-      if (fillRef.current) fillRef.current.style.transform = `scaleX(${eased})`
+      strokes.forEach((s) => {
+        const len = parseFloat(s.style.strokeDasharray)
+        s.style.strokeDashoffset = len * (1 - eased)
+      })
       if (t < 1) {
         raf = requestAnimationFrame(tick)
       } else {
@@ -27,7 +36,7 @@ export default function Preloader() {
           setDone(true)
           start()
           setTimeout(() => setGone(true), 950)
-        }, 250)
+        }, 300)
       }
     }
     raf = requestAnimationFrame(tick)
@@ -39,13 +48,15 @@ export default function Preloader() {
   return (
     <div className={`preloader${done ? ' done' : ''}`}>
       <div className="preloader-inner">
-        <div className="preloader-counter">
-          {String(count).padStart(3, '0')}<span>%</span>
-        </div>
-        <div className="preloader-bar">
-          <div className="preloader-bar-fill" ref={fillRef} style={{ transform: 'scaleX(0)' }} />
-        </div>
-        <div className="preloader-label">Initializing · Paras Motwani</div>
+        <svg className="preloader-sigil" viewBox="0 0 100 100" ref={sigilRef} aria-hidden="true">
+          <circle cx="50" cy="50" r="46" />
+          <circle cx="50" cy="50" r="34" />
+          <polygon points="50,16 79,67 21,67" />
+          <polygon points="50,84 21,33 79,33" />
+          <circle cx="50" cy="50" r="6" />
+        </svg>
+        <div className="preloader-counter">{String(count).padStart(3, '0')}</div>
+        <div className="preloader-label">Awakening the Codex</div>
       </div>
     </div>
   )
