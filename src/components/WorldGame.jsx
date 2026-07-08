@@ -329,6 +329,9 @@ export default function WorldGame() {
     }
     fit()
     window.addEventListener('resize', fit)
+    // the CRT expands when play starts — refit when the element resizes
+    const ro = new ResizeObserver(fit)
+    ro.observe(canvas)
 
     const SPEED = 150 // px/s
 
@@ -406,6 +409,7 @@ export default function WorldGame() {
       alive = false
       cancelAnimationFrame(rafRef.current)
       window.removeEventListener('resize', fit)
+      ro.disconnect()
       window.removeEventListener('keydown', onKeyDown)
       window.removeEventListener('keyup', onKeyUp)
       stateRef.current.keys = {}
@@ -446,12 +450,39 @@ export default function WorldGame() {
       pin={false}
       className="room"
     >
-      <div className="world-wrap crt" data-reveal ref={wrapRef}>
-        <div className="crt-top" aria-hidden="true">
-          <span className="crt-brand">PM-2600</span>
-          <span className={`crt-led${playing ? ' on' : ''}`} />
-        </div>
-        <canvas className="world-canvas" ref={canvasRef} />
+      <div className="gameroom-scene" data-reveal>
+        {/* furniture: shelf with tapes, poster, trailing cable */}
+        <svg className="gameroom-svg" viewBox="0 0 980 460" aria-hidden="true">
+          <line x1="20" y1="430" x2="960" y2="430" stroke="var(--gold-ghost)" strokeWidth="1.5" />
+          {/* poster, left wall, peeling corner */}
+          <g transform="rotate(2 170 160)">
+            <rect x="90" y="70" width="160" height="200" fill="var(--surface)" stroke="var(--gold-dim)" strokeWidth="1.2" />
+            <text x="170" y="130" textAnchor="middle" className="poster-text">INSERT</text>
+            <text x="170" y="168" textAnchor="middle" className="poster-text">COIN</text>
+            <text x="170" y="225" textAnchor="middle" className="poster-sub">est. 2003</text>
+            <path d="M250 70 L 232 92 L 250 96 Z" fill="var(--surface-2)" stroke="var(--gold-dim)" strokeWidth="0.8" />
+          </g>
+          {/* low shelf with tape stack */}
+          <g stroke="var(--gold-dim)" strokeWidth="1.1" fill="var(--surface)">
+            <rect x="330" y="330" width="200" height="100" />
+            <line x1="330" y1="378" x2="530" y2="378" />
+          </g>
+          <g fill="var(--surface-2)" stroke="var(--gold-dim)" strokeWidth="0.7">
+            <rect x="344" y="346" width="52" height="14" />
+            <rect x="350" y="358" width="52" height="14" transform="rotate(-4 376 365)" />
+            <rect x="430" y="392" width="60" height="16" />
+          </g>
+          {/* cable from the machine down to the floor */}
+          <path d="M700 400 Q 660 440 560 428 T 380 440" stroke="var(--gold-dim)" strokeWidth="1.4" fill="none" strokeDasharray="1 0" />
+          <text x="430" y="320" textAnchor="middle" className="scene-caption">it never got unplugged</text>
+        </svg>
+
+        <div className={`crt-unit${playing ? ' expanded' : ''}`} ref={wrapRef}>
+          <div className="crt-top" aria-hidden="true">
+            <span className="crt-brand">PM-2600</span>
+            <span className={`crt-led${playing ? ' on' : ''}`} />
+          </div>
+          <canvas className="world-canvas" ref={canvasRef} />
 
         {!playing && (
           <button className="world-enter" data-hover onClick={() => setPlaying(true)}>
@@ -491,6 +522,9 @@ export default function WorldGame() {
             <button onTouchStart={padInteract} className="da">E</button>
           </div>
         )}
+        </div>
+
+        {playing && <div className="crt-backdrop" onClick={() => { setPanel(null); setPlaying(false) }} />}
       </div>
     </Chapter>
   )

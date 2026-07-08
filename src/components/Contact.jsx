@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import Chapter from './Chapter'
-import MagicCircle from './MagicCircle'
+import Cobweb from './Cobweb'
+import Spider from './Spider'
 
 const contactLinks = [
   { label: 'Email', value: 'parasmotwani@gmail.com', href: 'mailto:parasmotwani@gmail.com' },
@@ -30,9 +31,11 @@ export default function Contact() {
       numeral="Room VI"
       title="Contact"
       subtitle="The telephone still works. Open to opportunities and collaborations."
-      className="summoning room"
+      className="room"
     >
-      <MagicCircle className="summoning-circle" nodes={false} />
+      <Cobweb corner="tl" size={150} />
+      <Cobweb corner="br" size={180} />
+      <Spider left="88%" delay={3} />
 
       <h3 className="contact-huge" data-reveal>
         Let us build something<br /><span className="gold">intelligent.</span>

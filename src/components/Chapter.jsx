@@ -50,18 +50,30 @@ export default function Chapter({ id, numeral, title, subtitle, pin = true, chil
         scrollTrigger: {
           trigger: el,
           start: 'top top',
-          end: '+=85%',
+          end: '+=95%',
           pin: true,
           scrub: 0.5,
           anticipatePin: 1,
         },
       })
+      // walk through the doorway: the room opens from a door-shaped arch
+      tl.fromTo(el,
+        {
+          clipPath: 'inset(14% 39% 0% 39% round 45vw 45vw 0 0)',
+          scale: 1.07,
+        },
+        {
+          clipPath: 'inset(0% 0% 0% 0% round 0vw 0vw 0 0)',
+          scale: 1,
+          duration: 0.32,
+          ease: 'power2.out',
+        }, 0)
       tl.to(items, {
         opacity: 1, y: 0, filter: 'blur(0px)',
         stagger: 0.1, ease: 'power2.out',
-      }, 0)
-      tl.to(strokes, { strokeDashoffset: 0, stagger: 0.12, ease: 'none' }, 0)
-      // small dwell so the finished page holds before releasing
+      }, 0.18)
+      tl.to(strokes, { strokeDashoffset: 0, stagger: 0.12, ease: 'none' }, 0.18)
+      // small dwell so the finished room holds before releasing
       tl.to({}, { duration: 0.25 })
     }
 

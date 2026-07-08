@@ -10,6 +10,8 @@ import Preloader from './components/Preloader'
 import Cursor from './components/Cursor'
 import Flashlight from './components/Flashlight'
 import LightSwitch from './components/LightSwitch'
+import HouseFlicker from './components/HouseFlicker'
+import Whisper from './components/Whisper'
 import PerformanceToggle from './components/PerformanceToggle'
 import SceneCanvas from './scene/SceneCanvas'
 import { ScrollProvider } from './hooks/useScrollProgress'
@@ -25,9 +27,7 @@ export default function App() {
           <SceneCanvas />
           <div className="app">
             <Navbar />
-            <div className="corner-whisper" aria-hidden="true">
-              they left in a hurry.<br />the machines kept running.
-            </div>
+            <Whisper />
             <Hero />
             <DrawerRoom />
             <Skills />
@@ -42,6 +42,7 @@ export default function App() {
           </div>
           <LightSwitch />
           <Flashlight />
+          <HouseFlicker />
           <PerformanceToggle />
           <Cursor />
         </ScrollProvider>

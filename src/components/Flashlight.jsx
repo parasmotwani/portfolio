@@ -58,26 +58,28 @@ export default function Flashlight() {
       const oy = s.cy + (switchY() - s.cy) * s.spread
 
       const flicker = 1 + Math.sin(t * 0.011) * 0.028 + Math.sin(t * 0.037) * 0.018
-      const r = (170 + (maxR() - 170) * s.spread * s.spread) * flicker
+      const r = (290 + (maxR() - 290) * s.spread * s.spread) * flicker
 
-      // realistic falloff: bright core → long soft penumbra → near-black
+      // wide, warm lantern spread — long soft penumbra, never a hard spot
       shade.style.display = ''
       shade.style.opacity = '1'
       shade.style.background = `radial-gradient(circle ${r}px at ${ox}px ${oy}px,
-        rgba(6,5,4,0) 0%,
-        rgba(6,5,4,0.08) 34%,
-        rgba(6,5,4,0.32) 55%,
-        rgba(6,5,4,0.72) 74%,
-        rgba(6,5,4,0.94) 88%,
-        rgba(6,5,4,0.985) 100%)`
+        rgba(8,6,4,0) 0%,
+        rgba(8,6,4,0.04) 28%,
+        rgba(8,6,4,0.18) 48%,
+        rgba(8,6,4,0.48) 66%,
+        rgba(8,6,4,0.8) 82%,
+        rgba(8,6,4,0.96) 94%,
+        rgba(8,6,4,0.985) 100%)`
 
-      // warm cast of the beam itself
+      // warm candle-colored cast filling most of the beam
       glow.style.display = ''
-      glow.style.opacity = String(0.9 * (1 - s.spread))
-      glow.style.background = `radial-gradient(circle ${r * 0.55}px at ${ox}px ${oy}px,
-        rgba(255, 196, 110, 0.13) 0%,
-        rgba(255, 176, 90, 0.05) 55%,
-        rgba(255, 176, 90, 0) 100%)`
+      glow.style.opacity = String(0.95 * (1 - s.spread))
+      glow.style.background = `radial-gradient(circle ${r * 0.85}px at ${ox}px ${oy}px,
+        rgba(255, 190, 100, 0.2) 0%,
+        rgba(255, 170, 80, 0.1) 45%,
+        rgba(255, 150, 60, 0.03) 75%,
+        rgba(255, 150, 60, 0) 100%)`
 
       raf = requestAnimationFrame(loop)
     }

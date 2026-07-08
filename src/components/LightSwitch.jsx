@@ -1,5 +1,7 @@
 import { useLight } from '../context/LightContext'
 
+// The switch hides in the dark like everything else — no glow, no label.
+// You find it with the torch (the whisper says it's on the right wall).
 export default function LightSwitch() {
   const { lit, setLit } = useLight()
 
@@ -17,7 +19,7 @@ export default function LightSwitch() {
         <rect x="10" className="toggle" width="8" height="11" rx="1.5"
           y={lit ? 11 : 22} />
       </svg>
-      <span className="light-switch-label">{lit ? 'lights on' : 'lights out'}</span>
+      {lit && <span className="light-switch-label">lights on</span>}
     </button>
   )
 }
