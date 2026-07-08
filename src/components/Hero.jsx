@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import gsap from 'gsap'
-import MagicCircle from './MagicCircle'
 import { useScroll } from '../hooks/useScrollProgress'
+import { useLight } from '../context/LightContext'
+import Cobweb from './Cobweb'
 
 const ROLES = [
   'AI & Data Science Engineer',
@@ -10,32 +11,23 @@ const ROLES = [
 ]
 
 export default function Hero() {
-  const { started, scrollTo } = useScroll()
+  const { started } = useScroll()
+  const { lit } = useLight()
   const [typed, setTyped] = useState('')
-  const circleRef = useRef(null)
-  const contentRef = useRef(null)
 
-  // inscribe the magic circle + fade in content once the preloader lifts
   useEffect(() => {
-    if (!started || !circleRef.current) return
+    if (!started) return
+    const items = document.querySelectorAll('[data-hero-reveal]')
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    const strokes = circleRef.current.querySelectorAll('[data-inscribe]')
-    strokes.forEach((s) => {
-      const len = s.getTotalLength ? s.getTotalLength() : 300
-      s.style.strokeDasharray = len
-      s.style.strokeDashoffset = reduced ? 0 : len
-    })
-    const items = contentRef.current.querySelectorAll('[data-hero-reveal]')
     if (reduced) {
       gsap.set(items, { opacity: 1, y: 0 })
       return
     }
     const tl = gsap.timeline()
-    tl.to(strokes, { strokeDashoffset: 0, duration: 2.2, stagger: 0.04, ease: 'power2.inOut' }, 0)
     tl.fromTo(items,
-      { opacity: 0, y: 26, filter: 'blur(4px)' },
-      { opacity: 1, y: 0, filter: 'blur(0px)', duration: 1, stagger: 0.14, ease: 'power3.out' },
-      0.4
+      { opacity: 0, y: 22 },
+      { opacity: 1, y: 0, duration: 1.1, stagger: 0.16, ease: 'power3.out' },
+      0.3
     )
     return () => tl.kill()
   }, [started])
@@ -70,35 +62,37 @@ export default function Hero() {
   }, [started])
 
   return (
-    <section className="hero" id="hero">
-      <div ref={circleRef}>
-        <MagicCircle className="hero-circle" />
-      </div>
+    <section className="hero room" id="hero">
+      <Cobweb corner="tl" size={190} />
+      <Cobweb corner="br" size={130} />
 
-      <div className="hero-content" ref={contentRef}>
-        <p className="hero-epigraph" data-hero-reveal>✦ AI · Data Science · GenAI ✦</p>
+      <div className="hero-content">
+        <p className="hero-epigraph" data-hero-reveal>
+          {lit ? 'someone still lives here…' : 'the lights are out'}
+        </p>
         <h1 className="hero-name" data-hero-reveal>
-          Paras <span className="gold">Motwani</span>
+          Paras<br />Motwani
         </h1>
         <p className="hero-role" data-hero-reveal>
           {typed}<span className="caret" />
         </p>
-        <div className="hero-status" data-hero-reveal>
-          <span className="wax" />
-          Available for opportunities · Jaipur, IN
-        </div>
-        <div className="hero-cta" data-hero-reveal>
-          <button className="btn solid" data-hover data-magnetic onClick={() => scrollTo('#projects')}>
-            View Projects
-          </button>
-          <button className="btn" data-hover data-magnetic onClick={() => scrollTo('#contact')}>
-            Get in Touch
-          </button>
-        </div>
+        <p className="hero-summary" data-hero-reveal>
+          I build intelligent systems — agentic AI workflows, contract
+          intelligence on Databricks, autonomous pipelines on AWS.
+          Computer Science graduate, Manipal University Jaipur.
+          This house holds the rest: open the drawer, play the old
+          machine, read the walls.
+        </p>
       </div>
 
+      {!lit && (
+        <div className="hero-switch-hint" aria-hidden="true">
+          find the switch <span className="arrow">↗</span>
+        </div>
+      )}
+
       <div className="hero-foot">
-        <span>Scroll to turn the page</span>
+        <span>scroll — the next room is below</span>
         <div className="quill" />
       </div>
     </section>

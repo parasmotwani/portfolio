@@ -2,10 +2,10 @@ import { useState, useEffect, useRef } from 'react'
 import { useScroll } from '../hooks/useScrollProgress'
 
 const SECTIONS = [
-  { id: 'hero', label: 'Home', num: '·' },
+  { id: 'hero', label: 'Entrance', num: '·' },
   { id: 'about', label: 'About', num: 'I' },
   { id: 'skills', label: 'Skills', num: 'II' },
-  { id: 'world', label: 'The World', num: 'III' },
+  { id: 'world', label: 'Game Room', num: 'III' },
   { id: 'projects', label: 'Projects', num: 'IV' },
   { id: 'experience', label: 'Experience', num: 'V' },
   { id: 'contact', label: 'Contact', num: 'VI' },

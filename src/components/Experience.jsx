@@ -71,10 +71,11 @@ export default function Experience() {
   return (
     <Chapter
       id="experience"
-      numeral="Chapter V"
+      numeral="Room V"
       title="Experience"
-      subtitle="Professional work, in order"
+      subtitle="The records room — everything filed, nothing forgotten"
       pin={false}
+      className="room"
     >
       <div className="chronicle">
         <div className="chronicle-line" ref={lineRef} />

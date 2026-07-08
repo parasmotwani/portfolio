@@ -20,9 +20,15 @@
   --seal: #8e2f2f;
   --seal-bright: #b04040;
 
-  --font-display: 'Cinzel', serif;
+  --font-display: 'IM Fell English SC', 'Cinzel', serif;
+  --font-flavor: 'IM Fell English', serif;
   --font-body: 'Cormorant Garamond', serif;
   --font-mono: 'JetBrains Mono', monospace;
+
+  --paper: #d8d2c0;
+  --paper-dark: #c4bca6;
+  --ink-on-paper: #2b2317;
+  --web: rgba(216, 210, 192, 0.16);
 
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --fast: 0.25s var(--ease-out);
@@ -1326,4 +1332,392 @@ button {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* ============================================================
+   THE ABANDONED HOUSE — haunted layer
+   ============================================================ */
+
+/* --- flashlight / darkness --- */
+.flashlight-shade, .flashlight-glow {
+  position: fixed;
+  inset: 0;
+  z-index: 2500;
+  pointer-events: none;
+}
+.flashlight-glow { mix-blend-mode: screen; }
+
+/* --- light switch (top-right, under the nav) --- */
+.light-switch {
+  position: fixed;
+  top: 74px;
+  right: clamp(18px, 4vw, 60px);
+  z-index: 2600; /* above the darkness — you can always find it */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+}
+
+.light-switch svg { width: 30px; height: 47px; }
+
+.light-switch .plate {
+  fill: var(--surface-2);
+  stroke: var(--gold-dim);
+  stroke-width: 1.2;
+}
+
+.light-switch .slot { fill: var(--bg-deep); stroke: var(--gold-faint); }
+
+.light-switch .toggle {
+  fill: var(--gold);
+  transition: y 0.18s ease;
+}
+
+.light-switch-label {
+  font-family: var(--font-mono);
+  font-size: 0.52rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ivory-dim);
+  white-space: nowrap;
+}
+
+/* in the dark, the switch glows so it can be found */
+html.lights-off .light-switch svg {
+  filter: drop-shadow(0 0 10px rgba(212, 169, 78, 0.85));
+  animation: switchBeckon 2.6s ease-in-out infinite;
+}
+
+@keyframes switchBeckon {
+  0%, 100% { filter: drop-shadow(0 0 8px rgba(212, 169, 78, 0.6)); }
+  50% { filter: drop-shadow(0 0 16px rgba(212, 169, 78, 1)); }
+}
+
+/* --- cursor role swap: torch in the dark, pointer in the light --- */
+html.lights-off .cursor-ring { opacity: 0; }
+html.lights-off .cursor-dot {
+  background: #ffdca0;
+  box-shadow: 0 0 14px 4px rgba(255, 200, 110, 0.65);
+}
+
+/* --- corner whisper (top-left) --- */
+.corner-whisper {
+  position: fixed;
+  top: 72px;
+  left: clamp(18px, 4vw, 60px);
+  z-index: 900;
+  font-family: var(--font-flavor);
+  font-style: italic;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--ivory-mute);
+  pointer-events: none;
+  opacity: 0.75;
+}
+
+html.lights-off .corner-whisper {
+  animation: whisperFlicker 7s ease-in-out infinite;
+}
+
+@keyframes whisperFlicker {
+  0%, 92%, 100% { opacity: 0.75; }
+  94% { opacity: 0.2; }
+  96% { opacity: 0.7; }
+  98% { opacity: 0.35; }
+}
+
+/* --- rooms --- */
+.room {
+  position: relative;
+  overflow: hidden;
+}
+
+/* wall + floor: a faint horizon line makes each section read as a room */
+.room::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(216, 210, 192, 0.025) 0%, transparent 18%),
+    linear-gradient(0deg, rgba(0, 0, 0, 0.5) 0%, transparent 22%);
+}
+
+.room::after {
+  content: '';
+  position: absolute;
+  left: 4%;
+  right: 4%;
+  bottom: 12%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold-ghost) 20%, var(--gold-ghost) 80%, transparent);
+  pointer-events: none;
+}
+
+.cobweb {
+  position: absolute;
+  color: var(--web);
+  pointer-events: none;
+  z-index: 0;
+}
+.cobweb-tl { top: 0; left: 0; }
+.cobweb-tr { top: 0; right: 0; }
+.cobweb-bl { bottom: 0; left: 0; }
+.cobweb-br { bottom: 0; right: 0; }
+
+/* --- spider --- */
+.spider-rig {
+  position: absolute;
+  top: 0;
+  width: 24px;
+  pointer-events: none;
+  z-index: 1;
+  color: rgba(216, 210, 192, 0.35);
+  animation: spiderDrop 14s ease-in-out infinite;
+}
+
+.spider-thread {
+  position: absolute;
+  top: -100vh;
+  left: 50%;
+  width: 1px;
+  height: 100vh;
+  background: linear-gradient(180deg, transparent, var(--web));
+}
+
+.spider { width: 24px; height: 20px; }
+
+@keyframes spiderDrop {
+  0%, 55%, 100% { transform: translateY(-120px); }
+  68% { transform: translateY(90px); }
+  74% { transform: translateY(70px); }
+  80% { transform: translateY(95px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spider-rig { display: none; }
+}
+
+/* --- hero: centered intro, name + summary only --- */
+.hero {
+  align-items: center;
+  text-align: center;
+}
+
+.hero-content {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.hero-epigraph {
+  font-family: var(--font-flavor);
+  font-style: italic;
+  text-transform: none;
+  letter-spacing: 0.08em;
+  font-size: 0.95rem;
+  color: var(--ivory-mute);
+}
+
+.hero-name {
+  font-size: clamp(3rem, 10vw, 6.4rem);
+  line-height: 1.02;
+}
+
+.hero-summary {
+  font-size: 1.12rem;
+  color: var(--ivory-dim);
+  margin-top: 26px;
+  line-height: 1.7;
+}
+
+.hero-switch-hint {
+  position: absolute;
+  top: 132px;
+  right: clamp(20px, 5vw, 64px);
+  font-family: var(--font-flavor);
+  font-style: italic;
+  font-size: 0.9rem;
+  color: var(--gold);
+  pointer-events: none;
+  animation: whisperFlicker 5s ease-in-out infinite;
+}
+
+.hero-switch-hint .arrow { font-style: normal; }
+
+/* --- the study: desk + drawer + old paper --- */
+.study-scene {
+  position: relative;
+  max-width: 640px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.desk {
+  width: 100%;
+  cursor: pointer;
+  display: block;
+}
+
+.desk .desk-drawer {
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translateY(6px); /* slightly ajar at rest */
+}
+
+.desk.open .desk-drawer { transform: translateY(34px); }
+
+.desk .candle-flame {
+  transform-origin: 416px 30px;
+  animation: flame 2.8s ease-in-out infinite;
+}
+
+@keyframes flame {
+  0%, 100% { transform: scale(1) skewX(0deg); opacity: 0.95; }
+  30% { transform: scale(1.08, 1.16) skewX(-3deg); opacity: 1; }
+  60% { transform: scale(0.94, 0.9) skewX(2deg); opacity: 0.85; }
+}
+
+.desk-hint {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  fill: var(--ivory-mute);
+}
+
+.old-paper {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) rotate(-1.2deg);
+  width: min(560px, 92vw);
+  max-height: 82vh;
+  overflow-y: auto;
+  z-index: 2000;
+  background:
+    radial-gradient(ellipse 120% 100% at 50% 0%, rgba(43, 35, 23, 0.06), transparent 60%),
+    var(--paper);
+  color: var(--ink-on-paper);
+  padding: clamp(22px, 4vw, 40px);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.75);
+  animation: paperUnfold 0.55s var(--ease-out);
+  transform-origin: bottom center;
+  z-index: 5;
+}
+
+@keyframes paperUnfold {
+  from { transform: translate(-50%, -30%) rotate(-1.2deg) scaleY(0.1); opacity: 0; }
+  to { transform: translate(-50%, -50%) rotate(-1.2deg) scaleY(1); opacity: 1; }
+}
+
+.old-paper h4 {
+  font-family: var(--font-flavor);
+  color: var(--ink-on-paper);
+  font-size: 1.5rem;
+}
+
+.old-paper .paper-sub {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #5d5137;
+  margin-top: 4px;
+}
+
+.old-paper hr {
+  border: none;
+  border-top: 1px solid rgba(43, 35, 23, 0.25);
+  margin: 14px 0;
+}
+
+.old-paper p { font-size: 1rem; line-height: 1.6; }
+
+.paper-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 22px;
+  margin-top: 12px;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+}
+
+.paper-stats b { color: #7e2a22; }
+
+.paper-edu { font-size: 0.92rem; }
+
+.old-paper-close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  color: #5d5137;
+  font-size: 0.95rem;
+}
+
+.old-paper-close:hover { color: #7e2a22; }
+
+/* --- game room: CRT cabinet framing --- */
+.world-wrap.crt {
+  border: 10px solid #221c12;
+  outline: 1px solid var(--gold-faint);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7), inset 0 0 40px rgba(0, 0, 0, 0.8);
+  background: #221c12;
+}
+
+.world-wrap.crt .world-canvas {
+  border: 1px solid rgba(212, 169, 78, 0.3);
+  outline: none;
+  border-radius: 6px;
+}
+
+.crt-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2px 6px 8px;
+}
+
+.crt-brand {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.3em;
+  color: var(--gold-dim);
+}
+
+.crt-led {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: #3a3325;
+}
+
+.crt-led.on {
+  background: #b04040;
+  box-shadow: 0 0 8px rgba(176, 64, 64, 0.9);
+  animation: waxPulse 1.6s ease-in-out infinite;
+}
+
+/* --- projects as dusty framed paintings --- */
+.artifact-card {
+  border-width: 8px;
+  border-style: solid;
+  border-color: #221c12;
+  outline: 1px solid var(--gold-faint);
+}
+
+.artifact-card::after {
+  content: '';
+  position: absolute;
+  top: -8px; left: -8px; right: -8px;
+  height: 10px;
+  background: linear-gradient(180deg, rgba(216, 210, 192, 0.07), transparent);
+  pointer-events: none;
+}
+
+/* --- responsive: hint + whisper on small screens --- */
+@media (max-width: 768px) {
+  .corner-whisper { display: none; }
+  .light-switch { top: 64px; right: 14px; }
+  .hero-switch-hint { display: none; }
 }

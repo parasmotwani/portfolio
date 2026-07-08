@@ -80,9 +80,9 @@ export default function Projects() {
     <section className="artifacts-outer" id="projects" ref={outerRef}>
       <div className="chapter" style={{ minHeight: 'unset', paddingBottom: 36 }}>
         <header className="chapter-head" style={{ marginBottom: 0 }}>
-          <span className="chapter-numeral">Chapter IV</span>
+          <span className="chapter-numeral">Room IV</span>
           <h2 className="chapter-title">Projects</h2>
-          <p className="chapter-sub">Selected work — scroll, and the gallery moves sideways</p>
+          <p className="chapter-sub">A gallery of paintings nobody dusted — scroll, and it moves sideways</p>
           <div className="orn-rule"><span className="gem" /></div>
         </header>
       </div>

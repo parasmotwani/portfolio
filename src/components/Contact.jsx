@@ -27,10 +27,10 @@ export default function Contact() {
   return (
     <Chapter
       id="contact"
-      numeral="Chapter VI"
+      numeral="Room VI"
       title="Contact"
-      subtitle="Open to opportunities, collaborations, and good conversations"
-      className="summoning"
+      subtitle="The telephone still works. Open to opportunities and collaborations."
+      className="summoning room"
     >
       <MagicCircle className="summoning-circle" nodes={false} />
 

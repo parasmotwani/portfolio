@@ -64,8 +64,8 @@ export default function EmberField({ count = 260 }) {
           void main() {
             float d = length(gl_PointCoord - 0.5);
             if (d > 0.5) discard;
-            float alpha = smoothstep(0.5, 0.1, d) * 0.68 * vFlicker;
-            gl_FragColor = vec4(0.83, 0.66, 0.31, alpha); // old gold
+            float alpha = smoothstep(0.5, 0.1, d) * 0.5 * vFlicker;
+            gl_FragColor = vec4(0.78, 0.75, 0.66, alpha); // pale dust
           }
         `}
       />

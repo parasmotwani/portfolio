@@ -56,7 +56,7 @@ export default function Preloader() {
           <circle cx="50" cy="50" r="6" />
         </svg>
         <div className="preloader-counter">{String(count).padStart(3, '0')}</div>
-        <div className="preloader-label">Awakening the Codex</div>
+        <div className="preloader-label">Entering the house</div>
       </div>
     </div>
   )

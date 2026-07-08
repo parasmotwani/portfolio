@@ -1,6 +1,6 @@
 # Paras Motwani — Portfolio
 
-A portfolio with an ancient-grimoire visual identity and strictly technical content. Chapters pin to the screen and scrolling inscribes them — headings ink in, an alchemy-circle neural network draws itself stroke by stroke. Chapter III is a **retro 2D open world**: walk around a little pixel village and explore the portfolio building by building.
+An **abandoned-house portfolio**. The lights are out when you arrive — your cursor is a torch. Find the glowing switch in the top-right and the light spreads across the room. Then explore: a study with a desk drawer that opens into an old paper résumé, walls of framed skills, a game room where an old machine still runs a playable open world, a gallery of project paintings, and a records room.
 
 🔗 **Live:** [paras-portfolio.vercel.app](https://paras-portfolio-5thwzbdny-paras-projects-92cb4789.vercel.app)
 
@@ -11,30 +11,29 @@ A portfolio with an ancient-grimoire visual identity and strictly technical cont
 | Layer | Tools |
 |---|---|
 | Framework | React 18 + Vite |
-| Scroll | Lenis (smooth scroll) + GSAP ScrollTrigger (pinned scrub chapters) |
-| Atmosphere | Three.js / R3F — sparse golden ember motes (custom GLSL) |
-| Game | Hand-rolled canvas 2D engine — tile map, collision, camera, sprite (zero deps) |
-| Diagrams | Hand-built SVG (neural-net circle, sigils) with stroke-draw animation |
-| Styling | Vanilla CSS design system — Cinzel · Cormorant Garamond · JetBrains Mono |
+| Scroll | Lenis + GSAP ScrollTrigger (pinned scrub rooms) |
+| Torch & light spread | CSS radial gradients driven per-frame (no WebGL needed) |
+| Atmosphere | Three.js / R3F — sparse dust motes (custom GLSL) |
+| Game | Hand-rolled canvas 2D engine — tile map, collision, camera (zero deps) |
+| Styling | Vanilla CSS — IM Fell English · Cormorant Garamond · JetBrains Mono |
 | Deployment | Vercel |
 
-## The Chapters
+## The Rooms
 
-- **Hero** — a neural-network circle inscribes itself behind the name
-- **I · About** — stats, education, background
-- **II · Skills & Tools** — five categories, each with its hand-drawn sigil
-- **III · The World** — retro open-world game: WASD/arrows to walk, E to read About/Skills/Projects/Experience/Contact inside the world; touch d-pad on mobile
-- **IV · Projects** — pinned horizontal gallery, six projects with GitHub links
-- **V · Experience** — timeline that draws itself on scroll, certifications
+- **Entrance** — dark. Name + summary revealed by torchlight; spooky whisper top-left, glowing switch top-right
+- **I · About** — a study; pull the ajar drawer and an aged paper unfolds with the condensed résumé
+- **II · Skills & Tools** — five categories framed on the wall
+- **III · Game Room** — a CRT machine running a retro open world: walk with WASD, press E to read the portfolio inside the game
+- **IV · Projects** — horizontal gallery of framed work, GitHub links
+- **V · Experience** — timeline + certifications
 - **VI · Contact** — links + mailto form
 
 ## Performance & Accessibility
 
-- Ember motes: one draw call, ~260 points, dpr ≤ 1.5 — atmosphere never covers text
-- Game loop runs only while playing; arrow keys don't scroll the page mid-game
-- **3D toggle** (bottom-right) disables the canvas; saved to `localStorage`
-- `prefers-reduced-motion`: no pinning, everything visible immediately
-- Mobile: normal scrolling, vertical galleries, touch d-pad, no custom cursor
+- Touch devices and `prefers-reduced-motion` start with the lights **on**
+- Dust motes: one draw call, dpr ≤ 1.5; flashlight is two fixed divs, no re-renders
+- **3D toggle** (bottom-right) disables the canvas
+- Mobile: normal scrolling, touch d-pad in the game, no custom cursor
 
 ## Running Locally
 

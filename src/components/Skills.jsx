@@ -1,5 +1,6 @@
 import Chapter from './Chapter'
 import Sigil from './Sigil'
+import Cobweb from './Cobweb'
 
 const categories = [
   {
@@ -33,10 +34,12 @@ export default function Skills() {
   return (
     <Chapter
       id="skills"
-      numeral="Chapter II"
+      numeral="Room II"
       title="Skills & Tools"
-      subtitle="Five disciplines, practiced daily"
+      subtitle="Framed on the wall, under a decade of dust"
+      className="room"
     >
+      <Cobweb corner="tl" size={130} />
       <div className="grimoire-rows">
         {categories.map((cat) => (
           <div className="spell-row" key={cat.title} data-reveal data-hover>

@@ -440,17 +440,22 @@ export default function WorldGame() {
   return (
     <Chapter
       id="world"
-      numeral="Chapter III"
-      title="The World"
-      subtitle="A little open world — walk around and explore the portfolio"
+      numeral="Room III"
+      title="The Game Room"
+      subtitle="An old machine still hums in the corner. It still takes players."
       pin={false}
+      className="room"
     >
-      <div className="world-wrap" data-reveal ref={wrapRef}>
+      <div className="world-wrap crt" data-reveal ref={wrapRef}>
+        <div className="crt-top" aria-hidden="true">
+          <span className="crt-brand">PM-2600</span>
+          <span className={`crt-led${playing ? ' on' : ''}`} />
+        </div>
         <canvas className="world-canvas" ref={canvasRef} />
 
         {!playing && (
           <button className="world-enter" data-hover onClick={() => setPlaying(true)}>
-            <span className="world-enter-title">▶ Enter the World</span>
+            <span className="world-enter-title">▶ Insert Coin</span>
             <span className="world-enter-sub">WASD / arrows to move · E to interact · Esc to leave</span>
           </button>
         )}
