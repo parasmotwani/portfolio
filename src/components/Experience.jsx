@@ -70,10 +70,10 @@ export default function Experience() {
 
   return (
     <Chapter
-      id="chronicle"
+      id="experience"
       numeral="Chapter V"
-      title="The Chronicle"
-      subtitle="A record of service, set down in order"
+      title="Experience"
+      subtitle="Professional work, in order"
       pin={false}
     >
       <div className="chronicle">
@@ -91,7 +91,7 @@ export default function Experience() {
       </div>
 
       <div className="seals" data-reveal>
-        <div className="seals-head">✦ Nine Seals of Study ✦</div>
+        <div className="seals-head">✦ Certifications ✦</div>
         <div className="seal-rows">
           {certifications.map((cert) => (
             <div className="seal-row" key={cert.name} data-hover>

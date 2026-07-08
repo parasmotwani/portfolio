@@ -2,13 +2,13 @@ import { useState, useEffect, useRef } from 'react'
 import { useScroll } from '../hooks/useScrollProgress'
 
 const SECTIONS = [
-  { id: 'hero', label: 'Frontispiece', num: '·' },
-  { id: 'about', label: 'The Scholar', num: 'I' },
-  { id: 'skills', label: 'The Grimoire', num: 'II' },
-  { id: 'playground', label: 'Divination', num: 'III' },
-  { id: 'artifacts', label: 'Artifacts', num: 'IV' },
-  { id: 'chronicle', label: 'Chronicle', num: 'V' },
-  { id: 'summoning', label: 'Summoning', num: 'VI' },
+  { id: 'hero', label: 'Home', num: '·' },
+  { id: 'about', label: 'About', num: 'I' },
+  { id: 'skills', label: 'Skills', num: 'II' },
+  { id: 'world', label: 'The World', num: 'III' },
+  { id: 'projects', label: 'Projects', num: 'IV' },
+  { id: 'experience', label: 'Experience', num: 'V' },
+  { id: 'contact', label: 'Contact', num: 'VI' },
 ]
 
 export default function Navbar() {
@@ -80,7 +80,7 @@ export default function Navbar() {
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label="Toggle navigation"
         >
-          {mobileOpen ? 'Close' : 'Index'}
+          {mobileOpen ? 'Close' : 'Menu'}
         </button>
       </nav>
     </>

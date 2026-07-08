@@ -1,35 +1,30 @@
 import Chapter from './Chapter'
 import Sigil from './Sigil'
 
-const schools = [
+const categories = [
   {
     sigil: 'tongue',
-    title: 'Tongues & Frameworks',
-    school: 'the spoken forms',
+    title: 'Languages & Frameworks',
     skills: ['Python', 'SQL', 'Go', 'FastAPI'],
   },
   {
     sigil: 'lens',
     title: 'Machine Learning',
-    school: 'the seeing lens',
     skills: ['NumPy', 'Pandas', 'Scikit-learn', 'TensorFlow', 'Matplotlib', 'Seaborn'],
   },
   {
     sigil: 'spark',
-    title: 'Generative Arts',
-    school: 'the summoned minds',
+    title: 'GenAI & Agents',
     skills: ['LLMs', 'AI Agents', 'RAG', 'Amazon Bedrock', 'Hugging Face'],
   },
   {
     sigil: 'vessel',
-    title: 'Data Alchemy',
-    school: 'the great work',
+    title: 'Data Engineering',
     skills: ['Databricks', 'Delta Lake', 'MySQL', 'PostgreSQL', 'ETL Pipelines'],
   },
   {
     sigil: 'tower',
-    title: 'Cloud & Keep',
-    school: 'the high towers',
+    title: 'Cloud & DevOps',
     skills: ['AWS', 'Docker', 'Git', 'Jenkins', 'Vercel'],
   },
 ]
@@ -39,17 +34,14 @@ export default function Skills() {
     <Chapter
       id="skills"
       numeral="Chapter II"
-      title="The Grimoire"
-      subtitle="Five schools of practice, mastered by study"
+      title="Skills & Tools"
+      subtitle="Five disciplines, practiced daily"
     >
       <div className="grimoire-rows">
-        {schools.map((cat) => (
+        {categories.map((cat) => (
           <div className="spell-row" key={cat.title} data-reveal data-hover>
             <Sigil name={cat.sigil} />
-            <h3>
-              {cat.title}
-              <span className="school">{cat.school}</span>
-            </h3>
+            <h3>{cat.title}</h3>
             <div className="spell-tags">
               {cat.skills.map((skill) => (
                 <span key={skill} className="spell-tag">{skill}</span>

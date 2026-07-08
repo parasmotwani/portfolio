@@ -1,10 +1,10 @@
 import Chapter from './Chapter'
 
 const stats = [
-  { value: '16+', label: 'Works Completed' },
-  { value: 'II', label: 'Apprenticeships' },
-  { value: '9+', label: 'Seals Earned' },
-  { value: 'MMXXV', label: 'B.Tech Graduate' },
+  { value: '16+', label: 'Projects' },
+  { value: '2', label: 'Internships' },
+  { value: '9+', label: 'Certifications' },
+  { value: '2025', label: 'B.Tech Graduate' },
 ]
 
 const education = [
@@ -25,8 +25,8 @@ export default function About() {
     <Chapter
       id="about"
       numeral="Chapter I"
-      title="The Scholar"
-      subtitle="Of the author, his studies, and his craft"
+      title="About"
+      subtitle="The engineer behind the work"
     >
       <div className="about-grid">
         <div>
@@ -35,7 +35,7 @@ export default function About() {
             AI workflows to data pipelines that move at production scale.
           </p>
           <p className="about-body" data-reveal>
-            Computer Science graduate from Manipal University Jaipur, devoted to
+            Computer Science graduate from Manipal University Jaipur, focused on
             Artificial Intelligence, Data Science, and Generative AI. From contract
             intelligence on Databricks to autonomous SAP workflows on AWS, I turn
             complex problems into clean, automated solutions. Co-founded a gamified

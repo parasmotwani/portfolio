@@ -384,11 +384,26 @@ button {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
   width: min(78vmin, 640px);
   height: min(78vmin, 640px);
   opacity: 0.5;
   pointer-events: none;
+  margin: calc(min(78vmin, 640px) / -2) 0 0 calc(min(78vmin, 640px) / -2);
+  animation: circleSpin 140s linear infinite;
+}
+
+@keyframes circleSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.summoning-circle {
+  animation: circleSpinR 180s linear infinite;
+}
+
+@keyframes circleSpinR {
+  from { transform: translate(-50%, -52%) rotate(0deg); }
+  to { transform: translate(-50%, -52%) rotate(-360deg); }
 }
 
 .hero-content { position: relative; z-index: 1; }
@@ -728,80 +743,192 @@ button {
 .spell-row:hover .spell-tag { color: var(--ivory); }
 
 /* ============================================================
-   CHAPTER III — THE DIVINATION TABLE (playground)
+   CHAPTER III — THE WORLD (retro open-world game)
    ============================================================ */
-.divination-wrap {
-  display: grid;
-  grid-template-columns: 280px 1fr;
-  gap: clamp(32px, 4vw, 60px);
-  align-items: start;
+.world-wrap {
+  position: relative;
   max-width: 1180px;
   margin: 0 auto;
   width: 100%;
 }
 
-.divination-desc {
-  color: var(--ivory-dim);
-  font-size: 1.05rem;
-  margin-bottom: 26px;
-}
-
-.divination-controls {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.divination-k {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-family: var(--font-mono);
-  font-size: 0.66rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--ivory-dim);
-}
-
-.divination-k button {
-  width: 32px; height: 32px;
-  border: 1px solid var(--gold-faint);
-  font-family: var(--font-mono);
-  font-size: 0.9rem;
-  color: var(--ivory);
-  transition: border-color var(--fast), color var(--fast);
-}
-
-.divination-k button:hover { border-color: var(--gold); color: var(--gold); }
-
-.divination-k .kval {
-  font-family: var(--font-display);
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: var(--gold);
-  min-width: 22px;
-  text-align: center;
-}
-
-.divination-status {
-  font-family: var(--font-mono);
-  font-size: 0.6rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--ivory-mute);
-  min-height: 1.6em;
-  font-variant-numeric: tabular-nums;
-}
-
-.divination-canvas {
+.world-canvas {
   width: 100%;
   aspect-ratio: 16 / 9;
   border: 1px solid var(--gold-faint);
   outline: 1px solid rgba(212, 169, 78, 0.08);
   outline-offset: 5px;
   background: var(--surface);
-  cursor: crosshair;
   display: block;
+  image-rendering: pixelated;
+}
+
+.world-enter {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: rgba(9, 7, 5, 0.72);
+  transition: background var(--fast);
+}
+
+.world-enter:hover { background: rgba(9, 7, 5, 0.55); }
+
+.world-enter-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.1rem, 2.5vw, 1.6rem);
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.world-enter-sub {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ivory-dim);
+}
+
+.world-prompt {
+  position: absolute;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ivory);
+  background: rgba(13, 11, 8, 0.92);
+  border: 1px solid var(--gold-faint);
+  padding: 9px 18px;
+  pointer-events: none;
+}
+
+.world-prompt b { color: var(--gold); }
+
+.world-panel {
+  position: absolute;
+  inset: 8%;
+  background: rgba(13, 11, 8, 0.97);
+  border: 1px solid var(--gold);
+  outline: 1px solid var(--gold-faint);
+  outline-offset: 4px;
+  padding: clamp(18px, 3vw, 34px);
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+}
+
+.world-panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-bottom: 1px solid var(--gold-faint);
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+}
+
+.world-panel-head h4 {
+  font-size: 1.15rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--gold);
+}
+
+.world-panel-head button {
+  color: var(--ivory-dim);
+  font-size: 1rem;
+  padding: 4px 8px;
+}
+
+.world-panel-head button:hover { color: var(--gold); }
+
+.world-panel pre {
+  font-family: var(--font-mono);
+  font-size: clamp(0.65rem, 1.3vw, 0.8rem);
+  line-height: 1.8;
+  color: var(--ivory);
+  white-space: pre-wrap;
+}
+
+.world-panel-foot {
+  margin-top: auto;
+  padding-top: 14px;
+  font-family: var(--font-mono);
+  font-size: 0.56rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ivory-mute);
+  text-align: right;
+}
+
+.world-hud {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.56rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ivory-dim);
+  pointer-events: none;
+}
+
+.world-hud span {
+  background: rgba(13, 11, 8, 0.75);
+  padding: 6px 10px;
+}
+
+.world-hud button {
+  pointer-events: auto;
+  font-family: var(--font-mono);
+  font-size: 0.56rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ivory-dim);
+  background: rgba(13, 11, 8, 0.75);
+  border: 1px solid var(--gold-faint);
+  padding: 6px 12px;
+}
+
+.world-hud button:hover { color: var(--gold); border-color: var(--gold); }
+
+.world-dpad {
+  position: absolute;
+  bottom: 14px;
+  left: 14px;
+  display: none;
+  grid-template-areas: '. u .' 'l a r' '. d .';
+  gap: 6px;
+}
+
+.world-dpad button {
+  width: 46px; height: 46px;
+  border: 1px solid var(--gold-faint);
+  background: rgba(13, 11, 8, 0.8);
+  color: var(--gold);
+  font-size: 0.9rem;
+  touch-action: none;
+}
+
+.world-dpad .du { grid-area: u; }
+.world-dpad .dl { grid-area: l; }
+.world-dpad .dr { grid-area: r; }
+.world-dpad .dd { grid-area: d; }
+.world-dpad .da { grid-area: a; font-family: var(--font-display); font-weight: 700; }
+
+@media (hover: none), (pointer: coarse) {
+  .world-dpad { display: grid; }
 }
 
 /* ============================================================

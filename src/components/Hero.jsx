@@ -5,8 +5,8 @@ import { useScroll } from '../hooks/useScrollProgress'
 
 const ROLES = [
   'AI & Data Science Engineer',
-  'Practitioner of data alchemy',
-  'Builder of thinking machines',
+  'Building agentic AI systems',
+  'Data pipelines at production scale',
 ]
 
 export default function Hero() {
@@ -76,7 +76,7 @@ export default function Hero() {
       </div>
 
       <div className="hero-content" ref={contentRef}>
-        <p className="hero-epigraph" data-hero-reveal>✦ The Codex of ✦</p>
+        <p className="hero-epigraph" data-hero-reveal>✦ AI · Data Science · GenAI ✦</p>
         <h1 className="hero-name" data-hero-reveal>
           Paras <span className="gold">Motwani</span>
         </h1>
@@ -88,11 +88,11 @@ export default function Hero() {
           Available for opportunities · Jaipur, IN
         </div>
         <div className="hero-cta" data-hero-reveal>
-          <button className="btn solid" data-hover data-magnetic onClick={() => scrollTo('#artifacts')}>
-            The Artifacts
+          <button className="btn solid" data-hover data-magnetic onClick={() => scrollTo('#projects')}>
+            View Projects
           </button>
-          <button className="btn" data-hover data-magnetic onClick={() => scrollTo('#summoning')}>
-            The Summoning
+          <button className="btn" data-hover data-magnetic onClick={() => scrollTo('#contact')}>
+            Get in Touch
           </button>
         </div>
       </div>

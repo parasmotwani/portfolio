@@ -26,10 +26,10 @@ export default function Contact() {
 
   return (
     <Chapter
-      id="summoning"
+      id="contact"
       numeral="Chapter VI"
-      title="The Summoning"
-      subtitle="Speak, and the author shall answer"
+      title="Contact"
+      subtitle="Open to opportunities, collaborations, and good conversations"
       className="summoning"
     >
       <MagicCircle className="summoning-circle" nodes={false} />
@@ -75,7 +75,7 @@ export default function Contact() {
             required
           />
           <button type="submit" className="btn solid" data-hover data-magnetic>
-            {sent ? '✓ The raven is sent' : 'Send word →'}
+            {sent ? '✓ Opening email client' : 'Send Message →'}
           </button>
         </form>
       </div>

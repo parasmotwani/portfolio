@@ -77,12 +77,12 @@ export default function Projects() {
   }, [lowPower])
 
   return (
-    <section className="artifacts-outer" id="artifacts" ref={outerRef}>
+    <section className="artifacts-outer" id="projects" ref={outerRef}>
       <div className="chapter" style={{ minHeight: 'unset', paddingBottom: 36 }}>
         <header className="chapter-head" style={{ marginBottom: 0 }}>
           <span className="chapter-numeral">Chapter IV</span>
-          <h2 className="chapter-title">The Artifacts</h2>
-          <p className="chapter-sub">Relics forged in code — scroll, and the gallery turns sideways</p>
+          <h2 className="chapter-title">Projects</h2>
+          <p className="chapter-sub">Selected work — scroll, and the gallery moves sideways</p>
           <div className="orn-rule"><span className="gem" /></div>
         </header>
       </div>
@@ -96,14 +96,14 @@ export default function Projects() {
               onClick={() => window.open(project.github, '_blank', 'noopener')}
             >
               <div className="artifact-idx">
-                Relic {['I', 'II', 'III', 'IV', 'V', 'VI'][i]} of VI
+                {String(i + 1).padStart(2, '0')} / {String(projects.length).padStart(2, '0')}
               </div>
               <h3>{project.title}</h3>
               <p>{project.description}</p>
               <div className="artifact-tech">
                 {project.tech.map((t) => <span key={t}>{t}</span>)}
               </div>
-              <span className="artifact-link">Inspect on GitHub →</span>
+              <span className="artifact-link">View on GitHub →</span>
             </article>
           ))}
         </div>

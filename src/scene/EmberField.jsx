@@ -56,7 +56,7 @@ export default function EmberField({ count = 260 }) {
             vFlicker = 0.45 + 0.55 * sin(uTime * (0.8 + aSeed * 0.3) + aSeed * 7.0);
             vec4 mv = modelViewMatrix * vec4(p, 1.0);
             gl_Position = projectionMatrix * mv;
-            gl_PointSize = aSize * uPixelRatio * (18.0 / -mv.z);
+            gl_PointSize = aSize * uPixelRatio * (24.0 / -mv.z);
           }
         `}
         fragmentShader={/* glsl */ `
@@ -64,7 +64,7 @@ export default function EmberField({ count = 260 }) {
           void main() {
             float d = length(gl_PointCoord - 0.5);
             if (d > 0.5) discard;
-            float alpha = smoothstep(0.5, 0.1, d) * 0.5 * vFlicker;
+            float alpha = smoothstep(0.5, 0.1, d) * 0.68 * vFlicker;
             gl_FragColor = vec4(0.83, 0.66, 0.31, alpha); // old gold
           }
         `}

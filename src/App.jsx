@@ -2,7 +2,7 @@ import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import About from './components/About'
 import Skills from './components/Skills'
-import Playground from './components/Playground'
+import WorldGame from './components/WorldGame'
 import Projects from './components/Projects'
 import Experience from './components/Experience'
 import Contact from './components/Contact'
@@ -24,13 +24,13 @@ export default function App() {
           <Hero />
           <About />
           <Skills />
-          <Playground />
+          <WorldGame />
           <Projects />
           <Experience />
           <Contact />
           <footer className="footer">
-            <p className="colophon">Here ends the codex.</p>
-            <p className="fine">© MMXXVI Paras Motwani · Inscribed in React & Three.js</p>
+            <p className="colophon">Thanks for reading.</p>
+            <p className="fine">© 2026 Paras Motwani · Built with React, GSAP & Three.js</p>
           </footer>
         </div>
         <PerformanceToggle />
