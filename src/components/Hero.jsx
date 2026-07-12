@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useScroll } from '../hooks/useScrollProgress'
 import { useLight } from '../context/LightContext'
-import Cobweb from './Cobweb'
-import Spider from './Spider'
+import { heroState } from '../scene/heroState'
+
+gsap.registerPlugin(ScrollTrigger)
 
 const ROLES = [
   'AI & Data Science Engineer',
@@ -11,40 +13,50 @@ const ROLES = [
   'Data pipelines at production scale',
 ]
 
-// loose threads hanging from the ceiling, sagging between anchor points
-function WebStrands() {
-  return (
-    <svg className="web-strands" viewBox="0 0 1440 140" preserveAspectRatio="none" aria-hidden="true">
-      <g stroke="currentColor" fill="none" strokeWidth="1">
-        <path d="M0 0 Q 110 96 240 12" />
-        <path d="M180 0 Q 300 70 430 8" />
-        <path d="M990 0 Q 1105 88 1230 10" />
-        <path d="M1180 0 Q 1300 64 1440 18" />
-        <path d="M60 20 L 60 78" strokeDasharray="2 5" />
-        <path d="M1120 14 L 1120 92" strokeDasharray="2 5" />
-      </g>
-    </svg>
-  )
-}
-
-// a bulb on a cord — dead while the power is out, warm and swaying after
-function HangingBulb({ lit }) {
-  return (
-    <div className={`bulb-rig${lit ? ' lit' : ''}`} aria-hidden="true">
-      <svg viewBox="0 0 40 130">
-        <line x1="20" y1="0" x2="20" y2="86" stroke="currentColor" strokeWidth="1.2" />
-        <rect x="15" y="86" width="10" height="10" fill="currentColor" />
-        <circle className="bulb-glass" cx="20" cy="106" r="11" />
-        <path d="M16 100 Q20 108 24 100" stroke="currentColor" strokeWidth="0.8" fill="none" />
-      </svg>
-    </div>
-  )
-}
-
 export default function Hero() {
   const { started } = useScroll()
   const { lit } = useLight()
   const [typed, setTyped] = useState('')
+  const ref = useRef(null)
+  const contentRef = useRef(null)
+
+  // pinned first-person exit: scroll scrubs heroState.p, the 3D camera
+  // is drawn out through the opening, and the text slips past the viewer
+  useEffect(() => {
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const mobile = window.innerWidth < 768 || window.matchMedia('(pointer: coarse)').matches
+    if (reduced || mobile) {
+      heroState.p = 0
+      return
+    }
+
+    const foot = ref.current.querySelector('.hero-foot')
+
+    const st = ScrollTrigger.create({
+      trigger: ref.current,
+      start: 'top top',
+      end: '+=170%',
+      pin: true,
+      scrub: 0.4,
+      onUpdate: (self) => {
+        const p = self.progress
+        heroState.p = p
+        heroState.active = p < 0.999
+        // text slips past the viewer as the walk begins — driven here so
+        // it can never desync from the pin (a second ScrollTrigger would
+        // measure against the pin spacer and drift)
+        const f = Math.min(1, Math.max(0, (p - 0.3) / 0.32))
+        if (contentRef.current) {
+          contentRef.current.style.opacity = String(1 - f)
+          contentRef.current.style.transform = `scale(${1 + f * 0.55})`
+          contentRef.current.style.filter = `blur(${f * 9}px)`
+        }
+        if (foot) foot.style.opacity = String(1 - Math.min(1, p / 0.25))
+      },
+    })
+
+    return () => st.kill()
+  }, [])
 
   useEffect(() => {
     if (!started) return
@@ -93,15 +105,8 @@ export default function Hero() {
   }, [started])
 
   return (
-    <section className="hero room" id="hero">
-      <WebStrands />
-      <HangingBulb lit={lit} />
-      <Cobweb corner="tl" size={230} />
-      <Cobweb corner="tr" size={170} />
-      <Cobweb corner="br" size={150} />
-      <Spider left="16%" delay={4} />
-
-      <div className="hero-content">
+    <section className="hero" id="hero" ref={ref}>
+      <div className="hero-content" ref={contentRef}>
         <p className="hero-epigraph" data-hero-reveal>
           {lit ? 'someone still lives here…' : 'the lights are out'}
         </p>
@@ -120,7 +125,7 @@ export default function Hero() {
       </div>
 
       <div className="hero-foot">
-        <span>scroll — the next room is below</span>
+        <span>scroll — leave the room when you're ready</span>
         <div className="quill" />
       </div>
     </section>
