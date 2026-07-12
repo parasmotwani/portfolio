@@ -45,11 +45,12 @@ export default function Hero() {
         // text slips past the viewer as the walk begins — driven here so
         // it can never desync from the pin (a second ScrollTrigger would
         // measure against the pin spacer and drift)
+        // zoom-out: the name shrinks and sinks with the receding room
         const f = Math.min(1, Math.max(0, (p - 0.3) / 0.32))
         if (contentRef.current) {
           contentRef.current.style.opacity = String(1 - f)
-          contentRef.current.style.transform = `scale(${1 + f * 0.55})`
-          contentRef.current.style.filter = `blur(${f * 9}px)`
+          contentRef.current.style.transform = `scale(${1 - f * 0.38}) translateY(${f * 60}px)`
+          contentRef.current.style.filter = `blur(${f * 6}px)`
         }
         if (foot) foot.style.opacity = String(1 - Math.min(1, p / 0.25))
       },

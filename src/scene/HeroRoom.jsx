@@ -264,19 +264,20 @@ export default function HeroRoom({ lit }) {
   const group = useRef()
   const doorRef = useRef()
   const spillRef = useRef()
+  const fadeRef = useRef()
   const { camera } = useThree()
 
   const wood = useMemo(makeWoodTexture, [])
   const plaster = useMemo(makePlasterTexture, [])
   const webGeo = useMemo(() => buildWeb(-6.2, 3.3, -5.82), [])
 
-  // camera path for the walk-out: drift right → doorway → through
+  // camera path for the exit: pull BACKWARD out of the space — the room
+  // recedes and shrinks away, rising slightly, until darkness closes
   const path = useMemo(() => new THREE.CatmullRomCurve3([
     new THREE.Vector3(0, 0.25, 7.4),
-    new THREE.Vector3(1.6, 0.1, 3.4),
-    new THREE.Vector3(3.1, -0.1, -1.6),
-    new THREE.Vector3(3.2, -0.2, -5.6),
-    new THREE.Vector3(3.2, -0.25, -8.6),
+    new THREE.Vector3(0.3, 0.55, 9.8),
+    new THREE.Vector3(0.5, 1.0, 12.6),
+    new THREE.Vector3(0.6, 1.5, 15.8),
   ]), [])
   const lookTarget = useMemo(() => new THREE.Vector3(), [])
   const camPos = useMemo(() => new THREE.Vector3(), [])
@@ -312,21 +313,24 @@ export default function HeroRoom({ lit }) {
       if (camera.fov !== 55) { camera.fov += (55 - camera.fov) * 0.08; camera.updateProjectionMatrix() }
     } else {
       path.getPointAt(Math.min(walk, 0.999), camPos)
-      // faint head-bob early in the pull, gone by the end
-      camPos.y += Math.sin(walk * 26) * 0.03 * (1 - walk)
       camera.position.lerp(camPos, 0.12)
-      // fov opens as you pass through — the "zooming out of a space" feel
-      const targetFov = 55 + THREE.MathUtils.smoothstep(walk, 0.45, 1) * 22
+      // slight fov widen sells the pull-away; the room shrinks in frame
+      const targetFov = 55 + THREE.MathUtils.smoothstep(walk, 0.3, 1) * 10
       camera.fov += (targetFov - camera.fov) * 0.1
       camera.updateProjectionMatrix()
-      const gaze = Math.min(1, walk * 1.6)
+      // gaze holds the room as it sinks away below
       lookTarget.set(
-        THREE.MathUtils.lerp(heroState.mouse.x * 1.2, 3.2, gaze),
-        THREE.MathUtils.lerp(0.05, -0.25, gaze),
-        THREE.MathUtils.lerp(-2, -9, gaze)
+        heroState.mouse.x * 0.4 * (1 - walk),
+        THREE.MathUtils.lerp(0.05, -1.2, walk),
+        -2.5
       )
     }
     camera.lookAt(lookTarget)
+
+    // darkness closes over the receding room at the end of the pull
+    if (fadeRef.current) {
+      fadeRef.current.material.opacity = THREE.MathUtils.smoothstep(p, 0.78, 0.98)
+    }
   })
 
   return (
@@ -413,6 +417,13 @@ export default function HeroRoom({ lit }) {
         <lineBasicMaterial color="#d8d2c0" transparent opacity={0.38} />
       </lineSegments>
       <Spider anchor={[-5.1, 2.7, -5.45]} />
+
+      {/* curtain the retreating camera pulls back through — fades in at
+          the end of the zoom-out so darkness closes over the room */}
+      <mesh ref={fadeRef} position={[0.4, 0.6, 8.6]}>
+        <planeGeometry args={[40, 24]} />
+        <meshBasicMaterial color="#060504" transparent opacity={0} depthWrite={false} />
+      </mesh>
     </group>
   )
 }
