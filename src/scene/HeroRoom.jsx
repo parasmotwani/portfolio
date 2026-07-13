@@ -2,85 +2,24 @@ import { useMemo, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { heroState } from './heroState'
-import { Rubble, BrokenWindow, DrapedWebs, Critters } from './RoomDressing'
-// (heroState is also read inside Bulb for the leaving-dim)
+import {
+  RubbleField, BrickShell, BrokenWindow, WebSheets, AnchorStrands, Critters,
+} from './RoomDressing'
 
 // ============================================================
-// The entrance — a real 3D room. Wood floor and plaster walls
-// lit by a swinging bulb, a web strung in the corner catching
-// light, a spider with actual anatomy hanging on its thread,
-// and a doorway in the back wall the camera walks through as
-// the visitor scrolls out (first-person exit).
+// The entrance — a collapsed brick room. Daylight through a
+// broken window, the floor buried in rubble, gauzy webs draped
+// over everything. Camera sits LOW among the debris (like the
+// reference photograph) and pulls backward out of the space as
+// the visitor scrolls.
 // ============================================================
 
-// ---------- procedural textures (generated once, no downloads) ----------
-function makeWoodTexture() {
-  const c = document.createElement('canvas')
-  c.width = 512; c.height = 512
-  const g = c.getContext('2d')
-  g.fillStyle = '#241708'
-  g.fillRect(0, 0, 512, 512)
-  const plankW = 512 / 6
-  for (let p = 0; p < 6; p++) {
-    const x0 = p * plankW
-    const base = 30 + Math.random() * 14
-    for (let y = 0; y < 512; y += 2) {
-      const n = Math.sin(y * 0.045 + p * 7) * 7 + Math.sin(y * 0.21 + p * 13) * 3.5
-      const v = base + n + (Math.random() - 0.5) * 7
-      g.fillStyle = `rgb(${v + 12}, ${v * 0.72 + 6}, ${v * 0.4})`
-      g.fillRect(x0 + 1.5, y, plankW - 3, 2)
-    }
-    // dark seam + occasional knot
-    g.fillStyle = 'rgba(0,0,0,0.68)'
-    g.fillRect(x0, 0, 1.8, 512)
-    if (Math.random() > 0.4) {
-      const ky = Math.random() * 512
-      g.beginPath()
-      g.ellipse(x0 + plankW / 2, ky, 5.5, 9, 0, 0, 7)
-      g.fillStyle = 'rgba(12,7,2,0.8)'
-      g.fill()
-    }
-  }
-  const t = new THREE.CanvasTexture(c)
-  t.wrapS = t.wrapT = THREE.RepeatWrapping
-  t.repeat.set(3, 2)
-  return t
-}
-
-function makePlasterTexture() {
-  const c = document.createElement('canvas')
-  c.width = 256; c.height = 256
-  const g = c.getContext('2d')
-  g.fillStyle = '#171209'
-  g.fillRect(0, 0, 256, 256)
-  for (let i = 0; i < 2600; i++) {
-    const v = Math.random() * 26
-    g.fillStyle = `rgba(${34 + v}, ${27 + v * 0.8}, ${15 + v * 0.5}, ${0.16 + Math.random() * 0.2})`
-    g.fillRect(Math.random() * 256, Math.random() * 256, 1.6, 1.6)
-  }
-  // water stains
-  for (let i = 0; i < 5; i++) {
-    const x = Math.random() * 256, y = Math.random() * 200
-    const r = 18 + Math.random() * 40
-    const grad = g.createRadialGradient(x, y, 2, x, y, r)
-    grad.addColorStop(0, 'rgba(8,5,2,0.35)')
-    grad.addColorStop(1, 'rgba(8,5,2,0)')
-    g.fillStyle = grad
-    g.beginPath(); g.arc(x, y, r, 0, 7); g.fill()
-  }
-  const t = new THREE.CanvasTexture(c)
-  t.wrapS = t.wrapT = THREE.RepeatWrapping
-  t.repeat.set(4, 2)
-  return t
-}
-
-// ---------- web geometry: radial threads + sagging spiral ----------
+// ---------- radial corner web (kept from v1, thickened) ----------
 function buildWeb(cx, cy, cz) {
   const pts = []
-  const SP = 9 // spokes
+  const SP = 9
   const spokes = []
   for (let i = 0; i <= SP; i++) {
-    // quarter web tucked into the corner: spans wall-corner angle
     const a = Math.PI * 1.0 + (i / SP) * Math.PI * 0.52
     spokes.push(a)
     const len = 2.1 + Math.sin(i * 2.7) * 0.25
@@ -91,21 +30,16 @@ function buildWeb(cx, cy, cz) {
       const a1 = spokes[i], a2 = spokes[i + 1]
       const x1 = cx + Math.cos(a1) * r, y1 = cy + Math.sin(a1) * r
       const x2 = cx + Math.cos(a2) * r, y2 = cy + Math.sin(a2) * r
-      // sag the connecting thread toward the corner's gravity
       const mx = (x1 + x2) / 2, my = (y1 + y2) / 2 - r * 0.075
       pts.push(x1, y1, cz + 0.06, mx, my, cz + 0.06)
       pts.push(mx, my, cz + 0.06, x2, y2, cz + 0.06)
     }
   }
-  // a few broken loose ends
-  pts.push(cx + 0.4, cy - 1.9, cz + 0.1, cx + 0.55, cy - 2.5, cz + 0.22)
-  pts.push(cx + 1.3, cy - 1.5, cz + 0.1, cx + 1.5, cy - 2.1, cz + 0.25)
   return new Float32Array(pts)
 }
 
-// ---------- spider: two body segments + 8 jointed legs ----------
+// ---------- hanging spider (unchanged anatomy, window backdrop) ----------
 function SpiderLegs() {
-  // legs as pairs of segments; per-leg base rotation around the body
   const legs = useMemo(() => {
     const arr = []
     for (let side = -1; side <= 1; side += 2) {
@@ -114,7 +48,6 @@ function SpiderLegs() {
           yaw: side * (0.55 + i * 0.42),
           pitch: 0.55 + (i % 2) * 0.12,
           upper: 0.30, lower: 0.36,
-          phase: i * 1.7 + (side > 0 ? 0.9 : 0),
           side,
         })
       }
@@ -126,13 +59,11 @@ function SpiderLegs() {
     <group>
       {legs.map((l, i) => (
         <group key={i} rotation={[0, l.yaw, 0]} position={[0, 0.02, 0]}>
-          {/* upper segment: out and up */}
           <group rotation={[0, 0, l.side * l.pitch]} name={`legU${i}`}>
             <mesh position={[l.side * l.upper / 2, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
               <cylinderGeometry args={[0.011, 0.016, l.upper, 5]} />
               <meshStandardMaterial color="#1c1610" roughness={0.9} />
             </mesh>
-            {/* lower segment: bends down from the knee */}
             <group position={[l.side * l.upper, 0, 0]} rotation={[0, 0, -l.side * (l.pitch + 0.9)]}>
               <mesh position={[l.side * l.lower / 2, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
                 <cylinderGeometry args={[0.006, 0.011, l.lower, 5]} />
@@ -149,17 +80,16 @@ function SpiderLegs() {
 function Spider({ anchor }) {
   const rig = useRef()
   const threadRef = useRef()
-  const restY = anchor[1] - 1.55
+  const restY = anchor[1] - 1.45
   const state = useRef({ y: restY, flee: 0 })
   const { camera } = useThree()
   const proj = useMemo(() => new THREE.Vector3(), [])
 
-  useFrame(({ clock }, dt) => {
+  useFrame(({ clock }) => {
     if (!rig.current) return
     const t = clock.elapsedTime
     const s = state.current
 
-    // cursor proximity in screen space → climb the thread
     proj.set(anchor[0], s.y, anchor[2]).project(camera)
     const dx = proj.x - heroState.mouse.x
     const dy = proj.y - heroState.mouse.y
@@ -172,7 +102,6 @@ function Spider({ anchor }) {
     rig.current.rotation.z = Math.sin(t * 0.9) * 0.05
     rig.current.rotation.y = Math.sin(t * 0.35) * 0.2
 
-    // leg micro-steps
     rig.current.traverse((o) => {
       if (o.name?.startsWith('legU')) {
         const i = Number(o.name.slice(4))
@@ -180,7 +109,6 @@ function Spider({ anchor }) {
       }
     })
 
-    // thread follows
     const pos = threadRef.current.geometry.attributes.position
     pos.setXYZ(0, anchor[0], anchor[1], anchor[2])
     pos.setXYZ(1, anchor[0], s.y + 0.22, anchor[2])
@@ -198,18 +126,16 @@ function Spider({ anchor }) {
             itemSize={3}
           />
         </bufferGeometry>
-        <lineBasicMaterial color="#cfc8b4" transparent opacity={0.4} />
+        <lineBasicMaterial color="#3a352c" opacity={0.85} transparent />
       </line>
       <group ref={rig} scale={1.15}>
-        {/* abdomen */}
-        <mesh position={[0, -0.16, 0]} scale={[1, 1.3, 1.1]}>
+        <mesh position={[0, -0.16, 0]} scale={[1, 1.3, 1.1]} castShadow>
           <sphereGeometry args={[0.15, 20, 16]} />
-          <meshStandardMaterial color="#241d14" roughness={0.75} />
+          <meshStandardMaterial color="#1c160e" roughness={0.75} />
         </mesh>
-        {/* cephalothorax */}
         <mesh position={[0, 0.06, 0]}>
           <sphereGeometry args={[0.09, 16, 12]} />
-          <meshStandardMaterial color="#2c241a" roughness={0.7} />
+          <meshStandardMaterial color="#241d12" roughness={0.7} />
         </mesh>
         <SpiderLegs />
       </group>
@@ -217,7 +143,7 @@ function Spider({ anchor }) {
   )
 }
 
-// ---------- swinging bulb that actually lights the room ----------
+// ---------- swinging bulb: a warm counterpoint to the cold daylight ----------
 function Bulb({ lit }) {
   const pivot = useRef()
   const lightRef = useRef()
@@ -229,15 +155,14 @@ function Bulb({ lit }) {
       pivot.current.rotation.x = Math.sin(t * 0.41 + 1) * 0.045
     }
     if (lightRef.current) {
-      // filament flutter; dims as the visitor is drawn out of the room
       const flick = 0.9 + Math.sin(t * 11) * 0.02 + Math.sin(t * 23.7) * 0.03 + (Math.random() > 0.992 ? -0.35 : 0)
       const leaving = 1 - Math.min(1, Math.max(0, (heroState.p - 0.45) / 0.4)) * 0.75
-      lightRef.current.intensity = lit ? 14 * flick * leaving : 0
+      lightRef.current.intensity = lit ? 3.2 * flick * leaving : 0
     }
   })
 
   return (
-    <group ref={pivot} position={[0.6, 3.4, -2.4]}>
+    <group ref={pivot} position={[2.6, 3.4, -1.8]}>
       <mesh position={[0, -0.95, 0]}>
         <cylinderGeometry args={[0.008, 0.008, 1.9, 4]} />
         <meshBasicMaterial color="#0a0806" />
@@ -255,7 +180,7 @@ function Bulb({ lit }) {
           roughness={0.35}
         />
       </mesh>
-      <pointLight ref={lightRef} position={[0, -2.11, 0]} color="#ffbe70" distance={16} decay={1.9} />
+      <pointLight ref={lightRef} position={[0, -2.11, 0]} color="#ffbe70" distance={12} decay={1.9} />
     </group>
   )
 }
@@ -263,22 +188,17 @@ function Bulb({ lit }) {
 // ---------- the room ----------
 export default function HeroRoom({ lit }) {
   const group = useRef()
-  const doorRef = useRef()
-  const spillRef = useRef()
   const fadeRef = useRef()
   const { camera } = useThree()
 
-  const wood = useMemo(makeWoodTexture, [])
-  const plaster = useMemo(makePlasterTexture, [])
-  const webGeo = useMemo(() => buildWeb(-6.2, 3.3, -5.82), [])
+  const webGeo = useMemo(() => buildWeb(-7.6, 3.3, -5.82), [])
 
-  // camera path for the exit: pull BACKWARD out of the space — the room
-  // recedes and shrinks away, rising slightly, until darkness closes
+  // exit: pull BACKWARD and up — the room recedes and shrinks away
   const path = useMemo(() => new THREE.CatmullRomCurve3([
-    new THREE.Vector3(0, 0.25, 7.4),
-    new THREE.Vector3(0.3, 0.55, 9.8),
-    new THREE.Vector3(0.5, 1.0, 12.6),
-    new THREE.Vector3(0.6, 1.5, 15.8),
+    new THREE.Vector3(0, -0.55, 6.6),
+    new THREE.Vector3(0.25, -0.1, 9.6),
+    new THREE.Vector3(0.45, 0.7, 12.6),
+    new THREE.Vector3(0.6, 1.4, 15.8),
   ]), [])
   const lookTarget = useMemo(() => new THREE.Vector3(), [])
   const camPos = useMemo(() => new THREE.Vector3(), [])
@@ -288,47 +208,33 @@ export default function HeroRoom({ lit }) {
     const p = heroState.p
     const active = heroState.active
     group.current.visible = active
-
     if (!active) return
 
-    // the opening is already ajar — it just gives way as you're drawn out
-    const openT = THREE.MathUtils.smoothstep(p, 0.5, 0.82)
-    if (doorRef.current) doorRef.current.rotation.y = -(0.55 + openT * 1.5)
-    if (spillRef.current) {
-      spillRef.current.intensity = 0.4 + openT * 3.4
-    }
-
-    // camera: idle look-around → drawn out through the opening.
-    // The exit reads as motion through an aperture: accelerating dolly,
-    // fov widening (zoom-out feel), light spill growing, then darkness
-    // swallows the frame — not a staged look-at-the-door moment.
     const walk = THREE.MathUtils.smoothstep(p, 0.42, 1)
     if (walk <= 0) {
+      // LOW idle framing: camera sits just above the rubble line
       camPos.set(
-        0 + heroState.mouse.x * 0.55,
-        0.25 + heroState.mouse.y * 0.3,
-        7.4
+        heroState.mouse.x * 0.5,
+        -0.55 + heroState.mouse.y * 0.28,
+        6.6
       )
       camera.position.lerp(camPos, 0.06)
-      lookTarget.set(heroState.mouse.x * 1.4, 0.05 + heroState.mouse.y * 0.7, -2)
-      if (camera.fov !== 55) { camera.fov += (55 - camera.fov) * 0.08; camera.updateProjectionMatrix() }
+      lookTarget.set(heroState.mouse.x * 1.2, -0.45 + heroState.mouse.y * 0.5, -2.6)
+      if (camera.fov !== 58) { camera.fov += (58 - camera.fov) * 0.08; camera.updateProjectionMatrix() }
     } else {
       path.getPointAt(Math.min(walk, 0.999), camPos)
       camera.position.lerp(camPos, 0.12)
-      // slight fov widen sells the pull-away; the room shrinks in frame
-      const targetFov = 55 + THREE.MathUtils.smoothstep(walk, 0.3, 1) * 10
+      const targetFov = 58 + THREE.MathUtils.smoothstep(walk, 0.3, 1) * 10
       camera.fov += (targetFov - camera.fov) * 0.1
       camera.updateProjectionMatrix()
-      // gaze holds the room as it sinks away below
       lookTarget.set(
         heroState.mouse.x * 0.4 * (1 - walk),
-        THREE.MathUtils.lerp(0.05, -1.2, walk),
-        -2.5
+        THREE.MathUtils.lerp(-0.45, -1.8, walk),
+        -2.8
       )
     }
     camera.lookAt(lookTarget)
 
-    // darkness closes over the receding room at the end of the pull
     if (fadeRef.current) {
       fadeRef.current.material.opacity = THREE.MathUtils.smoothstep(p, 0.78, 0.98)
     }
@@ -336,100 +242,31 @@ export default function HeroRoom({ lit }) {
 
   return (
     <group ref={group}>
-      {/* lighting: near-nothing in the dark (the torch does the work),
-          warm and moody once the switch is on */}
-      <ambientLight intensity={lit ? 0.22 : 0.09} color="#c9baa0" />
-      <ambientLight intensity={lit ? 0.1 : 0.05} color="#8a94b8" />
+      {/* daylight fill: pale sky bounce + dark ground bounce */}
+      <hemisphereLight args={['#c2ccbe', '#443e33', lit ? 0.85 : 0.3]} />
       <Bulb lit={lit} />
 
-      {/* floor */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -2.2, -0.5]}>
-        <planeGeometry args={[18, 15]} />
-        <meshStandardMaterial map={wood} roughness={0.85} />
-      </mesh>
-      {/* ceiling */}
-      <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 3.45, -0.5]}>
-        <planeGeometry args={[18, 15]} />
-        <meshStandardMaterial map={plaster} color="#5e564a" roughness={1} />
-      </mesh>
-      {/* back wall — split around the doorway (opening x 2.4..4.0, top y 0.9) */}
-      <mesh position={[-2.8, 0.625, -6]}>
-        <planeGeometry args={[10.4, 5.65]} />
-        <meshStandardMaterial map={plaster} roughness={1} />
-      </mesh>
-      <mesh position={[6.5, 0.625, -6]}>
-        <planeGeometry args={[5, 5.65]} />
-        <meshStandardMaterial map={plaster} roughness={1} />
-      </mesh>
-      <mesh position={[3.2, 2.175, -6]}>
-        <planeGeometry args={[1.6, 2.55]} />
-        <meshStandardMaterial map={plaster} roughness={1} />
-      </mesh>
-      {/* side walls */}
-      <mesh rotation={[0, Math.PI / 2, 0]} position={[-8, 0.625, -0.5]}>
-        <planeGeometry args={[15, 5.65]} />
-        <meshStandardMaterial map={plaster} roughness={1} />
-      </mesh>
-      <mesh rotation={[0, -Math.PI / 2, 0]} position={[8, 0.625, -0.5]}>
-        <planeGeometry args={[15, 5.65]} />
-        <meshStandardMaterial map={plaster} roughness={1} />
-      </mesh>
+      <BrickShell />
+      <BrokenWindow lit={lit} />
+      <RubbleField />
+      <WebSheets />
+      <AnchorStrands />
 
-      {/* doorway: jambs, lintel, swinging door, warm spill behind */}
-      <group position={[3.2, 0, -6]}>
-        <mesh position={[-0.86, -0.65, 0]}>
-          <boxGeometry args={[0.14, 3.1, 0.22]} />
-          <meshStandardMaterial color="#1d1610" roughness={0.8} />
-        </mesh>
-        <mesh position={[0.86, -0.65, 0]}>
-          <boxGeometry args={[0.14, 3.1, 0.22]} />
-          <meshStandardMaterial color="#1d1610" roughness={0.8} />
-        </mesh>
-        <mesh position={[0, 0.97, 0]}>
-          <boxGeometry args={[1.86, 0.16, 0.22]} />
-          <meshStandardMaterial color="#1d1610" roughness={0.8} />
-        </mesh>
-        {/* door leaf, hinged left */}
-        <group position={[-0.78, -0.65, 0]}>
-          <group ref={doorRef}>
-            <mesh position={[0.78, 0, -0.02]}>
-              <boxGeometry args={[1.56, 3.0, 0.06]} />
-              <meshStandardMaterial color="#221a10" roughness={0.75} />
-            </mesh>
-            <mesh position={[1.42, -0.05, 0.05]}>
-              <sphereGeometry args={[0.045, 10, 8]} />
-              <meshStandardMaterial color="#8a6f38" metalness={0.7} roughness={0.35} />
-            </mesh>
-          </group>
-        </group>
-        <pointLight ref={spillRef} position={[0.2, -0.4, -2.2]} color="#ffb35e" distance={11} decay={2} intensity={0.4} />
-        {/* darkness beyond the door so the pass-through ends black */}
-        <mesh position={[0, 0, -4.4]}>
-          <planeGeometry args={[10, 8]} />
-          <meshBasicMaterial color="#050403" />
-        </mesh>
-      </group>
-
-      {/* the web, strung into the top-left corner */}
+      {/* radial web in the dark left corner */}
       <lineSegments>
         <bufferGeometry>
           <bufferAttribute attach="attributes-position" array={webGeo} count={webGeo.length / 3} itemSize={3} />
         </bufferGeometry>
-        <lineBasicMaterial color="#d8d2c0" transparent opacity={0.38} />
+        <lineBasicMaterial color="#d8d2c0" transparent opacity={0.45} />
       </lineSegments>
-      <Spider anchor={[-5.1, 2.7, -5.45]} />
 
-      {/* set dressing: rubble under the window, draped strands, and the
-          tenants — a patrolling spider, beetles, a bolting cockroach */}
-      <BrokenWindow lit={lit} />
-      <Rubble />
-      <DrapedWebs />
+      {/* the hanging spider silhouettes against the window light */}
+      <Spider anchor={[-1.15, 2.85, -5.4]} />
       <Critters />
 
-      {/* curtain the retreating camera pulls back through — fades in at
-          the end of the zoom-out so darkness closes over the room */}
-      <mesh ref={fadeRef} position={[0.4, 0.6, 8.6]}>
-        <planeGeometry args={[40, 24]} />
+      {/* darkness closes over the receding room at the end of the pull */}
+      <mesh ref={fadeRef} position={[0.4, 0.6, 8.2]}>
+        <planeGeometry args={[46, 26]} />
         <meshBasicMaterial color="#060504" transparent opacity={0} depthWrite={false} />
       </mesh>
     </group>

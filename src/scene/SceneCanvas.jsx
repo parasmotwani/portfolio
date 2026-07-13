@@ -1,5 +1,6 @@
 import { useMemo, useEffect } from 'react'
 import { Canvas } from '@react-three/fiber'
+import * as THREE from 'three'
 import EmberField from './EmberField'
 import HeroRoom from './HeroRoom'
 import { heroState } from './heroState'
@@ -34,9 +35,14 @@ export default function SceneCanvas() {
   return (
     <div className="scene-canvas">
       <Canvas
-        camera={{ position: [0, 0.25, 7.4], fov: 55 }}
+        shadows
+        camera={{ position: [0, -0.55, 6.6], fov: 58 }}
         dpr={[1, 1.5]}
         gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
+        onCreated={({ gl }) => {
+          gl.toneMapping = THREE.ACESFilmicToneMapping
+          gl.toneMappingExposure = 1.12
+        }}
         performance={{ min: 0.5 }}
       >
         {caps.room && <HeroRoom lit={lit} />}

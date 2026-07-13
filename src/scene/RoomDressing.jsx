@@ -1,19 +1,22 @@
 import { useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
+import { useTexture } from '@react-three/drei'
 import * as THREE from 'three'
 
 // ============================================================
-// Set dressing for the entrance: a broken window pouring cold
-// light, a rubble heap draped in stringy webs, and the life
-// that moved in after the people left — spiders, beetles, and
-// a cockroach that bolts across the floor at intervals.
+// Photoreal set dressing. Built from CC0 photoscanned PBR maps
+// (Poly Haven): broken brick walls, a rubble field burying the
+// floor, gauzy web sheets with real volume, daylight through a
+// broken window — plus the tenants: spiders, beetles, a roach.
 // ============================================================
 
 const rand = (a, b) => a + Math.random() * (b - a)
 
-// ---------- rubble ----------
-function jitteredRock(seed) {
-  const geo = new THREE.DodecahedronGeometry(1, 0)
+// ---------- rubble chunk geometry: angular, displaced ----------
+function chunkGeo(seed, box) {
+  const geo = box
+    ? new THREE.BoxGeometry(1, 1, 1, 2, 2, 2)
+    : new THREE.DodecahedronGeometry(0.62, 0)
   const pos = geo.attributes.position
   const rng = (i) => {
     const n = Math.sin(seed * 12.9898 + i * 78.233) * 43758.5453
@@ -22,129 +25,176 @@ function jitteredRock(seed) {
   for (let i = 0; i < pos.count; i++) {
     pos.setXYZ(
       i,
-      pos.getX(i) * (1 + rng(i) * 0.5),
-      pos.getY(i) * (1 + rng(i + 7) * 0.45),
-      pos.getZ(i) * (1 + rng(i + 13) * 0.5)
+      pos.getX(i) * (1 + rng(i) * 0.42),
+      pos.getY(i) * (1 + rng(i + 7) * 0.38),
+      pos.getZ(i) * (1 + rng(i + 13) * 0.42)
     )
   }
   geo.computeVertexNormals()
   return geo
 }
 
-const ROCK_COLORS = ['#5c544a', '#514a40', '#464038', '#5a5248', '#3e3830']
+// ---------- the rubble field: buries the floor like the reference ----------
+export function RubbleField() {
+  const [rockDiff, rockNor, floorDiff, floorNor] = useTexture([
+    '/textures/gray_rocks_diff_1k.jpg',
+    '/textures/gray_rocks_nor_gl_1k.jpg',
+    '/textures/embedded_rock_floor_diff_1k.jpg',
+    '/textures/embedded_rock_floor_nor_gl_1k.jpg',
+  ])
+  ;[rockDiff, rockNor].forEach((t) => { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(1.6, 1.6) })
+  ;[floorDiff, floorNor].forEach((t) => { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(4, 3) })
 
-export function Rubble() {
-  const rocks = useMemo(() => {
+  const chunks = useMemo(() => {
     const arr = []
-    // heap under the window (back-left) …
-    for (let i = 0; i < 9; i++) {
-      arr.push({
-        pos: [rand(-6.4, -1.4), -2.2 + rand(0.05, 0.5), rand(-5.6, -3.6)],
-        scale: [rand(0.35, 0.95), rand(0.22, 0.6), rand(0.35, 0.9)],
-        rot: [rand(0, 3), rand(0, 3), rand(0, 3)],
-        seed: i * 3.7 + 1,
-        color: ROCK_COLORS[i % ROCK_COLORS.length],
-      })
+    // pile height: taller at the back and toward the left, like a collapse
+    const pileY = (x, z) => {
+      const back = THREE.MathUtils.clamp((z + 6) / 5, 0, 1)
+      const left = THREE.MathUtils.clamp((2 - x) / 9, 0, 1)
+      return -2.2 + (1 - back) * 1.15 + left * 0.5 + rand(-0.08, 0.14)
     }
-    // …and a smaller spill in the right corner
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 58; i++) {
+      const x = rand(-7.6, 7.6)
+      const z = rand(-5.6, 2.8)
+      const big = Math.random() > 0.6
+      const s = big ? rand(0.55, 1.35) : rand(0.24, 0.6)
       arr.push({
-        pos: [rand(5.4, 7.6), -2.2 + rand(0.03, 0.3), rand(-5.4, -4)],
-        scale: [rand(0.25, 0.6), rand(0.15, 0.4), rand(0.25, 0.6)],
-        rot: [rand(0, 3), rand(0, 3), rand(0, 3)],
-        seed: i * 5.1 + 40,
-        color: ROCK_COLORS[(i + 2) % ROCK_COLORS.length],
+        pos: [x, pileY(x, z) - s * 0.22, z],
+        scale: [s * rand(0.8, 1.3), s * rand(0.5, 0.85), s * rand(0.8, 1.3)],
+        rot: [rand(0, 3.1), rand(0, 3.1), rand(0, 3.1)],
+        seed: i * 3.31 + 1,
+        box: Math.random() > 0.45,
+        tint: ['#ded7c8', '#cfc7b6', '#c2b9a8', '#e8e1d2'][i % 4],
       })
     }
     return arr
   }, [])
 
-  const geos = useMemo(() => rocks.map((r) => jitteredRock(r.seed)), [rocks])
+  const geos = useMemo(() => chunks.map((c) => chunkGeo(c.seed, c.box)), [chunks])
 
   return (
     <group>
-      {rocks.map((r, i) => (
-        <mesh key={i} geometry={geos[i]} position={r.pos} scale={r.scale} rotation={r.rot}>
-          <meshStandardMaterial color={r.color} roughness={0.96} />
-        </mesh>
-      ))}
-      {/* fine debris scatter */}
-      {rocks.slice(0, 8).map((r, i) => (
-        <mesh key={`d${i}`} position={[r.pos[0] + rand(-0.9, 0.9), -2.18, r.pos[2] + rand(0.4, 1.3)]} rotation={[0, rand(0, 3), 0]}>
-          <boxGeometry args={[rand(0.06, 0.16), 0.04, rand(0.06, 0.16)]} />
-          <meshStandardMaterial color="#4a443c" roughness={1} />
+      {/* debris-strewn ground under the chunks */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -2.25, -1]}>
+        <planeGeometry args={[18, 14, 24, 18]} />
+        <meshStandardMaterial map={floorDiff} normalMap={floorNor} color="#c9c0b2" roughness={0.96} />
+      </mesh>
+      {chunks.map((c, i) => (
+        <mesh key={i} geometry={geos[i]} position={c.pos} scale={c.scale} rotation={c.rot} castShadow receiveShadow>
+          <meshStandardMaterial map={rockDiff} normalMap={rockNor} color={c.tint} roughness={0.95} />
         </mesh>
       ))}
     </group>
   )
 }
 
-// ---------- broken window + cold light ----------
-export function BrokenWindow({ lit }) {
-  return (
-    <group position={[-4.7, 1.45, -5.97]}>
-      {/* recess + pale sky behind */}
-      <mesh position={[0, 0, -0.02]}>
-        <planeGeometry args={[2.5, 1.9]} />
-        <meshBasicMaterial color="#0e1114" />
-      </mesh>
-      <mesh position={[0, 0, -0.01]}>
-        <planeGeometry args={[2.3, 1.7]} />
-        <meshBasicMaterial color="#5e6d78" />
-      </mesh>
-      <mesh position={[0.15, 0.1, 0]}>
-        <planeGeometry args={[1.7, 1.25]} />
-        <meshBasicMaterial color="#8b9aa4" />
-      </mesh>
-      {/* frame */}
-      {[
-        [0, 0.92, 2.6, 0.14], [0, -0.92, 2.6, 0.14],
-      ].map(([x, y, w, h], i) => (
-        <mesh key={i} position={[x, y, 0.04]}>
-          <boxGeometry args={[w, h, 0.1]} />
-          <meshStandardMaterial color="#241d14" roughness={0.85} />
-        </mesh>
-      ))}
-      {[[-1.24, 0], [1.24, 0]].map(([x, y], i) => (
-        <mesh key={`v${i}`} position={[x, y, 0.04]}>
-          <boxGeometry args={[0.14, 1.98, 0.1]} />
-          <meshStandardMaterial color="#241d14" roughness={0.85} />
-        </mesh>
-      ))}
-      {/* broken crossbars — one intact, one snapped and hanging */}
-      <mesh position={[-0.62, 0.05, 0.03]} rotation={[0, 0, 0.04]}>
-        <boxGeometry args={[1.1, 0.07, 0.06]} />
-        <meshStandardMaterial color="#2a2217" roughness={0.9} />
-      </mesh>
-      <mesh position={[0.72, -0.28, 0.03]} rotation={[0, 0, -0.7]}>
-        <boxGeometry args={[0.8, 0.07, 0.06]} />
-        <meshStandardMaterial color="#2a2217" roughness={0.9} />
-      </mesh>
-      {/* glass shards left in the frame */}
-      {[[-0.9, 0.55, 0.5], [0.4, 0.75, -0.4], [0.95, -0.6, 0.9]].map(([x, y, r], i) => (
-        <mesh key={`g${i}`} position={[x, y, 0.02]} rotation={[0, 0, r]}>
-          <coneGeometry args={[0.12, 0.34, 3]} />
-          <meshStandardMaterial color="#6e7a82" transparent opacity={0.5} roughness={0.15} metalness={0.2} />
-        </mesh>
-      ))}
-      {/* cold light pouring in */}
-      <spotLight
-        position={[0, 0.2, 0.4]}
-        target-position={[1.6, -3.4, 3.4]}
-        angle={0.72}
-        penumbra={0.9}
-        color="#a9b8c6"
-        intensity={lit ? 5 : 2.6}
-        distance={16}
-        decay={1.6}
+// ---------- brick shell: back + side walls, whitewashed like the ref ----------
+export function BrickShell() {
+  const [diff, nor] = useTexture([
+    '/textures/broken_brick_wall_diff_1k.jpg',
+    '/textures/broken_brick_wall_nor_gl_1k.jpg',
+  ])
+  const mk = (rx, ry) => {
+    const d = diff.clone(); const n = nor.clone()
+    ;[d, n].forEach((t) => { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rx, ry); t.needsUpdate = true })
+    return [d, n]
+  }
+  const [backD, backN] = useMemo(() => mk(3.4, 1.6), [diff, nor])
+  const [sideD, sideN] = useMemo(() => mk(3, 1.6), [diff, nor])
+
+  const Wall = ({ d, n, whitewash = true, ...props }) => (
+    <mesh {...props} receiveShadow>
+      <planeGeometry args={props.size} />
+      {/* limewash = flat pale paint over brick RELIEF: normal map only,
+          the red diff shows through faintly via a low-opacity second pass */}
+      <meshStandardMaterial
+        map={whitewash ? null : d}
+        normalMap={n}
+        normalScale={new THREE.Vector2(1.4, 1.4)}
+        color={whitewash ? '#c9c2b2' : '#efe9db'}
+        roughness={0.95}
       />
-      {/* faint volumetric shaft */}
-      <mesh position={[0.7, -1.15, 1.5]} rotation={[0.62, 0.06, 0]}>
-        <planeGeometry args={[2.3, 4.6]} />
+    </mesh>
+  )
+
+  return (
+    <group>
+      {/* back wall around the window opening (window x -2.9..0.5, top y 2.8, sill y 0.4) */}
+      <Wall d={backD} n={backN} size={[10.2, 5.9]} position={[-6, 0.5, -6]} />
+      <Wall d={backD} n={backN} size={[10.6, 5.9]} position={[5.8, 0.5, -6]} />
+      <Wall d={backD} n={backN} size={[3.4, 1.3]} position={[-1.2, 2.85, -6]} />
+      <Wall d={backD} n={backN} size={[3.4, 2.8]} position={[-1.2, -2.0, -6]} />
+      {/* sides: right wall keeps exposed red brick where the wash peeled,
+          like the reference's right-hand wall */}
+      <Wall d={sideD} n={sideN} size={[15, 5.9]} position={[-8, 0.5, -0.5]} rotation={[0, Math.PI / 2, 0]} />
+      <Wall d={sideD} n={sideN} whitewash={false} size={[15, 5.9]} position={[8, 0.5, -0.5]} rotation={[0, -Math.PI / 2, 0]} />
+      <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 3.45, -0.5]}>
+        <planeGeometry args={[18, 15]} />
+        <meshStandardMaterial color="#4e483e" roughness={1} />
+      </mesh>
+    </group>
+  )
+}
+
+// ---------- the window: big, bright, broken ----------
+export function BrokenWindow({ lit }) {
+  const sunRef = useRef()
+  return (
+    <group position={[-1.2, 1.6, -5.96]}>
+      {/* blown-out sky + soft foliage tint, like overgrown daylight */}
+      <mesh position={[0, 0, -0.03]}>
+        <planeGeometry args={[3.5, 2.5]} />
+        <meshBasicMaterial color="#f4f8ee" toneMapped={false} />
+      </mesh>
+      <mesh position={[-0.7, -0.5, -0.02]} rotation={[0, 0, 0.4]}>
+        <planeGeometry args={[1.8, 1.2]} />
+        <meshBasicMaterial color="#b9c9a8" transparent opacity={0.5} toneMapped={false} />
+      </mesh>
+      {/* frame + mullions, weathered */}
+      {[[0, 1.18, 3.6, 0.16], [0, -1.18, 3.6, 0.16]].map(([x, y, w, h], i) => (
+        <mesh key={i} position={[x, y, 0.05]} castShadow>
+          <boxGeometry args={[w, h, 0.14]} />
+          <meshStandardMaterial color="#4a4136" roughness={0.9} />
+        </mesh>
+      ))}
+      {[[-1.72, 0], [0, 0], [1.72, 0]].map(([x, y], i) => (
+        <mesh key={`v${i}`} position={[x, y, 0.05]} castShadow>
+          <boxGeometry args={[0.16, 2.5, 0.14]} />
+          <meshStandardMaterial color="#4a4136" roughness={0.9} />
+        </mesh>
+      ))}
+      {/* broken X-brace like the reference, one bar snapped */}
+      <mesh position={[-0.85, 0.1, 0.04]} rotation={[0, 0, 0.6]}>
+        <boxGeometry args={[1.9, 0.07, 0.05]} />
+        <meshStandardMaterial color="#3c352c" roughness={0.9} />
+      </mesh>
+      <mesh position={[0.9, 0.28, 0.04]} rotation={[0, 0, -0.55]}>
+        <boxGeometry args={[1.6, 0.07, 0.05]} />
+        <meshStandardMaterial color="#3c352c" roughness={0.9} />
+      </mesh>
+      <mesh position={[1.35, -0.75, 0.04]} rotation={[0, 0, -1.2]}>
+        <boxGeometry args={[0.7, 0.07, 0.05]} />
+        <meshStandardMaterial color="#3c352c" roughness={0.9} />
+      </mesh>
+
+      {/* daylight: strong directional through the opening + soft fill */}
+      <directionalLight
+        ref={sunRef}
+        position={[-0.4, 1.6, 1.2]}
+        target-position={[0.8, -4.2, 3.2]}
+        color="#eef4e8"
+        intensity={lit ? 4.2 : 1.3}
+        castShadow
+        shadow-mapSize={[1024, 1024]}
+      />
+      <pointLight position={[0, 0, 0.8]} color="#dfe8d8" intensity={lit ? 1.6 : 0.55} distance={9} decay={1.8} />
+      {/* volumetric shaft, wider and softer */}
+      <mesh position={[0.9, -1.7, 2.1]} rotation={[0.7, 0.08, 0]}>
+        <planeGeometry args={[3.6, 5.6]} />
         <meshBasicMaterial
-          color="#9fb2c2"
+          color="#e5eede"
           transparent
-          opacity={0.05}
+          opacity={lit ? 0.075 : 0.035}
           blending={THREE.AdditiveBlending}
           depthWrite={false}
           side={THREE.DoubleSide}
@@ -154,60 +204,107 @@ export function BrokenWindow({ lit }) {
   )
 }
 
-// ---------- draped webs: catenary strands between anchors ----------
-export function DrapedWebs() {
-  const { coarse, fine } = useMemo(() => {
-    const coarse = []
-    const fine = []
-    const A = new THREE.Vector3(), B = new THREE.Vector3(), P = new THREE.Vector3(), Q = new THREE.Vector3()
+// ---------- gauzy web sheets: canvas-painted fiber texture ----------
+function makeWebSheetTexture(seed = 1) {
+  const c = document.createElement('canvas')
+  c.width = 256; c.height = 256
+  const g = c.getContext('2d')
+  g.clearRect(0, 0, 256, 256)
+  let s = seed
+  const rng = () => { s = (s * 16807) % 2147483647; return (s / 2147483647) }
+  // soft haze base
+  const haze = g.createRadialGradient(128, 128, 10, 128, 128, 130)
+  haze.addColorStop(0, 'rgba(235,232,222,0.34)')
+  haze.addColorStop(0.7, 'rgba(235,232,222,0.12)')
+  haze.addColorStop(1, 'rgba(235,232,222,0)')
+  g.fillStyle = haze
+  g.fillRect(0, 0, 256, 256)
+  // fibrous strands criss-crossing
+  for (let i = 0; i < 46; i++) {
+    const x0 = rng() * 256, y0 = rng() * 256
+    const x1 = x0 + (rng() - 0.5) * 240, y1 = y0 + (rng() - 0.5) * 240
+    const mx = (x0 + x1) / 2 + (rng() - 0.5) * 50
+    const my = (y0 + y1) / 2 + (rng() - 0.5) * 50
+    g.strokeStyle = `rgba(240,238,228,${0.1 + rng() * 0.3})`
+    g.lineWidth = 0.5 + rng() * 1.3
+    g.beginPath(); g.moveTo(x0, y0); g.quadraticCurveTo(mx, my, x1, y1); g.stroke()
+  }
+  // knots / dust clumps
+  for (let i = 0; i < 12; i++) {
+    const x = rng() * 256, y = rng() * 256, r = 2 + rng() * 7
+    const cl = g.createRadialGradient(x, y, 0, x, y, r)
+    cl.addColorStop(0, 'rgba(238,236,226,0.5)')
+    cl.addColorStop(1, 'rgba(238,236,226,0)')
+    g.fillStyle = cl
+    g.beginPath(); g.arc(x, y, r, 0, 7); g.fill()
+  }
+  const t = new THREE.CanvasTexture(c)
+  return t
+}
 
-    const strand = (ax, ay, az, bx, by, bz, sag, out, segs = 9) => {
-      A.set(ax, ay, az); B.set(bx, by, bz)
-      for (let i = 0; i < segs; i++) {
-        const t0 = i / segs, t1 = (i + 1) / segs
-        P.lerpVectors(A, B, t0); P.y -= Math.sin(t0 * Math.PI) * sag
-        Q.lerpVectors(A, B, t1); Q.y -= Math.sin(t1 * Math.PI) * sag
-        out.push(P.x, P.y, P.z, Q.x, Q.y, Q.z)
-      }
-      // occasional vertical drip from the low point
-      if (sag > 0.25) {
-        P.lerpVectors(A, B, 0.5); P.y -= sag
-        out.push(P.x, P.y, P.z, P.x, P.y - sag * rand(0.5, 1.2), P.z + 0.05)
-      }
-    }
-
-    // window ↔ rubble heap
-    strand(-5.95, 2.35, -5.9, -5.9, -1.6, -4.6, 0.55, coarse)
-    strand(-3.5, 2.4, -5.9, -2.2, -1.5, -4.2, 0.7, coarse)
-    strand(-5.9, 0.55, -5.92, -2.6, -1.35, -4.4, 0.35, fine)
-    // across the heap, rock to rock
-    strand(-6.1, -1.55, -4.5, -3.4, -1.5, -4.0, 0.4, coarse)
-    strand(-5.2, -1.5, -4.9, -1.6, -1.7, -3.9, 0.5, fine)
-    strand(-3.3, -1.4, -4.3, -2.0, -2.0, -3.3, 0.3, fine)
-    // corner web area ↔ wall
-    strand(-7.95, 3.3, -4.4, -6.2, 1.5, -5.9, 0.45, fine)
-    strand(-7.9, 2.2, -5.2, -6.6, -1.4, -4.8, 0.6, coarse)
-    // right corner spill
-    strand(7.95, 0.8, -4.6, 5.9, -1.8, -4.5, 0.5, fine)
-    strand(6.3, -1.7, -5.1, 7.9, -1.9, -4.1, 0.3, fine)
-
-    return { coarse: new Float32Array(coarse), fine: new Float32Array(fine) }
+export function WebSheets() {
+  const sheets = useMemo(() => {
+    const defs = [
+      // draped over the rubble peaks, mid-frame — the reference's signature
+      { pos: [-3.4, -0.8, -3.4], rot: [-0.9, 0.15, 0.2], size: [3.4, 2.4], o: 0.5, seed: 11 },
+      { pos: [0.6, -1.15, -2.2], rot: [-1.1, -0.1, 0.5], size: [2.8, 2.0], o: 0.42, seed: 23 },
+      { pos: [3.6, -1.0, -3.6], rot: [-0.85, 0.2, -0.3], size: [2.6, 1.9], o: 0.4, seed: 37 },
+      // strung from the window down to the heap
+      { pos: [-2.9, 0.7, -5.2], rot: [-0.35, 0.1, 0.1], size: [2.6, 2.6], o: 0.46, seed: 5 },
+      { pos: [0.4, 1.0, -5.5], rot: [-0.2, -0.2, -0.4], size: [2.2, 2.4], o: 0.36, seed: 41 },
+      // corners
+      { pos: [-7.5, 2.2, -4.9], rot: [0, 1.2, 0.3], size: [2.8, 2.6], o: 0.5, seed: 53 },
+      { pos: [7.4, 0.4, -5.1], rot: [0, -1.1, -0.2], size: [2.4, 2.8], o: 0.42, seed: 67 },
+      // low veil across the foreground rubble
+      { pos: [-1.2, -1.7, 0.6], rot: [-1.25, 0, 0.15], size: [4.2, 2.2], o: 0.3, seed: 79 },
+    ]
+    return defs.map((d) => ({ ...d, tex: makeWebSheetTexture(d.seed) }))
   }, [])
 
   return (
     <group>
-      <lineSegments>
-        <bufferGeometry>
-          <bufferAttribute attach="attributes-position" array={coarse} count={coarse.length / 3} itemSize={3} />
-        </bufferGeometry>
-        <lineBasicMaterial color="#d4cfc0" transparent opacity={0.3} />
-      </lineSegments>
-      <lineSegments>
-        <bufferGeometry>
-          <bufferAttribute attach="attributes-position" array={fine} count={fine.length / 3} itemSize={3} />
-        </bufferGeometry>
-        <lineBasicMaterial color="#c9c4b4" transparent opacity={0.16} />
-      </lineSegments>
+      {sheets.map((s, i) => (
+        <mesh key={i} position={s.pos} rotation={s.rot}>
+          <planeGeometry args={s.size} />
+          <meshBasicMaterial
+            map={s.tex}
+            transparent
+            opacity={s.o}
+            depthWrite={false}
+            side={THREE.DoubleSide}
+          />
+        </mesh>
+      ))}
+    </group>
+  )
+}
+
+// ---------- thick anchor strands (tubes, not hairlines) ----------
+export function AnchorStrands() {
+  const tubes = useMemo(() => {
+    const mk = (ax, ay, az, bx, by, bz, sag) => {
+      const mid = new THREE.Vector3((ax + bx) / 2, (ay + by) / 2 - sag, (az + bz) / 2)
+      const curve = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(ax, ay, az), mid, new THREE.Vector3(bx, by, bz),
+      ])
+      return new THREE.TubeGeometry(curve, 14, 0.011, 4, false)
+    }
+    return [
+      mk(-2.9, 2.75, -5.9, -4.6, -0.6, -3.8, 0.5),
+      mk(0.4, 2.8, -5.9, 2.6, -0.7, -3.2, 0.7),
+      mk(-7.9, 3.2, -4.2, -4.9, 0.4, -5.1, 0.5),
+      mk(-6.8, -0.2, -5.4, -2.3, -0.9, -3.3, 0.35),
+      mk(3.4, -0.75, -3.5, 7.5, 0.6, -5.0, 0.45),
+      mk(1.2, -1.2, -1.6, -2.4, -1.5, 0.8, 0.3),
+    ]
+  }, [])
+  return (
+    <group>
+      {tubes.map((g, i) => (
+        <mesh key={i} geometry={g}>
+          <meshBasicMaterial color="#e2ddcf" transparent opacity={0.4} depthWrite={false} />
+        </mesh>
+      ))}
     </group>
   )
 }
@@ -216,11 +313,11 @@ export function DrapedWebs() {
 export function CrawlerSpider() {
   const rig = useRef()
   const path = useMemo(() => new THREE.CatmullRomCurve3([
-    new THREE.Vector3(-5.8, -1.35, -4.4),
-    new THREE.Vector3(-4.2, -1.2, -4.6),
-    new THREE.Vector3(-2.6, -1.35, -4.1),
-    new THREE.Vector3(-3.8, -1.85, -3.4),
-    new THREE.Vector3(-5.6, -1.7, -3.8),
+    new THREE.Vector3(-4.8, -0.7, -3.9),
+    new THREE.Vector3(-3.0, -0.75, -4.2),
+    new THREE.Vector3(-1.5, -0.95, -3.4),
+    new THREE.Vector3(-2.9, -1.3, -2.4),
+    new THREE.Vector3(-4.6, -1.05, -3.0),
   ], true), [])
   const pos = useMemo(() => new THREE.Vector3(), [])
   const ahead = useMemo(() => new THREE.Vector3(), [])
@@ -230,7 +327,6 @@ export function CrawlerSpider() {
     if (!rig.current) return
     const s = state.current
     const tt = clock.elapsedTime
-    // stop-and-go patrol
     if (s.pause > 0) {
       s.pause -= dt
     } else {
@@ -241,7 +337,6 @@ export function CrawlerSpider() {
     path.getPointAt((s.t + 0.01) % 1, ahead)
     rig.current.position.copy(pos)
     rig.current.lookAt(ahead)
-    // legs skitter only while moving
     const moving = s.pause <= 0 ? 1 : 0.15
     rig.current.traverse((o) => {
       if (o.name?.startsWith('cl')) {
@@ -263,7 +358,7 @@ export function CrawlerSpider() {
 
   return (
     <group ref={rig} scale={0.62}>
-      <mesh position={[0, 0.07, -0.1]} scale={[1, 0.85, 1.35]}>
+      <mesh position={[0, 0.07, -0.1]} scale={[1, 0.85, 1.35]} castShadow>
         <sphereGeometry args={[0.13, 14, 10]} />
         <meshStandardMaterial color="#221c13" roughness={0.8} />
       </mesh>
@@ -302,8 +397,8 @@ function Beetle({ area }) {
     if (st.t >= 1) {
       ref.current.visible = false
       if (now > st.nextAt) {
-        st.from.set(rand(area[0], area[1]), -2.17, rand(area[2], area[3]))
-        st.to.set(st.from.x + rand(-1.4, 1.4), -2.17, st.from.z + rand(-1, 1))
+        st.from.set(rand(area[0], area[1]), area[4] ?? -2.1, rand(area[2], area[3]))
+        st.to.set(st.from.x + rand(-1.4, 1.4), st.from.y, st.from.z + rand(-1, 1))
         st.t = 0
         st.dur = rand(2.5, 4.5)
       }
@@ -311,10 +406,9 @@ function Beetle({ area }) {
     }
     ref.current.visible = true
     st.t += dt / st.dur
-    const e = st.t
-    ref.current.position.lerpVectors(st.from, st.to, e)
-    ref.current.position.x += Math.sin(e * 26) * 0.02
-    ref.current.lookAt(st.to.x, -2.17, st.to.z)
+    ref.current.position.lerpVectors(st.from, st.to, st.t)
+    ref.current.position.x += Math.sin(st.t * 26) * 0.02
+    ref.current.lookAt(st.to.x, st.from.y, st.to.z)
     if (st.t >= 1) st.nextAt = now + rand(6, 14)
   })
 
@@ -344,10 +438,9 @@ function Cockroach() {
     if (st.t >= 1) {
       ref.current.visible = false
       if (now > st.nextAt) {
-        // dash across the open floor in front of the rubble
         const dir = Math.random() > 0.5 ? 1 : -1
-        st.from.set(-dir * rand(5, 7), -2.16, rand(-1.5, 3.5))
-        st.to.set(dir * rand(4, 7), -2.16, st.from.z + rand(-1.5, 1.5))
+        st.from.set(-dir * rand(4, 6.5), -2.02, rand(0.5, 3.5))
+        st.to.set(dir * rand(3.5, 6.5), -2.02, st.from.z + rand(-1.2, 1.2))
         st.t = 0
         st.dur = rand(1.4, 2.1)
         st.midPause = Math.random() > 0.55 ? rand(0.4, 1.1) : 0
@@ -355,7 +448,6 @@ function Cockroach() {
       return
     }
     ref.current.visible = true
-    // freeze mid-dash sometimes — the roach "listens", then bolts on
     if (st.midPause > 0 && st.t > 0.45 && st.t < 0.5) {
       st.midPause -= dt
     } else {
@@ -363,8 +455,7 @@ function Cockroach() {
     }
     ref.current.position.lerpVectors(st.from, st.to, st.t)
     ref.current.position.x += Math.sin(st.t * 34) * 0.045
-    ref.current.lookAt(st.to.x, -2.16, st.to.z)
-    // antennae sweep
+    ref.current.lookAt(st.to.x, -2.02, st.to.z)
     const sweep = Math.sin(now * 13)
     if (antL.current) antL.current.rotation.y = 0.5 + sweep * 0.25
     if (antR.current) antR.current.rotation.y = -0.5 - sweep * 0.25
@@ -373,8 +464,7 @@ function Cockroach() {
 
   return (
     <group ref={ref} visible={false}>
-      {/* glossy flattened body */}
-      <mesh scale={[1, 0.42, 1.7]}>
+      <mesh scale={[1, 0.42, 1.7]} castShadow>
         <sphereGeometry args={[0.085, 12, 8]} />
         <meshStandardMaterial color="#2c1a0a" roughness={0.28} metalness={0.15} />
       </mesh>
@@ -382,7 +472,6 @@ function Cockroach() {
         <sphereGeometry args={[0.06, 8, 6]} />
         <meshStandardMaterial color="#1f1206" roughness={0.35} />
       </mesh>
-      {/* antennae */}
       <group ref={antL} position={[0.02, 0.02, 0.16]}>
         <mesh position={[0.06, 0.02, 0.08]} rotation={[0.3, 0, -0.4]}>
           <cylinderGeometry args={[0.0022, 0.004, 0.22, 3]} />
@@ -403,8 +492,8 @@ export function Critters() {
   return (
     <group>
       <CrawlerSpider />
-      <Beetle area={[-6, -1, -4.6, -2.6]} />
-      <Beetle area={[4.6, 7.4, -5, -3]} />
+      <Beetle area={[-5.5, -1, -4.2, -2.4, -0.9]} />
+      <Beetle area={[3.5, 6.5, -4.6, -2.6, -1.4]} />
       <Cockroach />
     </group>
   )

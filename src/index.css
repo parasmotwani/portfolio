@@ -1526,6 +1526,21 @@ html.lights-off .corner-whisper {
 .hero-content {
   max-width: 720px;
   margin: 0 auto;
+  position: relative;
+}
+
+/* soft dark pool behind the name so it holds against the bright window */
+.hero-content::before {
+  content: '';
+  position: absolute;
+  inset: -14% -18%;
+  background: radial-gradient(ellipse 60% 55% at 50% 42%, rgba(6, 5, 3, 0.66), rgba(6, 5, 3, 0.25) 60%, transparent 78%);
+  z-index: -1;
+  pointer-events: none;
+}
+
+.hero-name, .hero-role, .hero-summary, .hero-epigraph {
+  text-shadow: 0 2px 26px rgba(0, 0, 0, 0.95), 0 0 8px rgba(0, 0, 0, 0.7);
 }
 
 .hero-epigraph {
