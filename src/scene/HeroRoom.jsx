@@ -2,6 +2,7 @@ import { useMemo, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { heroState } from './heroState'
+import { Rubble, BrokenWindow, DrapedWebs, Critters } from './RoomDressing'
 // (heroState is also read inside Bulb for the leaving-dim)
 
 // ============================================================
@@ -417,6 +418,13 @@ export default function HeroRoom({ lit }) {
         <lineBasicMaterial color="#d8d2c0" transparent opacity={0.38} />
       </lineSegments>
       <Spider anchor={[-5.1, 2.7, -5.45]} />
+
+      {/* set dressing: rubble under the window, draped strands, and the
+          tenants — a patrolling spider, beetles, a bolting cockroach */}
+      <BrokenWindow lit={lit} />
+      <Rubble />
+      <DrapedWebs />
+      <Critters />
 
       {/* curtain the retreating camera pulls back through — fades in at
           the end of the zoom-out so darkness closes over the room */}
