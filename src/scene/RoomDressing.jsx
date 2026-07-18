@@ -205,41 +205,85 @@ export function BrokenWindow({ lit }) {
 }
 
 // ---------- gauzy web sheets: canvas-painted fiber texture ----------
-function makeWebSheetTexture(seed = 1) {
+// Real sheet webs sag along one axis: strands mostly parallel with fine
+// cross-fibres, dust caught in them, a few torn holes, and NO hard edge.
+export function makeWebSheetTexture(seed = 1) {
   const c = document.createElement('canvas')
   c.width = 256; c.height = 256
   const g = c.getContext('2d')
   g.clearRect(0, 0, 256, 256)
   let s = seed
   const rng = () => { s = (s * 16807) % 2147483647; return (s / 2147483647) }
-  // soft haze base
-  const haze = g.createRadialGradient(128, 128, 10, 128, 128, 130)
-  haze.addColorStop(0, 'rgba(235,232,222,0.34)')
-  haze.addColorStop(0.7, 'rgba(235,232,222,0.12)')
-  haze.addColorStop(1, 'rgba(235,232,222,0)')
+
+  const haze = g.createRadialGradient(128, 128, 20, 128, 128, 125)
+  haze.addColorStop(0, 'rgba(233,230,219,0.15)')
+  haze.addColorStop(1, 'rgba(233,230,219,0)')
   g.fillStyle = haze
   g.fillRect(0, 0, 256, 256)
-  // fibrous strands criss-crossing
-  for (let i = 0; i < 46; i++) {
-    const x0 = rng() * 256, y0 = rng() * 256
-    const x1 = x0 + (rng() - 0.5) * 240, y1 = y0 + (rng() - 0.5) * 240
-    const mx = (x0 + x1) / 2 + (rng() - 0.5) * 50
-    const my = (y0 + y1) / 2 + (rng() - 0.5) * 50
-    g.strokeStyle = `rgba(240,238,228,${0.1 + rng() * 0.3})`
-    g.lineWidth = 0.5 + rng() * 1.3
+
+  const th = rng() * Math.PI
+  const dx = Math.cos(th), dy = Math.sin(th)
+
+  // long parallel strands, all sagging the same way
+  for (let i = 0; i < 30; i++) {
+    const off = (rng() - 0.5) * 290
+    const x0 = 128 - dx * 190 - dy * off, y0 = 128 - dy * 190 + dx * off
+    const x1 = 128 + dx * 190 - dy * off * (0.7 + rng() * 0.6)
+    const y1 = 128 + dy * 190 + dx * off * (0.7 + rng() * 0.6)
+    const mx = (x0 + x1) / 2 + (rng() - 0.5) * 22
+    const my = (y0 + y1) / 2 + 10 + rng() * 22
+    g.strokeStyle = `rgba(240,238,228,${0.06 + rng() * 0.2})`
+    g.lineWidth = 0.4 + rng() * 0.8
     g.beginPath(); g.moveTo(x0, y0); g.quadraticCurveTo(mx, my, x1, y1); g.stroke()
   }
-  // knots / dust clumps
-  for (let i = 0; i < 12; i++) {
-    const x = rng() * 256, y = rng() * 256, r = 2 + rng() * 7
+  // finer cross-fibres stitching the strands together
+  for (let i = 0; i < 26; i++) {
+    const x = rng() * 256, y = rng() * 256
+    const len = 24 + rng() * 70
+    const ja = (rng() - 0.5) * 1.1
+    const cx2 = Math.cos(th + Math.PI / 2 + ja), cy2 = Math.sin(th + Math.PI / 2 + ja)
+    g.strokeStyle = `rgba(238,236,226,${0.04 + rng() * 0.12})`
+    g.lineWidth = 0.3 + rng() * 0.5
+    g.beginPath(); g.moveTo(x, y)
+    g.quadraticCurveTo(x + cx2 * len * 0.5 + (rng() - 0.5) * 12, y + cy2 * len * 0.5 + 8, x + cx2 * len, y + cy2 * len)
+    g.stroke()
+  }
+  // trapped dust
+  for (let i = 0; i < 70; i++) {
+    g.fillStyle = `rgba(236,233,222,${0.08 + rng() * 0.25})`
+    const x = rng() * 256, y = rng() * 256, r = 0.4 + rng() * 1
+    g.fillRect(x, y, r, r)
+  }
+  for (let i = 0; i < 6; i++) {
+    const x = rng() * 256, y = rng() * 256, r = 2 + rng() * 5
     const cl = g.createRadialGradient(x, y, 0, x, y, r)
-    cl.addColorStop(0, 'rgba(238,236,226,0.5)')
+    cl.addColorStop(0, 'rgba(238,236,226,0.4)')
     cl.addColorStop(1, 'rgba(238,236,226,0)')
     g.fillStyle = cl
     g.beginPath(); g.arc(x, y, r, 0, 7); g.fill()
   }
-  const t = new THREE.CanvasTexture(c)
-  return t
+  // torn holes
+  g.globalCompositeOperation = 'destination-out'
+  for (let i = 0; i < 3; i++) {
+    const x = 40 + rng() * 176, y = 40 + rng() * 176, r = 14 + rng() * 30
+    const hole = g.createRadialGradient(x, y, 0, x, y, r)
+    hole.addColorStop(0, 'rgba(0,0,0,0.85)')
+    hole.addColorStop(1, 'rgba(0,0,0,0)')
+    g.fillStyle = hole
+    g.beginPath(); g.arc(x, y, r, 0, 7); g.fill()
+  }
+  // irregular edge falloff — kills the visible quad boundary
+  g.globalCompositeOperation = 'destination-in'
+  const fade = g.createRadialGradient(
+    128 + (rng() - 0.5) * 26, 128 + (rng() - 0.5) * 26, 26, 128, 128, 132
+  )
+  fade.addColorStop(0, 'rgba(0,0,0,1)')
+  fade.addColorStop(0.7, 'rgba(0,0,0,0.55)')
+  fade.addColorStop(1, 'rgba(0,0,0,0)')
+  g.fillStyle = fade
+  g.fillRect(0, 0, 256, 256)
+  g.globalCompositeOperation = 'source-over'
+  return new THREE.CanvasTexture(c)
 }
 
 export function WebSheets() {
@@ -279,7 +323,7 @@ export function WebSheets() {
   )
 }
 
-// ---------- thick anchor strands (tubes, not hairlines) ----------
+// ---------- anchor strands: fine, sagging, a few snapped danglers ----------
 export function AnchorStrands() {
   const tubes = useMemo(() => {
     const mk = (ax, ay, az, bx, by, bz, sag) => {
@@ -287,7 +331,15 @@ export function AnchorStrands() {
       const curve = new THREE.CatmullRomCurve3([
         new THREE.Vector3(ax, ay, az), mid, new THREE.Vector3(bx, by, bz),
       ])
-      return new THREE.TubeGeometry(curve, 14, 0.011, 4, false)
+      return new THREE.TubeGeometry(curve, 14, 0.006, 4, false)
+    }
+    const dangle = (x, y, z, len, drift) => {
+      const curve = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(x, y, z),
+        new THREE.Vector3(x + drift * 0.6, y - len * 0.55, z + 0.05),
+        new THREE.Vector3(x + drift, y - len, z + 0.1),
+      ])
+      return new THREE.TubeGeometry(curve, 10, 0.004, 3, false)
     }
     return [
       mk(-2.9, 2.75, -5.9, -4.6, -0.6, -3.8, 0.5),
@@ -296,14 +348,94 @@ export function AnchorStrands() {
       mk(-6.8, -0.2, -5.4, -2.3, -0.9, -3.3, 0.35),
       mk(3.4, -0.75, -3.5, 7.5, 0.6, -5.0, 0.45),
       mk(1.2, -1.2, -1.6, -2.4, -1.5, 0.8, 0.3),
+      // snapped threads hanging free
+      dangle(-1.4, 2.7, -5.85, 0.9, 0.25),
+      dangle(1.9, 2.75, -5.8, 0.6, -0.2),
+      dangle(-7.7, 1.4, -4.6, 0.7, 0.3),
     ]
   }, [])
   return (
     <group>
       {tubes.map((g, i) => (
         <mesh key={i} geometry={g}>
-          <meshBasicMaterial color="#e2ddcf" transparent opacity={0.4} depthWrite={false} />
+          <meshBasicMaterial color="#e2ddcf" transparent opacity={0.32} depthWrite={false} />
         </mesh>
+      ))}
+    </group>
+  )
+}
+
+// ---------- shared spider anatomy ----------
+// Small cephalothorax + large tilted abdomen, 8 legs in a real fan
+// (pairs I-II forward, III side, IV back), each leg femur-up / tibia-down /
+// tarsus tip. Leg groups carry userData so parents can drive the gait.
+const LEG_FAN = [-0.95, -0.4, 0.35, 1.05]
+
+export function SpiderModel({ raise = 0.85, curl = 1.15 }) {
+  const legs = useMemo(() => {
+    const arr = []
+    let n = 0
+    for (let side = -1; side <= 1; side += 2) {
+      for (let i = 0; i < 4; i++) {
+        arr.push({ side, pair: i, yaw: side * LEG_FAN[i], idx: n++ })
+      }
+    }
+    return arr
+  }, [])
+
+  return (
+    <group>
+      <mesh position={[0, 0.05, 0.1]} scale={[1, 0.7, 1.15]} castShadow>
+        <sphereGeometry args={[0.075, 12, 10]} />
+        <meshStandardMaterial color="#261e12" roughness={0.6} />
+      </mesh>
+      <mesh position={[0, 0.075, -0.13]} scale={[1, 0.95, 1.3]} rotation={[0.3, 0, 0]} castShadow>
+        <sphereGeometry args={[0.115, 14, 12]} />
+        <meshStandardMaterial color="#1c150c" roughness={0.5} />
+      </mesh>
+      {/* dorsal folium marking */}
+      <mesh position={[0, 0.155, -0.15]} rotation={[0.35, 0, 0]} scale={[0.6, 0.28, 1]}>
+        <sphereGeometry args={[0.08, 10, 8]} />
+        <meshStandardMaterial color="#3a2e1a" roughness={0.55} />
+      </mesh>
+      {/* spinnerets */}
+      <mesh position={[0, 0.05, -0.28]} rotation={[-1.9, 0, 0]}>
+        <coneGeometry args={[0.02, 0.05, 6]} />
+        <meshStandardMaterial color="#170f08" roughness={0.8} />
+      </mesh>
+      {/* pedipalps */}
+      {[-1, 1].map((s) => (
+        <mesh key={s} position={[s * 0.035, 0.03, 0.2]} rotation={[1.2, 0, s * -0.35]}>
+          <cylinderGeometry args={[0.006, 0.009, 0.09, 4]} />
+          <meshStandardMaterial color="#20180d" roughness={0.7} />
+        </mesh>
+      ))}
+      {legs.map((l) => (
+        <group
+          key={l.idx}
+          rotation={[0, l.yaw, 0]}
+          position={[l.side * 0.045, 0.06, 0.14 - l.pair * 0.045]}
+          userData={{ legIdx: l.idx, baseYaw: l.yaw, pair: l.pair, side: l.side }}
+        >
+          <group rotation={[0, 0, l.side * raise]}>
+            <mesh position={[l.side * 0.095, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+              <cylinderGeometry args={[0.008, 0.0115, 0.19, 5]} />
+              <meshStandardMaterial color="#1b140b" roughness={0.75} />
+            </mesh>
+            <group position={[l.side * 0.19, 0, 0]} rotation={[0, 0, -l.side * (raise + curl)]}>
+              <mesh position={[l.side * 0.105, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+                <cylinderGeometry args={[0.0042, 0.008, 0.21, 5]} />
+                <meshStandardMaterial color="#160f08" roughness={0.8} />
+              </mesh>
+              <group position={[l.side * 0.21, 0, 0]} rotation={[0, 0, -l.side * 0.38]}>
+                <mesh position={[l.side * 0.045, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+                  <cylinderGeometry args={[0.0018, 0.0042, 0.09, 4]} />
+                  <meshStandardMaterial color="#120c06" roughness={0.85} />
+                </mesh>
+              </group>
+            </group>
+          </group>
+        </group>
       ))}
     </group>
   )
@@ -335,49 +467,23 @@ export function CrawlerSpider() {
     }
     path.getPointAt(s.t, pos)
     path.getPointAt((s.t + 0.01) % 1, ahead)
+    const moving = s.pause <= 0 ? 1 : 0.1
     rig.current.position.copy(pos)
+    rig.current.position.y += Math.sin(tt * 18) * 0.006 * moving
     rig.current.lookAt(ahead)
-    const moving = s.pause <= 0 ? 1 : 0.15
+    // alternating-tetrapod gait: legs swing fore-aft in two diagonal sets
     rig.current.traverse((o) => {
-      if (o.name?.startsWith('cl')) {
-        const i = Number(o.name.slice(2))
-        o.rotation.x = Math.sin(tt * 9 + i * 1.9) * 0.14 * moving
+      const u = o.userData
+      if (u && u.legIdx !== undefined) {
+        const ph = ((u.pair + (u.side > 0 ? 0 : 1)) % 2) * Math.PI + u.pair * 0.5
+        o.rotation.y = u.baseYaw + Math.sin(tt * 9 + ph) * 0.2 * moving
       }
     })
   })
 
-  const legs = useMemo(() => {
-    const arr = []
-    for (let side = -1; side <= 1; side += 2) {
-      for (let i = 0; i < 4; i++) {
-        arr.push({ yaw: side * (0.5 + i * 0.44), side, i: arr.length })
-      }
-    }
-    return arr
-  }, [])
-
   return (
-    <group ref={rig} scale={0.62}>
-      <mesh position={[0, 0.07, -0.1]} scale={[1, 0.85, 1.35]} castShadow>
-        <sphereGeometry args={[0.13, 14, 10]} />
-        <meshStandardMaterial color="#221c13" roughness={0.8} />
-      </mesh>
-      <mesh position={[0, 0.06, 0.1]}>
-        <sphereGeometry args={[0.08, 12, 8]} />
-        <meshStandardMaterial color="#2a2318" roughness={0.75} />
-      </mesh>
-      {legs.map((l) => (
-        <group key={l.i} name={`cl${l.i}`} rotation={[0, l.yaw, 0]}>
-          <mesh position={[l.side * 0.16, 0.06, 0]} rotation={[0, 0, l.side * 0.75]}>
-            <cylinderGeometry args={[0.008, 0.012, 0.3, 4]} />
-            <meshStandardMaterial color="#1a140c" roughness={0.9} />
-          </mesh>
-          <mesh position={[l.side * 0.3, -0.03, 0]} rotation={[0, 0, -l.side * 0.9]}>
-            <cylinderGeometry args={[0.005, 0.008, 0.26, 4]} />
-            <meshStandardMaterial color="#15100a" roughness={0.9} />
-          </mesh>
-        </group>
-      ))}
+    <group ref={rig} scale={0.7}>
+      <SpiderModel raise={0.8} curl={1.25} />
     </group>
   )
 }
@@ -409,15 +515,47 @@ function Beetle({ area }) {
     ref.current.position.lerpVectors(st.from, st.to, st.t)
     ref.current.position.x += Math.sin(st.t * 26) * 0.02
     ref.current.lookAt(st.to.x, st.from.y, st.to.z)
+    ref.current.rotation.z = Math.sin(st.t * 90) * 0.07
     if (st.t >= 1) st.nextAt = now + rand(6, 14)
   })
 
   return (
-    <group ref={ref} visible={false}>
-      <mesh scale={[1, 0.55, 1.5]}>
-        <sphereGeometry args={[0.035, 8, 6]} />
-        <meshStandardMaterial color="#171106" roughness={0.5} />
+    <group ref={ref} visible={false} scale={0.9}>
+      {/* elytra with a split seam, pronotum shield, head, antennae, six legs */}
+      <mesh position={[0, 0.02, -0.005]} scale={[0.72, 0.5, 1.1]} castShadow>
+        <sphereGeometry args={[0.042, 10, 8]} />
+        <meshStandardMaterial color="#1c1208" roughness={0.35} />
       </mesh>
+      <mesh position={[0, 0.041, -0.008]} rotation={[Math.PI / 2, 0, 0]}>
+        <boxGeometry args={[0.0012, 0.052, 0.004]} />
+        <meshStandardMaterial color="#0d0803" roughness={0.4} />
+      </mesh>
+      <mesh position={[0, 0.017, 0.035]} scale={[0.85, 0.5, 0.8]}>
+        <sphereGeometry args={[0.02, 8, 6]} />
+        <meshStandardMaterial color="#241708" roughness={0.3} />
+      </mesh>
+      <mesh position={[0, 0.012, 0.052]}>
+        <sphereGeometry args={[0.011, 8, 6]} />
+        <meshStandardMaterial color="#160d04" roughness={0.4} />
+      </mesh>
+      {[-1, 1].map((sd) => (
+        <mesh key={sd} position={[sd * 0.012, 0.018, 0.07]} rotation={[1.35, 0, sd * -0.5]}>
+          <cylinderGeometry args={[0.001, 0.0016, 0.038, 3]} />
+          <meshBasicMaterial color="#120b04" />
+        </mesh>
+      ))}
+      {[-1, 1].map((sd) =>
+        [0.028, 0, -0.026].map((z, i) => (
+          <mesh
+            key={`${sd}${i}`}
+            position={[sd * 0.026, 0.006, z]}
+            rotation={[0, sd * (0.5 - i * 0.5), sd * 1.15]}
+          >
+            <cylinderGeometry args={[0.0013, 0.002, 0.032, 3]} />
+            <meshBasicMaterial color="#0f0903" />
+          </mesh>
+        ))
+      )}
     </group>
   )
 }
@@ -448,7 +586,8 @@ function Cockroach() {
       return
     }
     ref.current.visible = true
-    if (st.midPause > 0 && st.t > 0.45 && st.t < 0.5) {
+    const frozen = st.midPause > 0 && st.t > 0.45 && st.t < 0.5
+    if (frozen) {
       st.midPause -= dt
     } else {
       st.t += dt / st.dur
@@ -457,33 +596,83 @@ function Cockroach() {
     ref.current.position.x += Math.sin(st.t * 34) * 0.045
     ref.current.lookAt(st.to.x, -2.02, st.to.z)
     const sweep = Math.sin(now * 13)
-    if (antL.current) antL.current.rotation.y = 0.5 + sweep * 0.25
-    if (antR.current) antR.current.rotation.y = -0.5 - sweep * 0.25
+    if (antL.current) antL.current.rotation.y = 0.5 + sweep * 0.28
+    if (antR.current) antR.current.rotation.y = -0.5 - sweep * 0.28
+    const scur = frozen ? 0 : 1
+    ref.current.traverse((o) => {
+      const u = o.userData
+      if (u && u.roachLeg !== undefined) {
+        o.rotation.y = u.baseYaw + Math.sin(now * 30 + u.roachLeg * 2.1) * 0.22 * scur
+      }
+    })
     if (st.t >= 1) st.nextAt = now + rand(11, 22)
   })
 
+  const legDefs = useMemo(() => {
+    const arr = []
+    let n = 0
+    for (let sd = -1; sd <= 1; sd += 2) {
+      ;[
+        { z: 0.075, yaw: -0.7, len: 0.06 },
+        { z: 0.005, yaw: 0.15, len: 0.07 },
+        { z: -0.06, yaw: 0.85, len: 0.095 },
+      ].forEach((d) => arr.push({ ...d, sd, idx: n++ }))
+    }
+    return arr
+  }, [])
+
   return (
     <group ref={ref} visible={false}>
-      <mesh scale={[1, 0.42, 1.7]} castShadow>
-        <sphereGeometry args={[0.085, 12, 8]} />
-        <meshStandardMaterial color="#2c1a0a" roughness={0.28} metalness={0.15} />
+      {/* flat glossy body: wings over abdomen, pronotum shield, tucked head */}
+      <mesh scale={[0.75, 0.3, 1.6]} castShadow>
+        <sphereGeometry args={[0.075, 12, 8]} />
+        <meshStandardMaterial color="#291505" roughness={0.35} metalness={0.05} />
       </mesh>
-      <mesh position={[0, 0.01, 0.12]} scale={[0.7, 0.4, 0.6]}>
-        <sphereGeometry args={[0.06, 8, 6]} />
-        <meshStandardMaterial color="#1f1206" roughness={0.35} />
+      <mesh position={[0, 0.012, 0.095]} scale={[0.9, 0.35, 0.75]}>
+        <sphereGeometry args={[0.045, 10, 8]} />
+        <meshStandardMaterial color="#331b08" roughness={0.3} />
       </mesh>
-      <group ref={antL} position={[0.02, 0.02, 0.16]}>
-        <mesh position={[0.06, 0.02, 0.08]} rotation={[0.3, 0, -0.4]}>
-          <cylinderGeometry args={[0.0022, 0.004, 0.22, 3]} />
+      <mesh position={[0, -0.004, 0.14]} scale={[0.8, 0.6, 0.7]}>
+        <sphereGeometry args={[0.022, 8, 6]} />
+        <meshStandardMaterial color="#1f1206" roughness={0.4} />
+      </mesh>
+      {/* cerci */}
+      {[-1, 1].map((sd) => (
+        <mesh key={sd} position={[sd * 0.018, 0, -0.125]} rotation={[1.75, 0, sd * 0.5]}>
+          <coneGeometry args={[0.004, 0.035, 4]} />
+          <meshStandardMaterial color="#201004" roughness={0.5} />
+        </mesh>
+      ))}
+      <group ref={antL} position={[0.02, 0.008, 0.15]}>
+        <mesh position={[0.05, 0.015, 0.09]} rotation={[0.35, 0, -0.4]}>
+          <cylinderGeometry args={[0.0012, 0.003, 0.24, 3]} />
           <meshBasicMaterial color="#1a0f05" />
         </mesh>
       </group>
-      <group ref={antR} position={[-0.02, 0.02, 0.16]}>
-        <mesh position={[-0.06, 0.02, 0.08]} rotation={[0.3, 0, 0.4]}>
-          <cylinderGeometry args={[0.0022, 0.004, 0.22, 3]} />
+      <group ref={antR} position={[-0.02, 0.008, 0.15]}>
+        <mesh position={[-0.05, 0.015, 0.09]} rotation={[0.35, 0, 0.4]}>
+          <cylinderGeometry args={[0.0012, 0.003, 0.24, 3]} />
           <meshBasicMaterial color="#1a0f05" />
         </mesh>
       </group>
+      {/* six spiny legs, splayed low and wide */}
+      {legDefs.map((l) => (
+        <group
+          key={l.idx}
+          position={[l.sd * 0.045, -0.012, l.z]}
+          rotation={[0, l.sd * l.yaw, 0]}
+          userData={{ roachLeg: l.idx, baseYaw: l.sd * l.yaw }}
+        >
+          <mesh position={[l.sd * l.len * 0.5, -0.004, 0]} rotation={[0, 0, l.sd * (Math.PI / 2 - 0.35)]}>
+            <cylinderGeometry args={[0.0016, 0.0032, l.len, 4]} />
+            <meshStandardMaterial color="#201004" roughness={0.5} />
+          </mesh>
+          <mesh position={[l.sd * l.len, -0.014, 0]} rotation={[0, 0, l.sd * (Math.PI / 2 + 0.55)]}>
+            <cylinderGeometry args={[0.001, 0.0018, l.len * 0.7, 3]} />
+            <meshStandardMaterial color="#180b03" roughness={0.55} />
+          </mesh>
+        </group>
+      ))}
     </group>
   )
 }

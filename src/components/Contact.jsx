@@ -32,6 +32,7 @@ export default function Contact() {
       title="Contact"
       subtitle="The telephone still works. Open to opportunities and collaborations."
       className="room"
+      exit={false}
     >
       <Cobweb corner="tl" size={150} />
       <Cobweb corner="br" size={180} />

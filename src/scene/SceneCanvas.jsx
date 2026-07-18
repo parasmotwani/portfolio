@@ -1,24 +1,34 @@
-import { useMemo, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { Canvas } from '@react-three/fiber'
 import * as THREE from 'three'
 import EmberField from './EmberField'
 import HeroRoom from './HeroRoom'
+import StudyRoom from './StudyRoom'
 import { heroState } from './heroState'
 import { usePerformance } from '../context/PerformanceContext'
 import { useLight } from '../context/LightContext'
+
+function readCaps() {
+  const coarse = window.matchMedia('(pointer: coarse)').matches
+  const small = window.innerWidth < 768
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  return {
+    dust: coarse || small ? 120 : 260,
+    room: !coarse && !small && !reduced, // the 3D room is a desktop experience
+  }
+}
 
 export default function SceneCanvas() {
   const { lowPower } = usePerformance()
   const { lit } = useLight()
 
-  const caps = useMemo(() => {
-    const coarse = window.matchMedia('(pointer: coarse)').matches
-    const small = window.innerWidth < 768
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    return {
-      dust: coarse || small ? 120 : 260,
-      room: !coarse && !small && !reduced, // the 3D room is a desktop experience
-    }
+  // re-evaluated on resize: a window opened small then maximized must
+  // still get the room, and vice versa
+  const [caps, setCaps] = useState(readCaps)
+  useEffect(() => {
+    const update = () => setCaps(readCaps())
+    window.addEventListener('resize', update)
+    return () => window.removeEventListener('resize', update)
   }, [])
 
   useEffect(() => {
@@ -46,6 +56,7 @@ export default function SceneCanvas() {
         performance={{ min: 0.5 }}
       >
         {caps.room && <HeroRoom lit={lit} />}
+        {caps.room && <StudyRoom lit={lit} />}
         <EmberField count={caps.dust} />
       </Canvas>
     </div>

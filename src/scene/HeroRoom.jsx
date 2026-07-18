@@ -3,7 +3,7 @@ import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { heroState } from './heroState'
 import {
-  RubbleField, BrickShell, BrokenWindow, WebSheets, AnchorStrands, Critters,
+  RubbleField, BrickShell, BrokenWindow, WebSheets, AnchorStrands, Critters, SpiderModel,
 } from './RoomDressing'
 
 // ============================================================
@@ -14,67 +14,33 @@ import {
 // the visitor scrolls.
 // ============================================================
 
-// ---------- radial corner web (kept from v1, thickened) ----------
+// ---------- radial corner web: uneven spokes, sagging rings, torn gaps ----------
 function buildWeb(cx, cy, cz) {
   const pts = []
   const SP = 9
+  const h = (n) => { const x = Math.sin(n * 12.9898 + 78.233) * 43758.5453; return x - Math.floor(x) }
   const spokes = []
   for (let i = 0; i <= SP; i++) {
-    const a = Math.PI * 1.0 + (i / SP) * Math.PI * 0.52
+    const a = Math.PI * 1.0 + (i / SP) * Math.PI * 0.52 + (h(i + 1) - 0.5) * 0.05
     spokes.push(a)
-    const len = 2.1 + Math.sin(i * 2.7) * 0.25
+    const len = 2.1 + Math.sin(i * 2.7) * 0.25 + (h(i + 20) - 0.5) * 0.3
     pts.push(cx, cy, cz, cx + Math.cos(a) * len, cy + Math.sin(a) * len, cz + 0.12)
   }
-  for (let r = 0.35; r < 2.05; r += 0.34) {
+  let ri = 0
+  for (let r = 0.35; r < 2.05; r += 0.28 + h(ri++) * 0.14) {
     for (let i = 0; i < SP; i++) {
+      if (h(ri * 31 + i * 7) < 0.13) continue
+      const rr1 = r * (0.94 + h(ri * 13 + i * 3) * 0.12)
+      const rr2 = r * (0.94 + h(ri * 13 + (i + 1) * 3) * 0.12)
       const a1 = spokes[i], a2 = spokes[i + 1]
-      const x1 = cx + Math.cos(a1) * r, y1 = cy + Math.sin(a1) * r
-      const x2 = cx + Math.cos(a2) * r, y2 = cy + Math.sin(a2) * r
+      const x1 = cx + Math.cos(a1) * rr1, y1 = cy + Math.sin(a1) * rr1
+      const x2 = cx + Math.cos(a2) * rr2, y2 = cy + Math.sin(a2) * rr2
       const mx = (x1 + x2) / 2, my = (y1 + y2) / 2 - r * 0.075
       pts.push(x1, y1, cz + 0.06, mx, my, cz + 0.06)
       pts.push(mx, my, cz + 0.06, x2, y2, cz + 0.06)
     }
   }
   return new Float32Array(pts)
-}
-
-// ---------- hanging spider (unchanged anatomy, window backdrop) ----------
-function SpiderLegs() {
-  const legs = useMemo(() => {
-    const arr = []
-    for (let side = -1; side <= 1; side += 2) {
-      for (let i = 0; i < 4; i++) {
-        arr.push({
-          yaw: side * (0.55 + i * 0.42),
-          pitch: 0.55 + (i % 2) * 0.12,
-          upper: 0.30, lower: 0.36,
-          side,
-        })
-      }
-    }
-    return arr
-  }, [])
-
-  return (
-    <group>
-      {legs.map((l, i) => (
-        <group key={i} rotation={[0, l.yaw, 0]} position={[0, 0.02, 0]}>
-          <group rotation={[0, 0, l.side * l.pitch]} name={`legU${i}`}>
-            <mesh position={[l.side * l.upper / 2, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
-              <cylinderGeometry args={[0.011, 0.016, l.upper, 5]} />
-              <meshStandardMaterial color="#1c1610" roughness={0.9} />
-            </mesh>
-            <group position={[l.side * l.upper, 0, 0]} rotation={[0, 0, -l.side * (l.pitch + 0.9)]}>
-              <mesh position={[l.side * l.lower / 2, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
-                <cylinderGeometry args={[0.006, 0.011, l.lower, 5]} />
-                <meshStandardMaterial color="#181209" roughness={0.9} />
-              </mesh>
-            </group>
-          </group>
-        </group>
-      ))}
-    </group>
-  )
 }
 
 function Spider({ anchor }) {
@@ -99,19 +65,22 @@ function Spider({ anchor }) {
     const bob = Math.sin(t * 1.7) * 0.045
     s.y = restY + bob + s.flee * 1.15
     rig.current.position.set(anchor[0], s.y, anchor[2])
+    // slow twist on the dragline + a shiver of the legs when fleeing
     rig.current.rotation.z = Math.sin(t * 0.9) * 0.05
-    rig.current.rotation.y = Math.sin(t * 0.35) * 0.2
-
+    rig.current.rotation.y = Math.sin(t * 0.35) * 0.35
     rig.current.traverse((o) => {
-      if (o.name?.startsWith('legU')) {
-        const i = Number(o.name.slice(4))
-        o.rotation.x = Math.sin(t * 2.3 + i * 1.7) * 0.05
+      const u = o.userData
+      if (u && u.legIdx !== undefined) {
+        o.rotation.y =
+          u.baseYaw +
+          Math.sin(t * 1.8 + u.legIdx * 1.3) * 0.055 +
+          s.flee * Math.sin(t * 16 + u.legIdx) * 0.12
       }
     })
 
     const pos = threadRef.current.geometry.attributes.position
     pos.setXYZ(0, anchor[0], anchor[1], anchor[2])
-    pos.setXYZ(1, anchor[0], s.y + 0.22, anchor[2])
+    pos.setXYZ(1, anchor[0], s.y + 0.2, anchor[2])
     pos.needsUpdate = true
   })
 
@@ -128,16 +97,12 @@ function Spider({ anchor }) {
         </bufferGeometry>
         <lineBasicMaterial color="#3a352c" opacity={0.85} transparent />
       </line>
-      <group ref={rig} scale={1.15}>
-        <mesh position={[0, -0.16, 0]} scale={[1, 1.3, 1.1]} castShadow>
-          <sphereGeometry args={[0.15, 20, 16]} />
-          <meshStandardMaterial color="#1c160e" roughness={0.75} />
-        </mesh>
-        <mesh position={[0, 0.06, 0]}>
-          <sphereGeometry args={[0.09, 16, 12]} />
-          <meshStandardMaterial color="#241d12" roughness={0.7} />
-        </mesh>
-        <SpiderLegs />
+      {/* hangs head-down from the dragline — silk leaves the spinnerets,
+          so the abdomen points up and the legs fan around the thread */}
+      <group ref={rig} scale={0.8}>
+        <group rotation={[Math.PI / 2, 0, 0]}>
+          <SpiderModel raise={0.55} curl={1.5} />
+        </group>
       </group>
     </>
   )

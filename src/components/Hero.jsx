@@ -21,11 +21,26 @@ export default function Hero() {
   const contentRef = useRef(null)
 
   // pinned first-person exit: scroll scrubs heroState.p, the 3D camera
-  // is drawn out through the opening, and the text slips past the viewer
+  // is drawn out through the opening, and the text slips past the viewer.
+  // Gate is re-checked on resize — a window opened small must still pin
+  // once it grows past the breakpoint.
+  const [pinnable, setPinnable] = useState(() => (
+    window.innerWidth >= 768 &&
+    !window.matchMedia('(pointer: coarse)').matches &&
+    !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  ))
   useEffect(() => {
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    const mobile = window.innerWidth < 768 || window.matchMedia('(pointer: coarse)').matches
-    if (reduced || mobile) {
+    const update = () => setPinnable(
+      window.innerWidth >= 768 &&
+      !window.matchMedia('(pointer: coarse)').matches &&
+      !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    )
+    window.addEventListener('resize', update)
+    return () => window.removeEventListener('resize', update)
+  }, [])
+
+  useEffect(() => {
+    if (!pinnable) {
       heroState.p = 0
       return
     }
@@ -57,7 +72,7 @@ export default function Hero() {
     })
 
     return () => st.kill()
-  }, [])
+  }, [pinnable])
 
   useEffect(() => {
     if (!started) return

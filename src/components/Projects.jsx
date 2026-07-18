@@ -47,6 +47,7 @@ const projects = [
 export default function Projects() {
   const outerRef = useRef(null)
   const trackRef = useRef(null)
+  const shadeRef = useRef(null)
   const { lowPower } = usePerformance()
 
   useEffect(() => {
@@ -57,27 +58,31 @@ export default function Projects() {
     const track = trackRef.current
     const getDistance = () => track.scrollWidth - window.innerWidth
 
-    const tween = gsap.to(track, {
-      x: () => -getDistance(),
-      ease: 'none',
+    // one pinned pass: dark → gallery slides sideways → dark again,
+    // so the room has both a way in and a way out
+    const tl = gsap.timeline({
       scrollTrigger: {
         trigger: outerRef.current,
         start: 'top top',
-        end: () => `+=${getDistance()}`,
+        end: () => `+=${getDistance() + window.innerHeight * 0.7}`,
         pin: true,
         scrub: 0.6,
         invalidateOnRefresh: true,
       },
     })
+    tl.fromTo(shadeRef.current, { opacity: 1 }, { opacity: 0, duration: 0.1, ease: 'power2.out' }, 0)
+    tl.to(track, { x: () => -getDistance(), ease: 'none', duration: 0.78 }, 0.08)
+    tl.to(shadeRef.current, { opacity: 1, duration: 0.12, ease: 'power2.in' }, 0.88)
 
     return () => {
-      tween.scrollTrigger?.kill()
-      tween.kill()
+      tl.scrollTrigger?.kill()
+      tl.kill()
     }
   }, [lowPower])
 
   return (
     <section className="artifacts-outer" id="projects" ref={outerRef}>
+      <div className="room-shade" ref={shadeRef} aria-hidden="true" />
       <div className="chapter" style={{ minHeight: 'unset', paddingBottom: 36 }}>
         <header className="chapter-head" style={{ marginBottom: 0 }}>
           <span className="chapter-numeral">Room IV</span>

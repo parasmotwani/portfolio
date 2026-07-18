@@ -6,3 +6,5 @@ export const heroState = {
   mouse: { x: 0, y: 0 }, // NDC -1..1
   active: true,          // false once the walk-out completes
 }
+
+if (typeof window !== 'undefined') window.__heroState = heroState

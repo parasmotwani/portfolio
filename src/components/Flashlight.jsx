@@ -37,10 +37,16 @@ export default function Flashlight() {
     const switchY = () => 110
     const maxR = () => Math.hypot(window.innerWidth, window.innerHeight) * 1.1
 
+    let last = performance.now()
     const loop = (t) => {
-      // ease spread toward its target (1 when lit, 0 when dark)
+      // ease spread toward its target (1 when lit, 0 when dark).
+      // Time-based, not per-frame: a throttled/background tab still
+      // converges instead of freezing mid-spread.
+      const dt = Math.min((t - last) / 1000, 0.5)
+      last = t
       const target = lit ? 1 : 0
-      s.spread += (target - s.spread) * 0.055
+      s.spread += (target - s.spread) * Math.min(1, dt * 3.8)
+      if (lit && dt >= 0.5) s.spread = 1
       if (lit && s.spread > 0.995) {
         shade.style.opacity = '0'
         glow.style.opacity = '0'

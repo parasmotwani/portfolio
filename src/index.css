@@ -1347,41 +1347,41 @@ button {
 }
 .flashlight-glow { mix-blend-mode: screen; }
 
-/* --- light switch (top-right, under the nav) --- */
+/* --- light switch (right wall, mid-height) --- */
+/* Fixed box, fixed size: nothing about the plate may move on toggle. */
 .light-switch {
   position: fixed;
   top: 42vh;
   right: clamp(14px, 3vw, 44px);
   z-index: 2400; /* BELOW the darkness — you must find it with the torch */
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
+  width: 64px;
+  height: 94px;
   padding: 10px;
 }
 
-.light-switch svg { width: 30px; height: 47px; }
+.light-switch svg { width: 44px; height: 74px; display: block; margin: 0 auto; }
 
-.light-switch .plate {
-  fill: var(--surface-2);
-  stroke: var(--gold-dim);
-  stroke-width: 1.2;
+/* the knife-lever throws up when lit; pivot is the boss at (22,38) */
+.light-switch .lever {
+  transform-box: view-box;
+  transform-origin: 22px 38px;
+  transition: transform 0.22s cubic-bezier(0.5, 1.6, 0.4, 1);
 }
 
-.light-switch .slot { fill: var(--bg-deep); stroke: var(--gold-faint); }
-
-.light-switch .toggle {
-  fill: var(--gold);
-  transition: y 0.18s ease;
-}
+.light-switch.on .lever { transform: rotate(180deg); }
 
 .light-switch-label {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
   font-family: var(--font-mono);
   font-size: 0.52rem;
   letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--ivory-dim);
   white-space: nowrap;
+  pointer-events: none;
 }
 
 /* the whole house dims for a blink now and then — old wiring */
@@ -1488,7 +1488,7 @@ html.lights-off .corner-whisper {
 .spider-rig {
   position: absolute;
   top: 0;
-  width: 24px;
+  width: 26px;
   pointer-events: none;
   z-index: 1;
   color: rgba(216, 210, 192, 0.35);
@@ -1504,7 +1504,7 @@ html.lights-off .corner-whisper {
   background: linear-gradient(180deg, transparent, var(--web));
 }
 
-.spider { width: 24px; height: 20px; }
+.spider { width: 26px; height: 25px; }
 
 @keyframes spiderDrop {
   0%, 55%, 100% { transform: translateY(-120px); }
@@ -1820,7 +1820,7 @@ html.lights-off .corner-whisper {
 /* --- the study: split layout, scene art right --- */
 .about-split {
   display: grid;
-  grid-template-columns: 0.9fr 1.1fr;
+  grid-template-columns: 0.85fr 1.15fr;
   gap: clamp(30px, 5vw, 70px);
   align-items: center;
 }
@@ -1848,10 +1848,8 @@ html.lights-off .corner-whisper {
   letter-spacing: 2px;
 }
 
-.scene-drawer { cursor: pointer; }
-
-.scene-drawer rect:first-child { transition: transform 0.4s var(--ease-out); }
-.scene-drawer.open rect:first-child { transform: translateY(10px); }
+.scene-drawer { cursor: pointer; transition: transform 0.45s var(--ease-out); }
+.scene-drawer.open { transform: translate(4px, 14px); }
 
 .drawer-glint {
   animation: glint 3.4s ease-in-out infinite;
@@ -1882,16 +1880,52 @@ html.lights-off .corner-whisper {
   perspective: 1600px;
 }
 
+/* worn leather binding under the pages */
+.booklet::before {
+  content: '';
+  position: absolute;
+  inset: -10px -14px -16px -12px;
+  z-index: -1;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 38%, rgba(120, 80, 40, 0.25), transparent 70%),
+    radial-gradient(ellipse 60% 40% at 12% 90%, rgba(0, 0, 0, 0.5), transparent 60%),
+    linear-gradient(150deg, #241509, #120a04 60%, #1c1108);
+  border-radius: 10px 14px 12px 16px / 14px 10px 16px 12px;
+  box-shadow: 0 26px 70px rgba(0, 0, 0, 0.9);
+}
+
+/* the stacked fore-edge of the older pages, spine side */
+.booklet::after {
+  content: '';
+  position: absolute;
+  top: 6px;
+  bottom: 8px;
+  left: -8px;
+  width: 8px;
+  background: repeating-linear-gradient(180deg, #b0a078 0 2px, #7e6d4c 2px 4px, #988762 4px 6px);
+  border-radius: 3px 0 0 3px;
+  opacity: 0.8;
+}
+
+/* aged parchment: warm heart, tea stains, scorched edges, uneven cut */
 .booklet-page {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse 130% 90% at 20% 10%, rgba(43, 35, 23, 0.09), transparent 55%),
-    radial-gradient(ellipse 100% 70% at 85% 95%, rgba(43, 35, 23, 0.12), transparent 50%),
+    radial-gradient(ellipse 120% 100% at 50% 45%, rgba(246, 238, 214, 0.5), transparent 70%),
+    radial-gradient(ellipse 90% 70% at 10% 4%, rgba(88, 60, 28, 0.4), transparent 42%),
+    radial-gradient(ellipse 80% 60% at 94% 8%, rgba(88, 60, 28, 0.34), transparent 44%),
+    radial-gradient(ellipse 100% 55% at 50% 103%, rgba(70, 46, 20, 0.42), transparent 48%),
+    radial-gradient(ellipse 55% 45% at 103% 62%, rgba(88, 60, 28, 0.3), transparent 55%),
+    radial-gradient(ellipse 30% 22% at 26% 74%, rgba(120, 90, 44, 0.18), transparent 70%),
     var(--paper);
   color: var(--ink-on-paper);
   padding: clamp(24px, 5vw, 44px);
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.8), inset 0 0 60px rgba(43, 35, 23, 0.08);
+  border-radius: 2% 5% 3% 6% / 5% 3% 6% 3%;
+  box-shadow:
+    0 18px 50px rgba(0, 0, 0, 0.8),
+    inset 0 0 70px rgba(74, 52, 24, 0.4),
+    inset 0 0 14px rgba(58, 38, 16, 0.35);
   transform-origin: left center;
   transition: transform 0.65s cubic-bezier(0.4, 0.05, 0.3, 1);
   backface-visibility: hidden;
@@ -1900,16 +1934,36 @@ html.lights-off .corner-whisper {
 
 .booklet-page.turned { transform: rotateY(-165deg); }
 
-/* dust + torn edge */
+/* dust + foxing speckle */
 .booklet-page::after {
   content: '';
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background-image: radial-gradient(rgba(43, 35, 23, 0.16) 1px, transparent 1.4px);
-  background-size: 90px 70px;
-  opacity: 0.5;
+  background-image:
+    radial-gradient(rgba(43, 35, 23, 0.16) 1px, transparent 1.4px),
+    radial-gradient(rgba(94, 62, 26, 0.22) 1.4px, transparent 2px);
+  background-size: 90px 70px, 150px 110px;
+  background-position: 0 0, 40px 30px;
+  opacity: 0.55;
 }
+
+/* the cover: cracked dark leather, faded gilt scrawl */
+.booklet-page--cover {
+  background:
+    radial-gradient(ellipse 120% 90% at 50% 28%, rgba(96, 62, 30, 0.5), transparent 70%),
+    radial-gradient(ellipse 140% 100% at 50% 112%, rgba(0, 0, 0, 0.6), transparent 60%),
+    linear-gradient(160deg, #2c1c0e, #1a1007 55%, #241609);
+  box-shadow:
+    0 18px 50px rgba(0, 0, 0, 0.85),
+    inset 0 0 60px rgba(0, 0, 0, 0.55),
+    inset 0 0 4px rgba(214, 178, 116, 0.2);
+}
+
+.booklet-page--cover .scrawl { color: #c9a45c; }
+.booklet-page--cover .scrawl-note { color: #9a5c3c; }
+.booklet-page--cover .booklet-pageno { color: rgba(214, 178, 116, 0.4); }
+.booklet-page--cover .booklet-cover { border-color: rgba(214, 178, 116, 0.28); }
 
 .booklet-cover {
   height: 100%;
@@ -2065,4 +2119,126 @@ html.lights-off .corner-whisper {
     width: 100%;
     transform: none;
   }
+}
+
+/* ============================================================
+   STUDY v2 — full perspective room (Room I)
+   ============================================================ */
+.chandelier {
+  transform-origin: 490px 58px;
+  transform-box: view-box;
+  animation: chandelierSway 7.5s ease-in-out infinite;
+}
+
+@keyframes chandelierSway {
+  0%, 100% { transform: rotate(1.7deg); }
+  50% { transform: rotate(-1.5deg); }
+}
+
+.study-svg .candle-flame {
+  transform-origin: 714.5px 285px;
+  transform-box: view-box;
+  animation: flame 2.8s ease-in-out infinite;
+}
+
+.shaft-dust circle { animation: shaftDrift 11s linear infinite; }
+.shaft-dust circle:nth-child(2n) { animation-duration: 15s; animation-delay: -7s; }
+.shaft-dust circle:nth-child(3n) { animation-duration: 18s; animation-delay: -4s; }
+
+@keyframes shaftDrift {
+  0% { transform: translate(0, 0); opacity: 0; }
+  15% { opacity: 0.45; }
+  80% { opacity: 0.25; }
+  100% { transform: translate(24px, 58px); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chandelier,
+  .shaft-dust circle,
+  .study-svg .candle-flame { animation: none; }
+}
+
+/* --- study stage: on desktop the whole section IS the 3D room --- */
+.study-stage {
+  position: relative;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.study-overlay {
+  position: absolute;
+  top: 12vh;
+  left: clamp(20px, 5vw, 80px);
+  max-width: 470px;
+  z-index: 2;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* dark pool so the copy holds against the bright window */
+.study-overlay::before {
+  content: '';
+  position: absolute;
+  inset: -14% -18%;
+  background: radial-gradient(ellipse 62% 58% at 45% 42%, rgba(6, 5, 3, 0.72), rgba(6, 5, 3, 0.3) 62%, transparent 80%);
+  z-index: -1;
+  pointer-events: none;
+}
+
+.study-head { margin-bottom: 30px; }
+.study-head .chapter-sub { margin-top: 10px; }
+
+.study-copy .about-lede,
+.study-copy .about-body,
+.study-head .chapter-numeral,
+.study-head .chapter-title,
+.study-head .chapter-sub {
+  text-shadow: 0 2px 22px rgba(0, 0, 0, 0.9), 0 0 8px rgba(0, 0, 0, 0.6);
+}
+
+.study-hint {
+  margin-top: 26px;
+  font-family: var(--font-flavor);
+  font-style: italic;
+  font-size: 0.9rem;
+  color: var(--gold);
+  opacity: 0.85;
+  animation: whisperFlicker 6s ease-in-out infinite;
+}
+
+.drawer-hotspot {
+  position: absolute;
+  right: 4%;
+  top: 46%;
+  width: 16%;
+  height: 24%;
+  z-index: 2;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.drawer-hotspot::after {
+  content: '';
+  position: absolute;
+  inset: 16%;
+  border: 1px solid rgba(212, 169, 78, 0);
+  border-radius: 8px;
+  transition: border-color 0.3s;
+}
+
+.drawer-hotspot:hover::after { border-color: rgba(212, 169, 78, 0.35); }
+
+@media (prefers-reduced-motion: reduce) {
+  .study-hint { animation: none; }
+}
+
+/* every room's way in and way out: darkness at both thresholds */
+.room-shade {
+  position: absolute;
+  inset: 0;
+  background: #060504;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 6;
 }
