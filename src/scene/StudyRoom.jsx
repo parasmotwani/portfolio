@@ -621,7 +621,7 @@ export default function StudyRoom({ lit }) {
       glintRef.current.material.emissiveIntensity = 0.22 + Math.sin(t * 2.1) * 0.16
     }
     if (fadeRef.current) {
-      const fin = Math.max(0, 1 - p / 0.16)
+      const fin = Math.max(0, 1 - p / 0.09)
       const fout = Math.max(0, (p - 0.86) / 0.12)
       fadeRef.current.material.opacity = Math.min(1, fin + fout)
     }

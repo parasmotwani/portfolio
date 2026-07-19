@@ -42,8 +42,9 @@ export default function Flashlight() {
     const onMove = (e) => { s.mx = e.clientX; s.my = e.clientY }
     window.addEventListener('pointermove', onMove, { passive: true })
 
-    const switchX = () => window.innerWidth - 60
-    const switchY = () => window.innerHeight * 0.42 + 45
+    // the iron hook on the right wall — light spreads from the hung lantern
+    const switchX = () => window.innerWidth * 0.94
+    const switchY = () => window.innerHeight * 0.4
     const maxR = () => Math.hypot(window.innerWidth, window.innerHeight) * 1.1
 
     const loop = (t) => {

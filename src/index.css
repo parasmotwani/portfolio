@@ -219,6 +219,20 @@ button {
 /* custom cursor removed — the system cursor is the pointer; the lantern
    beam alone is the light (user call, 2026-07-19) */
 
+/* the reach for the iron hook: invisible, found with the beam like
+   everything else in the dark */
+.lantern-hook-reach {
+  position: fixed;
+  right: 0;
+  top: 28vh;
+  width: 9vw;
+  height: 34vh;
+  z-index: 2400; /* below the darkness — the beam must find it */
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
 /* ============================================================
    NAVBAR
    ============================================================ */
@@ -2128,9 +2142,12 @@ html.lights-off .corner-whisper {
 }
 
 /* --- study stage: on desktop the whole section IS the 3D room --- */
+/* pulled up under the hero's pin so leaving Room 0 flows straight into
+   entering Room I — no dead starry stretch between them */
 .study-stage {
   position: relative;
   height: 100vh;
+  margin-top: -100vh;
   overflow: hidden;
 }
 

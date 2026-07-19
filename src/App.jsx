@@ -8,7 +8,7 @@ import Experience from './components/Experience'
 import Contact from './components/Contact'
 import Preloader from './components/Preloader'
 import Flashlight from './components/Flashlight'
-import LightSwitch from './components/LightSwitch'
+import LanternHook from './components/LanternHook'
 import HouseFlicker from './components/HouseFlicker'
 import Whisper from './components/Whisper'
 import PerformanceToggle from './components/PerformanceToggle'
@@ -49,7 +49,7 @@ export default function App() {
               <p className="fine">© 2026 Paras Motwani · Built with React, GSAP & Three.js</p>
             </footer>
           </div>
-          <LightSwitch />
+          <LanternHook />
           <Flashlight />
           <HouseFlicker />
           <PerformanceToggle />

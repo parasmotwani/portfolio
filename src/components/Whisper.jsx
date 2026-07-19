@@ -1,14 +1,19 @@
 import { useLight } from '../context/LightContext'
 
 export default function Whisper() {
-  const { lit } = useLight()
+  const { lit, lantern } = useLight()
   return (
     <div className="corner-whisper" aria-hidden="true">
       they left in a hurry.<br />
       the machines kept running.
-      {!lit && (
+      {!lit && !lantern && (
         <span className="whisper-hint">
-          …the light is on the right side. feel the wall.
+          …strike your lantern. click anywhere.
+        </span>
+      )}
+      {!lit && lantern && (
+        <span className="whisper-hint">
+          …there's an iron hook on the right wall. hang the lantern.
         </span>
       )}
     </div>

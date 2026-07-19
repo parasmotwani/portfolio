@@ -183,7 +183,7 @@ export default function DrawerRoom() {
         const p = self.progress
         studyState.p = p
         if (overlayRef.current) {
-          const fin = Math.min(1, Math.max(0, (p - 0.06) / 0.14))
+          const fin = Math.min(1, Math.max(0, (p - 0.03) / 0.1))
           const fout = Math.min(1, Math.max(0, (p - 0.82) / 0.14))
           const o = fin * (1 - fout)
           overlayRef.current.style.opacity = String(o)

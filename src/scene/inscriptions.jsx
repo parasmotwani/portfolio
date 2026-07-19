@@ -78,6 +78,104 @@ export function Inscription({ draw, w = 1024, h = 512, position, rotation = [0, 
   )
 }
 
+// an aged sheet nailed to the wall — the writing surface of the house
+export function drawParchment(g, w, h, seed = 3) {
+  const m = 26
+  let s = seed
+  const rng = () => { s = (s * 16807) % 2147483647; return s / 2147483647 }
+  g.beginPath()
+  const pts = 28
+  for (let i = 0; i <= pts; i++) {
+    const p = i / pts
+    let x, y
+    if (p < 0.25) { x = m + (w - 2 * m) * (p / 0.25); y = m + (rng() - 0.5) * 16 }
+    else if (p < 0.5) { x = w - m + (rng() - 0.5) * 16; y = m + (h - 2 * m) * ((p - 0.25) / 0.25) }
+    else if (p < 0.75) { x = w - m - (w - 2 * m) * ((p - 0.5) / 0.25); y = h - m + (rng() - 0.5) * 16 }
+    else { x = m + (rng() - 0.5) * 16; y = h - m - (h - 2 * m) * ((p - 0.75) / 0.25) }
+    if (i === 0) g.moveTo(x, y); else g.lineTo(x, y)
+  }
+  g.closePath()
+  const grad = g.createRadialGradient(w / 2, h / 2, 40, w / 2, h / 2, Math.max(w, h) * 0.62)
+  grad.addColorStop(0, '#ddd0ac')
+  grad.addColorStop(0.72, '#cdbd93')
+  grad.addColorStop(1, '#a8905f')
+  g.fillStyle = grad
+  g.fill()
+  g.lineWidth = 10
+  g.strokeStyle = 'rgba(74, 50, 22, 0.5)'
+  g.stroke()
+  g.lineWidth = 3
+  g.strokeStyle = 'rgba(40, 26, 10, 0.6)'
+  g.stroke()
+  for (let i = 0; i < 5; i++) {
+    const x = m + rng() * (w - 2 * m), y = m + rng() * (h - 2 * m), r = 26 + rng() * 70
+    const st = g.createRadialGradient(x, y, 2, x, y, r)
+    st.addColorStop(0, 'rgba(122, 92, 48, 0.15)')
+    st.addColorStop(1, 'rgba(122, 92, 48, 0)')
+    g.fillStyle = st
+    g.beginPath(); g.arc(x, y, r, 0, 7); g.fill()
+  }
+  g.fillStyle = '#241c12'
+  ;[[m + 16, m + 16], [w - m - 16, m + 20], [m + 20, h - m - 16], [w - m - 14, h - m - 18]].forEach(([x, y]) => {
+    g.beginPath(); g.arc(x, y, 7, 0, 7); g.fill()
+  })
+}
+
+// what the window actually looks out on: moon, hills, one dead tree
+export function drawNightScene(g, w, h) {
+  const sky = g.createLinearGradient(0, 0, 0, h)
+  sky.addColorStop(0, '#101828')
+  sky.addColorStop(0.55, '#1a2438')
+  sky.addColorStop(1, '#0c111c')
+  g.fillStyle = sky
+  g.fillRect(0, 0, w, h)
+  let s = 5
+  const rng = () => { s = (s * 16807) % 2147483647; return s / 2147483647 }
+  for (let i = 0; i < 120; i++) {
+    g.globalAlpha = 0.25 + rng() * 0.7
+    g.fillStyle = '#dfe8f2'
+    g.fillRect(rng() * w, rng() * h * 0.72, 0.6 + rng() * 1.6, 0.6 + rng() * 1.6)
+  }
+  g.globalAlpha = 1
+  // framed by the arch: keep the moon and tree inside its view
+  const mx = w * 0.44, my = h * 0.4
+  const halo = g.createRadialGradient(mx, my, 20, mx, my, 190)
+  halo.addColorStop(0, 'rgba(226, 235, 240, 0.5)')
+  halo.addColorStop(1, 'rgba(226, 235, 240, 0)')
+  g.fillStyle = halo
+  g.beginPath(); g.arc(mx, my, 190, 0, 7); g.fill()
+  g.fillStyle = '#eff5f0'
+  g.beginPath(); g.arc(mx, my, 58, 0, 7); g.fill()
+  g.fillStyle = 'rgba(180, 195, 200, 0.5)'
+  ;[[-18, -8, 12], [16, 14, 9], [4, -22, 7]].forEach(([dx, dy, r]) => {
+    g.beginPath(); g.arc(mx + dx, my + dy, r, 0, 7); g.fill()
+  })
+  g.fillStyle = '#0b1018'
+  g.beginPath()
+  g.moveTo(0, h * 0.72)
+  g.quadraticCurveTo(w * 0.22, h * 0.6, w * 0.45, h * 0.7)
+  g.quadraticCurveTo(w * 0.7, h * 0.8, w, h * 0.66)
+  g.lineTo(w, h); g.lineTo(0, h)
+  g.closePath(); g.fill()
+  g.strokeStyle = '#070a10'
+  g.lineCap = 'round'
+  const branch = (x, y, a, len, depth) => {
+    if (depth === 0 || len < 8) return
+    const nx = x + Math.cos(a) * len
+    const ny = y + Math.sin(a) * len
+    g.lineWidth = depth * 2.2
+    g.beginPath(); g.moveTo(x, y); g.lineTo(nx, ny); g.stroke()
+    branch(nx, ny, a - 0.35 - rng() * 0.3, len * 0.72, depth - 1)
+    branch(nx, ny, a + 0.3 + rng() * 0.35, len * 0.66, depth - 1)
+  }
+  branch(w * 0.56, h * 0.72, -Math.PI / 2 + 0.08, h * 0.19, 6)
+  const mist = g.createLinearGradient(0, h * 0.7, 0, h)
+  mist.addColorStop(0, 'rgba(140, 160, 175, 0)')
+  mist.addColorStop(1, 'rgba(140, 160, 175, 0.18)')
+  g.fillStyle = mist
+  g.fillRect(0, h * 0.7, w, h * 0.3)
+}
+
 // the neural network, chalked the way you'd chalk a summoning circle
 export function drawSigil(g, w, h) {
   const cx = w / 2, cy = h / 2
