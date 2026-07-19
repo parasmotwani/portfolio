@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Chapter from './Chapter'
 
 // ============================================================
@@ -147,6 +148,9 @@ export default function WorldGame() {
   const solidRef = useRef(buildSolidMap())
   const rafRef = useRef(null)
   const panelRef = useRef(null)
+
+  // lazy-mounted: page height changed, re-measure every pinned trigger
+  useEffect(() => { ScrollTrigger.refresh() }, [])
   panelRef.current = panel
 
   const nearBuilding = useCallback(() => {

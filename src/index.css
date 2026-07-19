@@ -2233,6 +2233,35 @@ html.lights-off .corner-whisper {
   .study-hint { animation: none; }
 }
 
+/* --- strike-a-light: the only ceremony before the dark --- */
+.strike-veil {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 16vh;
+  pointer-events: none;
+  transition: opacity 1s ease;
+}
+
+.strike-veil.struck { opacity: 0; }
+
+.strike-hint {
+  font-family: var(--font-flavor);
+  font-style: italic;
+  font-size: 1.05rem;
+  color: var(--ivory-dim);
+  animation: whisperFlicker 4.5s ease-in-out infinite;
+}
+
+.strike-hint span { color: var(--gold); }
+
+@media (prefers-reduced-motion: reduce) {
+  .strike-hint { animation: none; }
+}
+
 /* every room's way in and way out: darkness at both thresholds */
 .room-shade {
   position: absolute;

@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { Canvas } from '@react-three/fiber'
+import { EffectComposer, Bloom, Vignette, Noise } from '@react-three/postprocessing'
 import * as THREE from 'three'
 import EmberField from './EmberField'
 import HeroRoom from './HeroRoom'
@@ -55,9 +56,21 @@ export default function SceneCanvas() {
         }}
         performance={{ min: 0.5 }}
       >
-        {caps.room && <HeroRoom lit={lit} />}
-        {caps.room && <StudyRoom lit={lit} />}
+        <color attach="background" args={['#0d0b08']} />
+        {caps.room && (
+          <Suspense fallback={null}>
+            <HeroRoom lit={lit} />
+            <StudyRoom lit={lit} />
+          </Suspense>
+        )}
         <EmberField count={caps.dust} />
+        {caps.room && (
+          <EffectComposer multisampling={0}>
+            <Bloom intensity={0.55} luminanceThreshold={0.62} luminanceSmoothing={0.25} mipmapBlur />
+            <Vignette eskil={false} offset={0.22} darkness={0.72} />
+            <Noise premultiply opacity={0.55} />
+          </EffectComposer>
+        )}
       </Canvas>
     </div>
   )

@@ -1,8 +1,8 @@
+import { lazy, Suspense } from 'react'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import DrawerRoom from './components/DrawerRoom'
 import Skills from './components/Skills'
-import WorldGame from './components/WorldGame'
 import Projects from './components/Projects'
 import Experience from './components/Experience'
 import Contact from './components/Contact'
@@ -18,6 +18,10 @@ import { ScrollProvider } from './hooks/useScrollProgress'
 import { PerformanceProvider } from './context/PerformanceContext'
 import { LightProvider } from './context/LightContext'
 
+// the game streams in behind the darkness — nobody reaches Room III
+// in the first seconds of a visit
+const WorldGame = lazy(() => import('./components/WorldGame'))
+
 export default function App() {
   return (
     <PerformanceProvider>
@@ -31,7 +35,13 @@ export default function App() {
             <Hero />
             <DrawerRoom />
             <Skills />
-            <WorldGame />
+            {/* stable slot: GSAP pin-spacers reparent siblings, so the lazy
+                swap must happen inside a node React fully owns */}
+            <div className="world-slot">
+              <Suspense fallback={<section id="world" style={{ minHeight: '50vh' }} />}>
+                <WorldGame />
+              </Suspense>
+            </div>
             <Projects />
             <Experience />
             <Contact />

@@ -445,11 +445,11 @@ export function SpiderModel({ raise = 0.85, curl = 1.15 }) {
 export function CrawlerSpider() {
   const rig = useRef()
   const path = useMemo(() => new THREE.CatmullRomCurve3([
-    new THREE.Vector3(-4.8, -0.7, -3.9),
-    new THREE.Vector3(-3.0, -0.75, -4.2),
-    new THREE.Vector3(-1.5, -0.95, -3.4),
-    new THREE.Vector3(-2.9, -1.3, -2.4),
-    new THREE.Vector3(-4.6, -1.05, -3.0),
+    new THREE.Vector3(-4.8, -2.22, -3.9),
+    new THREE.Vector3(-3.0, -2.24, -4.2),
+    new THREE.Vector3(-1.5, -2.26, -3.4),
+    new THREE.Vector3(-2.9, -2.3, -2.4),
+    new THREE.Vector3(-4.6, -2.26, -3.0),
   ], true), [])
   const pos = useMemo(() => new THREE.Vector3(), [])
   const ahead = useMemo(() => new THREE.Vector3(), [])
@@ -577,8 +577,8 @@ function Cockroach() {
       ref.current.visible = false
       if (now > st.nextAt) {
         const dir = Math.random() > 0.5 ? 1 : -1
-        st.from.set(-dir * rand(4, 6.5), -2.02, rand(0.5, 3.5))
-        st.to.set(dir * rand(3.5, 6.5), -2.02, st.from.z + rand(-1.2, 1.2))
+        st.from.set(-dir * rand(4, 6.5), -2.25, rand(0.5, 3.5))
+        st.to.set(dir * rand(3.5, 6.5), -2.25, st.from.z + rand(-1.2, 1.2))
         st.t = 0
         st.dur = rand(1.4, 2.1)
         st.midPause = Math.random() > 0.55 ? rand(0.4, 1.1) : 0
@@ -594,7 +594,7 @@ function Cockroach() {
     }
     ref.current.position.lerpVectors(st.from, st.to, st.t)
     ref.current.position.x += Math.sin(st.t * 34) * 0.045
-    ref.current.lookAt(st.to.x, -2.02, st.to.z)
+    ref.current.lookAt(st.to.x, -2.25, st.to.z)
     const sweep = Math.sin(now * 13)
     if (antL.current) antL.current.rotation.y = 0.5 + sweep * 0.28
     if (antR.current) antR.current.rotation.y = -0.5 - sweep * 0.28
@@ -681,8 +681,8 @@ export function Critters() {
   return (
     <group>
       <CrawlerSpider />
-      <Beetle area={[-5.5, -1, -4.2, -2.4, -0.9]} />
-      <Beetle area={[3.5, 6.5, -4.6, -2.6, -1.4]} />
+      <Beetle area={[-5.5, -1, -4.2, -2.4, -2.24]} />
+      <Beetle area={[3.5, 6.5, -4.6, -2.6, -2.24]} />
       <Cockroach />
     </group>
   )
