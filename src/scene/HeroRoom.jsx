@@ -3,6 +3,7 @@ import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { heroState } from './heroState'
 import { Piece, preloadPieces } from './toonify'
+import { Inscription, roughText, erode, drawSigil } from './inscriptions'
 import { WebSheets, AnchorStrands, Critters, SpiderModel } from './RoomDressing'
 
 // ============================================================
@@ -14,7 +15,7 @@ import { WebSheets, AnchorStrands, Critters, SpiderModel } from './RoomDressing'
 // ============================================================
 
 const S = 1.275            // kit walls are 4u; scaled to a 5.1u module
-const FT = -2.33           // floor-tile top surface
+const FT = -2.2            // floor-tile top surface (tiles are 0.19 thick)
 
 preloadPieces([
   'wall', 'wall_cracked', 'wall_broken', 'wall_archedwindow_open', 'wall_shelves',
@@ -179,7 +180,7 @@ function Dressing() {
       {/* stored and abandoned */}
       <Piece file="trunk_large_A" position={[-4.8, FT, -2.9]} rotation={[0, 0.5, 0]} scale={1.2} tint="#a8906c" />
       <Piece file="candle_triple" position={[-4.35, FT + 0.98, -2.7]} scale={1.1} tint="#e8e0cf" anchor="none" />
-      <Piece file="box_stacked" position={[6.2, FT, -4.6]} scale={1.2} tint="#b09878" />
+      <Piece file="box_stacked" position={[7.05, FT, -5.0]} scale={1.0} tint="#b09878" />
       <Piece file="barrel_large" position={[7.0, FT, -3.3]} scale={1.1} tint="#a8906c" />
       <Piece file="keg" position={[5.35, FT, -5.0]} scale={1.0} tint="#9c845f" />
       <Piece file="crates_stacked" position={[-7.0, FT, -0.6]} rotation={[0, -0.4, 0]} scale={1.1} tint="#b09878" />
@@ -190,7 +191,7 @@ function Dressing() {
       {/* wall dressing */}
       <Piece file="torch_mounted" position={[-6.2, -0.62, -5.7]} scale={1.2} tint="#b8a488" anchor="none" />
       <Piece file="torch_mounted" position={[7.7, -0.62, -1.95]} rotation={[0, -Math.PI / 2, 0]} scale={1.2} tint="#b8a488" anchor="none" />
-      <Piece file="sword_shield_broken" position={[3.35, -0.25, -5.72]} scale={1.2} tint="#c4b8a4" anchor="none" />
+      <Piece file="sword_shield_broken" position={[6.3, -0.35, -5.72]} scale={1.2} tint="#c4b8a4" anchor="none" />
     </group>
   )
 }
@@ -271,6 +272,77 @@ function Lighting({ lit }) {
   )
 }
 
+// ---------- the resident's work, written on the house itself ----------
+function WallInscriptions() {
+  return (
+    <group>
+      {/* the name, painted across the stone in faded pigment */}
+      <Inscription
+        position={[2.55, 0.62, -5.64]}
+        size={[4.6, 2.3]}
+        draw={(g, w, h) => {
+          roughText(g, 'PARAS', w / 2, h * 0.34, 172, '#e3d8bd', 0.95)
+          roughText(g, 'MOTWANI', w / 2, h * 0.62, 172, '#e3d8bd', 0.95)
+          g.strokeStyle = '#c9a45c'
+          g.globalAlpha = 0.7
+          g.lineWidth = 3
+          g.beginPath(); g.moveTo(w * 0.2, h * 0.7); g.lineTo(w * 0.8, h * 0.72); g.stroke()
+          g.globalAlpha = 1
+          roughText(g, 'AI & DATA SCIENCE ENGINEER', w / 2, h * 0.82, 52, '#c9a45c', 0.9)
+          erode(g, w, h, 1600, 5)
+        }}
+      />
+      {/* working notes chalked beside the window */}
+      <Inscription
+        position={[-6.35, 0.72, -5.64]}
+        size={[3.0, 2.0]}
+        w={768}
+        h={512}
+        draw={(g, w, h) => {
+          const lines = [
+            ['agentic AI workflows', 0],
+            ['contract intelligence — Databricks', 1],
+            ['autonomous pipelines — AWS', 2],
+            ['B.Tech CSE — Manipal Univ. Jaipur', 3.2],
+          ]
+          lines.forEach(([txt, i]) => {
+            roughText(g, txt, 30, 110 + i * 88, 42, '#d8d2c0', 0.78, { align: 'left', rot: -0.008 * (i + 1), font: '"IM Fell English", serif' })
+          })
+          g.strokeStyle = '#d8d2c0'
+          g.globalAlpha = 0.5
+          g.lineWidth = 2
+          g.beginPath(); g.moveTo(28, 140); g.lineTo(360, 146); g.stroke()
+          erode(g, w, h, 1100, 21)
+        }}
+      />
+      {/* the formulas that would have read as spells */}
+      <Inscription
+        position={[7.64, 0.9, -0.6]}
+        rotation={[0, -Math.PI / 2, 0]}
+        size={[2.6, 1.5]}
+        w={768}
+        h={448}
+        draw={(g, w, h) => {
+          roughText(g, 'softmax(QKᵀ/√dₖ)·V', w / 2, h * 0.3, 56, '#d8d2c0', 0.7)
+          roughText(g, 'θ ← θ − η ∇θ J(θ)', w / 2, h * 0.56, 56, '#d8d2c0', 0.65)
+          roughText(g, 'P(w | context)', w / 2, h * 0.8, 48, '#d8d2c0', 0.55)
+          erode(g, w, h, 900, 33)
+        }}
+      />
+      {/* the summoning circle: a neural network, chalked on the boards */}
+      <Inscription
+        position={[0.85, -2.185, 0.35]}
+        rotation={[-Math.PI / 2, 0, 0.42]}
+        size={[4.4, 4.4]}
+        w={1024}
+        h={1024}
+        opacity={0.62}
+        draw={drawSigil}
+      />
+    </group>
+  )
+}
+
 // ---------- the room ----------
 export default function HeroRoom({ lit }) {
   const group = useRef()
@@ -330,6 +402,7 @@ export default function HeroRoom({ lit }) {
       <Lighting lit={lit} />
       <ManorShell />
       <Dressing />
+      <WallInscriptions />
       <WebSheets />
       <AnchorStrands />
 

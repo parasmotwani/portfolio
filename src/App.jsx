@@ -7,7 +7,6 @@ import Projects from './components/Projects'
 import Experience from './components/Experience'
 import Contact from './components/Contact'
 import Preloader from './components/Preloader'
-import Cursor from './components/Cursor'
 import Flashlight from './components/Flashlight'
 import LightSwitch from './components/LightSwitch'
 import HouseFlicker from './components/HouseFlicker'
@@ -54,7 +53,6 @@ export default function App() {
           <Flashlight />
           <HouseFlicker />
           <PerformanceToggle />
-          <Cursor />
         </ScrollProvider>
       </LightProvider>
     </PerformanceProvider>

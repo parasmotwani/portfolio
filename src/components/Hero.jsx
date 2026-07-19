@@ -121,7 +121,9 @@ export default function Hero() {
   }, [started])
 
   return (
-    <section className="hero" id="hero" ref={ref}>
+    // on desktop the copy lives ON the room's walls (WallInscriptions);
+    // the DOM copy stays for screen readers, search, and the fallbacks
+    <section className={`hero${pinnable ? ' hero--diegetic' : ''}`} id="hero" ref={ref}>
       <div className="hero-content" ref={contentRef}>
         <p className="hero-epigraph" data-hero-reveal>
           {lit ? 'someone still lives here…' : 'the lights are out'}

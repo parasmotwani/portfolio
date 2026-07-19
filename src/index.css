@@ -216,41 +216,8 @@ button {
   margin-top: 14px;
 }
 
-/* ============================================================
-   CURSOR
-   ============================================================ */
-.cursor-dot, .cursor-ring {
-  position: fixed;
-  top: 0; left: 0;
-  z-index: 4000;
-  pointer-events: none;
-  border-radius: 50%;
-  will-change: transform;
-}
-
-.cursor-dot {
-  width: 5px; height: 5px;
-  background: var(--gold);
-  margin: -2.5px 0 0 -2.5px;
-}
-
-.cursor-ring {
-  width: 30px; height: 30px;
-  border: 1px solid rgba(212, 169, 78, 0.4);
-  margin: -15px 0 0 -15px;
-  transition: width 0.3s var(--ease-out), height 0.3s var(--ease-out),
-              margin 0.3s var(--ease-out), border-color 0.3s var(--ease-out);
-}
-
-.cursor-ring.hovering {
-  width: 52px; height: 52px;
-  margin: -26px 0 0 -26px;
-  border-color: var(--seal-bright);
-}
-
-@media (hover: none), (pointer: coarse) {
-  .cursor-dot, .cursor-ring { display: none; }
-}
+/* custom cursor removed — the system cursor is the pointer; the lantern
+   beam alone is the light (user call, 2026-07-19) */
 
 /* ============================================================
    NAVBAR
@@ -1412,12 +1379,6 @@ button {
   .house-flicker { display: none; }
 }
 
-/* --- cursor role swap: torch in the dark, pointer in the light --- */
-html.lights-off .cursor-ring { opacity: 0; }
-html.lights-off .cursor-dot {
-  background: #ffdca0;
-  box-shadow: 0 0 14px 4px rgba(255, 200, 110, 0.65);
-}
 
 /* --- corner whisper (top-left) --- */
 .corner-whisper {
@@ -1541,6 +1502,14 @@ html.lights-off .corner-whisper {
 
 .hero-name, .hero-role, .hero-summary, .hero-epigraph {
   text-shadow: 0 2px 26px rgba(0, 0, 0, 0.95), 0 0 8px rgba(0, 0, 0, 0.7);
+}
+
+/* desktop 3D: the copy is painted on the room's walls instead of
+   hovering over it — DOM stays for screen readers and fallbacks */
+.hero--diegetic .hero-content {
+  opacity: 0 !important;
+  pointer-events: none;
+  user-select: none;
 }
 
 .hero-epigraph {
