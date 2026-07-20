@@ -3,6 +3,7 @@ import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { heroState } from './heroState'
 import { Piece, preloadPieces } from './toonify'
+import { Flame } from './Flame'
 import { Inscription, roughText, erode, drawSigil, drawParchment, drawNightScene } from './inscriptions'
 import { WebSheets, AnchorStrands, Critters, SpiderModel } from './RoomDressing'
 
@@ -120,25 +121,29 @@ function Spider({ anchor }) {
 }
 
 // ---------- the manor shell, assembled from the kit ----------
+// A wider hall: the whole BACK wall is left clear for the proclamation,
+// the arched window moves to the LEFT wall so moonlight rakes across, and
+// two pillars frame the centre. Furniture is pushed to the sides (Dressing).
 function ManorShell() {
-  const backX = [-7.65, 2.55, 7.65]
-  const backKind = ['wall_cracked', 'wall', 'wall_broken']
+  const backX = [-7.65, -2.55, 2.55, 7.65]
+  const backKind = ['wall_cracked', 'wall', 'wall', 'wall_broken']
   const floorX = [-7.65, -2.55, 2.55, 7.65]
   const floorZ = [-3.45, 1.65, 6.75]
   return (
     <group>
+      {/* back wall — solid, centre kept clear for the name parchment */}
       {backKind.map((k, i) => (
         <Piece key={k + i} file={k} position={[backX[i], -2.4, -6]} scale={S} tint="#cfc4b2" />
       ))}
-      <Piece file="wall_archedwindow_open" position={[-2.55, -2.4, -6]} scale={S} tint="#cfc4b2" />
-      {/* sides */}
-      <Piece file="wall" position={[-8, -2.4, -3.45]} rotation={[0, Math.PI / 2, 0]} scale={S} tint="#b8ad9c" />
+      {/* left wall — the arched window; cold moonlight streams in from here */}
+      <Piece file="wall_archedwindow_open" position={[-8, -2.4, -3.45]} rotation={[0, Math.PI / 2, 0]} scale={S} tint="#c4b8a4" />
       <Piece file="wall_cracked" position={[-8, -2.4, 1.65]} rotation={[0, Math.PI / 2, 0]} scale={S} tint="#b8ad9c" />
+      {/* right wall — shelves + stone */}
       <Piece file="wall_shelves" position={[8, -2.4, -3.45]} rotation={[0, -Math.PI / 2, 0]} scale={S} tint="#c4b8a4" />
       <Piece file="wall" position={[8, -2.4, 1.65]} rotation={[0, -Math.PI / 2, 0]} scale={S} tint="#c4b8a4" />
-      {/* pillars framing the window */}
-      <Piece file="pillar" position={[-5.35, -2.4, -5.55]} scale={S} tint="#c9beac" />
-      <Piece file="pillar" position={[0.25, -2.4, -5.55]} scale={S} tint="#c9beac" />
+      {/* pillars flanking the centre proclamation */}
+      <Piece file="pillar" position={[-4.1, -2.4, -5.5]} scale={S} tint="#c9beac" />
+      <Piece file="pillar" position={[4.1, -2.4, -5.5]} scale={S} tint="#c9beac" />
       {/* wood floor */}
       {floorX.map((x) =>
         floorZ.map((z) => (
@@ -161,57 +166,50 @@ function ManorShell() {
   )
 }
 
-// ---------- what the family left behind ----------
+// ---------- what the family left behind — pushed to the sides ----------
+// Everything is cleared out of the centre (|x| < 3.6) so the proclamation
+// on the back wall reads uninterrupted. The left holds the storage and the
+// collapse; the right holds the interrupted meal.
 function Dressing() {
   return (
     <group>
-      {/* collapse tucked in the left corner, clear of the window
-          (rubble_large is 8u wide raw — keep it small) */}
-      <Piece file="rubble_large" position={[-6.9, FT, -4.9]} scale={0.3} tint="#cfc6b4" />
-      <Piece file="rubble_large" position={[-5.7, FT, -3.6]} rotation={[0, 1.2, 0]} scale={0.22} tint="#c2b8a5" />
-      <Piece file="column" position={[-5.3, FT + 0.42, -4.3]} rotation={[0, 0.3, 1.32]} scale={0.9} tint="#c9beac" anchor="none" />
-      <Piece file="rubble_half" position={[-3.6, FT, -1.4]} scale={0.28} tint="#c2b8a5" />
-      <Piece file="rubble_half" position={[0.8, FT, -4.2]} rotation={[0, 2.1, 0]} scale={0.24} tint="#cfc6b4" />
-      <Piece file="rubble_half" position={[4.6, FT, 0.7]} rotation={[0, -0.7, 0]} scale={0.2} tint="#c2b8a5" />
+      {/* LEFT — the collapse under the window + stored crates */}
+      <Piece file="rubble_large" position={[-7.2, FT, -4.9]} scale={0.3} tint="#cfc6b4" />
+      <Piece file="rubble_half" position={[-5.9, FT, -3.9]} rotation={[0, 1.2, 0]} scale={0.24} tint="#c2b8a5" />
+      <Piece file="column" position={[-6.2, FT + 0.42, -4.6]} rotation={[0, 0.3, 1.32]} scale={0.9} tint="#c9beac" anchor="none" />
+      <Piece file="trunk_large_A" position={[-6.4, FT, -2.6]} rotation={[0, 0.5, 0]} scale={1.2} tint="#a8906c" />
+      <Piece file="candle_triple" position={[-6.0, FT + 0.98, -2.4]} scale={1.1} tint="#b8ac92" anchor="none" />
+      <Piece file="crates_stacked" position={[-7.1, FT, -0.4]} rotation={[0, -0.4, 0]} scale={1.1} tint="#b09878" />
+      <Piece file="chest" position={[-6.9, FT, 2.0]} rotation={[0, 2.35, 0]} scale={1.1} tint="#a8906c" />
 
-      {/* the interrupted meal: broken table, thrown chair, one candle still lit */}
-      <Piece file="table_medium_broken" position={[2.4, FT, -2.4]} rotation={[0, -0.35, 0]} scale={1.2} tint="#a8906c" />
-      <Piece file="chair" position={[3.7, FT + 0.34, -1.4]} rotation={[-1.5, 0.4, 0.1]} scale={1.15} tint="#a8906c" anchor="none" />
-      <Piece file="stool" position={[1.1, FT, -1.05]} rotation={[0, 0.7, 0]} scale={1.1} tint="#9c845f" />
-      <Piece file="bottle_A_green" position={[1.75, FT, -1.65]} scale={1.25} tint="#b8c49a" />
-      <Piece file="bottle_B_brown" position={[3.1, FT + 0.07, -0.62]} rotation={[0, 0.3, Math.PI / 2]} scale={1.2} tint="#c2a67c" anchor="none" />
-      <Piece file="plate_stack" position={[2.95, FT, -3.15]} scale={1.1} tint="#d8d2c0" />
-      <Piece file="candle_lit" position={[1.9, FT, -2.0]} scale={1.35} tint="#b8ac92" />
-      <Piece file="candle_melted" position={[0.4, FT, -0.9]} scale={1.2} tint="#a89f8a" />
+      {/* RIGHT — the interrupted meal: broken table, thrown chair, a candle */}
+      <Piece file="table_medium_broken" position={[5.4, FT, -2.3]} rotation={[0, -0.35, 0]} scale={1.2} tint="#a8906c" />
+      <Piece file="chair" position={[6.6, FT + 0.34, -1.3]} rotation={[-1.5, 0.4, 0.1]} scale={1.15} tint="#a8906c" anchor="none" />
+      <Piece file="stool" position={[4.5, FT, -1.1]} rotation={[0, 0.7, 0]} scale={1.1} tint="#9c845f" />
+      <Piece file="bottle_A_green" position={[4.9, FT, -1.8]} scale={1.25} tint="#b8c49a" />
+      <Piece file="bottle_B_brown" position={[6.1, FT + 0.07, -0.6]} rotation={[0, 0.3, Math.PI / 2]} scale={1.2} tint="#c2a67c" anchor="none" />
+      <Piece file="plate_stack" position={[5.7, FT, -3.1]} scale={1.1} tint="#d8d2c0" />
+      <Piece file="candle_lit" position={[4.9, FT, -2.15]} scale={1.35} tint="#b8ac92" />
+      <Piece file="candle_melted" position={[6.7, FT, -2.7]} scale={1.2} tint="#a89f8a" />
+      <Piece file="barrel_large" position={[7.5, FT, -4.2]} scale={1.1} tint="#a8906c" />
+      <Piece file="keg" position={[6.0, FT, -4.7]} scale={1.0} tint="#9c845f" />
+      <Piece file="box_stacked" position={[7.3, FT, 1.4]} scale={1.0} tint="#b09878" />
+      <Piece file="shelf_large" position={[7.85, -0.3, 0.4]} rotation={[0, -Math.PI / 2, 0]} scale={1.2} tint="#a8906c" anchor="none" />
+      <Piece file="bottle_A_green" position={[7.8, -0.14, 0.1]} rotation={[0, 0.4, 0]} scale={1.0} tint="#b8c49a" anchor="none" />
 
-      {/* stored and abandoned */}
-      <Piece file="trunk_large_A" position={[-4.8, FT, -2.9]} rotation={[0, 0.5, 0]} scale={1.2} tint="#a8906c" />
-      <Piece file="candle_triple" position={[-4.35, FT + 0.98, -2.7]} scale={1.1} tint="#b8ac92" anchor="none" />
-      <Piece file="box_stacked" position={[7.05, FT, -5.0]} scale={1.0} tint="#b09878" />
-      <Piece file="barrel_large" position={[7.0, FT, -3.3]} scale={1.1} tint="#a8906c" />
-      <Piece file="keg" position={[5.35, FT, -5.0]} scale={1.0} tint="#9c845f" />
-      <Piece file="crates_stacked" position={[-7.0, FT, -0.6]} rotation={[0, -0.4, 0]} scale={1.1} tint="#b09878" />
-      <Piece file="chest" position={[-6.85, FT, 1.8]} rotation={[0, 2.35, 0]} scale={1.1} tint="#a8906c" />
-      <Piece file="shelf_large" position={[7.85, -0.3, -0.2]} rotation={[0, -Math.PI / 2, 0]} scale={1.2} tint="#a8906c" anchor="none" />
-      <Piece file="bottle_A_green" position={[7.8, -0.14, -0.5]} rotation={[0, 0.4, 0]} scale={1.0} tint="#b8c49a" anchor="none" />
-
-      {/* wall dressing */}
-      <Piece file="torch_mounted" position={[-6.2, -0.62, -5.7]} scale={1.2} tint="#b8a488" anchor="none" />
-      <Piece file="torch_mounted" position={[7.7, -0.62, -1.95]} rotation={[0, -Math.PI / 2, 0]} scale={1.2} tint="#b8a488" anchor="none" />
-      <Piece file="sword_shield_broken" position={[6.3, -0.35, -5.72]} scale={1.2} tint="#c4b8a4" anchor="none" />
+      {/* wall dressing — torches on the side walls, well off the centre */}
+      <Piece file="torch_mounted" position={[-7.85, -0.62, -3.45]} rotation={[0, Math.PI / 2, 0]} scale={1.2} tint="#b8a488" anchor="none" />
+      <Piece file="torch_mounted" position={[7.85, -0.62, -1.95]} rotation={[0, -Math.PI / 2, 0]} scale={1.2} tint="#b8a488" anchor="none" />
     </group>
   )
 }
 
 // ---------- moonlight + flames that answer the lantern, one by one ----------
-function Lighting({ lit }) {
+function Lighting({ lit, lantern }) {
   const hemi = useRef()
   const sun = useRef()
   const winFill = useRef()
-  const torchA = useRef()
-  const torchB = useRef()
-  const candleA = useRef()
-  const candleB = useRef()
+  const carried = useRef()
   const litState = useRef({ prev: null, at: -100 })
 
   useFrame(({ clock }) => {
@@ -219,58 +217,68 @@ function Lighting({ lit }) {
     const ls = litState.current
     if (lit !== ls.prev) { ls.prev = lit; ls.at = t }
     const since = t - ls.at
-    // each flame takes the light a beat after the lantern is hung;
-    // taking the lantern back snuffs them together
     const ignite = (delay) => lit
       ? THREE.MathUtils.smoothstep(since - delay, 0, 0.7)
       : Math.max(0, 1 - since / 0.5)
     const leaving = 1 - Math.min(1, Math.max(0, (heroState.p - 0.45) / 0.4)) * 0.75
-    const ease = (ref, target, k = 0.1) => {
+    const ease = (ref, target, k = 0.05) => {
       if (ref.current) ref.current.intensity += (target - ref.current.intensity) * k
     }
-    const flick = 0.86 + Math.sin(t * 11) * 0.05 + Math.sin(t * 23.7) * 0.06 + (Math.random() > 0.992 ? -0.3 : 0)
-    const cf = 0.8 + Math.sin(t * 9.3) * 0.14 + Math.sin(t * 21.1) * 0.1
-
-    // lit is candle-pools and long shadows, never a floodlight —
-    // the dark keeps its essence
-    ease(hemi, (0.2 + ignite(0.2) * 0.2) * leaving, 0.05)
-    ease(sun, (1.05 + ignite(0) * 1.0) * leaving, 0.05)
-    ease(winFill, (0.4 + ignite(0) * 0.4) * leaving, 0.05)
-    ease(candleA, (0.5 + ignite(0.7) * 1.2) * cf * leaving, 0.16)
-    ease(candleB, ignite(1.1) * 1.0 * cf * leaving, 0.16)
-    ease(torchA, ignite(1.5) * 1.4 * flick * leaving, 0.1)
-    ease(torchB, ignite(1.9) * 1.2 * flick * leaving, 0.1)
+    // the lantern the visitor carries (struck, not yet hung) throws a warm
+    // fill so the room reads as LIT the moment they strike it — no one
+    // should ever stare at a black screen. Once hung, the flames take over.
+    const carriedF = lantern && !lit ? 1 : 0
+    // the flames carry the warmth (see <Flame> instances below); the
+    // moonlight is cold and constant so lit keeps the essence of dark —
+    // candle-pools and long shadows, never a floodlight
+    ease(hemi, (0.16 + carriedF * 0.16 + ignite(0.2) * 0.16) * leaving)
+    ease(sun, (0.9 + ignite(0) * 0.6) * leaving)
+    ease(winFill, (0.34 + ignite(0) * 0.3) * leaving)
+    ease(carried, carriedF * 2.6 * leaving, 0.06)
   })
 
   return (
     <group>
-      <hemisphereLight ref={hemi} args={['#8fa0b8', '#2c2820', 0.2]} />
-      {/* cold moonlight through the arched window */}
+      <hemisphereLight ref={hemi} args={['#8fa0b8', '#2c2820', 0.16]} />
+      {/* cold moonlight now streams from the LEFT wall window */}
       <directionalLight
         ref={sun}
-        position={[-2.55, 1.7, -5.0]}
-        target-position={[1.6, -2.4, 2.2]}
+        position={[-7.0, 1.7, -3.0]}
+        target-position={[1.5, -2.4, -3.0]}
         color="#cfdae8"
-        intensity={1.05}
+        intensity={0.9}
         castShadow
         shadow-mapSize={[1024, 1024]}
       />
-      <pointLight ref={winFill} position={[-2.55, 0.6, -5.0]} color="#c8d4e2" intensity={0.4} distance={9} decay={1.8} />
-      {/* the flames — wall torches and the two candles */}
-      <pointLight ref={torchA} position={[-6.2, 0.4, -5.3]} color="#ffab5e" intensity={0} distance={9} decay={1.9} />
-      <pointLight ref={torchB} position={[7.3, 0.4, -1.95]} color="#ffab5e" intensity={0} distance={9} decay={1.9} />
-      <pointLight ref={candleA} position={[1.9, -1.5, -2.0]} color="#ffbe70" intensity={0.5} distance={6} decay={2} />
-      <pointLight ref={candleB} position={[-4.35, -0.8, -2.7]} color="#ffbe70" intensity={0} distance={5} decay={2} />
-      {/* the night outside the window: moon, hills, one dead tree */}
+      <pointLight ref={winFill} position={[-7.2, 0.6, -3.2]} color="#c8d4e2" intensity={0.34} distance={9} decay={1.8} />
+      {/* the carried lantern's warm fill, front-centre */}
+      <pointLight ref={carried} position={[0, -0.3, 4.6]} color="#ffbe70" intensity={0} distance={18} decay={1.5} />
+
+      {/* the flames that actually burn and cast light, staggered as the
+          lantern is hung. The interrupted-meal candle keeps a pilot lit. */}
+      {/* two sconces flank the proclamation and light it first */}
+      <Flame position={[-4.0, 0.75, -5.42]} lit={lit} delay={0.35} size={0.3} light={1.5} distance={7} />
+      <Flame position={[4.0, 0.75, -5.42]} lit={lit} delay={0.5} size={0.3} light={1.5} distance={7} />
+      {/* the interrupted-meal candle keeps a pilot flame on the right */}
+      <Flame position={[4.9, -1.6, -2.15]} lit={lit} base={0.34} delay={0.8} size={0.3} light={1.6} distance={6.5} />
+      <Flame position={[6.7, -1.72, -2.7]} lit={lit} delay={1.1} size={0.24} light={1.0} distance={5} />
+      {/* the triple candle on the trunk, left */}
+      <Flame position={[-6.0, -0.88, -2.4]} lit={lit} delay={1.3} size={0.3} light={1.3} distance={6} />
+      {/* the wall torches, last to catch */}
+      <Flame position={[-7.55, 0.42, -3.45]} lit={lit} delay={1.6} size={0.44} light={2.0} distance={10} color="#ffab5e" />
+      <Flame position={[7.55, 0.42, -1.95]} lit={lit} delay={1.9} size={0.44} light={1.9} distance={10} color="#ffab5e" />
+
+      {/* the night outside the LEFT window: moon, hills, one dead tree */}
       <Inscription
-        position={[-2.55, 0.75, -7.6]}
-        size={[8.6, 6.4]}
+        position={[-8.5, 0.55, -3.45]}
+        rotation={[0, Math.PI / 2, 0]}
+        size={[7.8, 6.0]}
         w={1024}
         h={768}
         draw={drawNightScene}
       />
-      {/* volumetric shaft toward the floor */}
-      <mesh position={[-1.6, -0.8, -3.4]} rotation={[0.62, 0.1, 0]}>
+      {/* volumetric shaft from the left window toward the floor */}
+      <mesh position={[-5.6, -0.8, -3.2]} rotation={[0.2, 0.9, 0.2]}>
         <planeGeometry args={[3.4, 5.6]} />
         <meshBasicMaterial
           color="#dce6ee"
@@ -288,18 +296,12 @@ function Lighting({ lit }) {
 // ---------- the iron hook, and the lantern once it's hung ----------
 function LanternOnHook({ lit }) {
   const sway = useRef()
-  const glowRef = useRef()
 
   useFrame(({ clock }) => {
     const t = clock.elapsedTime
     if (sway.current) {
       sway.current.rotation.z = Math.sin(t * 1.1) * 0.055
       sway.current.rotation.x = Math.sin(t * 0.7 + 1) * 0.03
-    }
-    if (glowRef.current) {
-      const flick = 0.9 + Math.sin(t * 12.3) * 0.06 + Math.sin(t * 27.1) * 0.04
-      const target = lit ? 2.1 * flick : 0
-      glowRef.current.intensity += (target - glowRef.current.intensity) * 0.12
     }
   })
 
@@ -340,18 +342,7 @@ function LanternOnHook({ lit }) {
             <meshStandardMaterial color="#1c1815" roughness={0.7} />
           </mesh>
           {/* only the flame glows — the glass carries it */}
-          <mesh position={[0, -0.3, 0]}>
-            <boxGeometry args={[0.13, 0.28, 0.13]} />
-            <meshStandardMaterial
-              color="#3a2c18"
-              emissive="#ffc06a"
-              emissiveIntensity={1.7}
-              transparent
-              opacity={0.85}
-              roughness={0.3}
-            />
-          </mesh>
-          <pointLight ref={glowRef} position={[0, -0.28, 0.1]} color="#ffbe70" intensity={0} distance={12} decay={1.8} />
+          <Flame position={[0, -0.28, 0]} lit={lit} size={0.26} light={2.2} distance={13} decay={1.8} />
         </group>
       )}
     </group>
@@ -362,28 +353,40 @@ function LanternOnHook({ lit }) {
 function WallInscriptions() {
   return (
     <group>
-      {/* the name, inked on a parchment nailed over the stone */}
+      {/* the proclamation — name, title and summary inked large on one
+          clear parchment, centred on the back wall. The first thing the
+          visitor reads once the room takes the light. */}
       <Inscription
-        position={[2.55, 0.62, -5.46]}
-        size={[4.7, 2.35]}
+        position={[0, 0.3, -5.42]}
+        size={[7.4, 4.0]}
+        w={1200}
+        h={648}
         draw={(g, w, h) => {
           drawParchment(g, w, h, 3)
-          roughText(g, 'PARAS', w / 2, h * 0.35, 134, '#3a2a14', 0.96)
-          roughText(g, 'MOTWANI', w / 2, h * 0.63, 134, '#3a2a14', 0.96)
+          roughText(g, 'PARAS', w / 2, h * 0.21, 140, '#33240f', 0.97)
+          roughText(g, 'MOTWANI', w / 2, h * 0.4, 140, '#33240f', 0.97)
           g.strokeStyle = '#7a4a20'
-          g.globalAlpha = 0.75
-          g.lineWidth = 3
-          g.beginPath(); g.moveTo(w * 0.2, h * 0.7); g.lineTo(w * 0.8, h * 0.715); g.stroke()
+          g.globalAlpha = 0.7
+          g.lineWidth = 3.5
+          g.beginPath(); g.moveTo(w * 0.2, h * 0.49); g.lineTo(w * 0.8, h * 0.5); g.stroke()
           g.globalAlpha = 1
-          roughText(g, 'AI & DATA SCIENCE ENGINEER', w / 2, h * 0.83, 48, '#7a2f22', 0.95)
-          erode(g, w, h, 380, 5)
+          roughText(g, 'AI & DATA SCIENCE ENGINEER', w / 2, h * 0.585, 50, '#7a2f22', 0.96)
+          const sum = [
+            'I build intelligent systems — agentic AI',
+            'workflows · contract intelligence · Databricks',
+            'autonomous data pipelines · AWS',
+          ]
+          sum.forEach((line, i) => {
+            roughText(g, line, w / 2, h * (0.7 + i * 0.095), 34, '#43301a', 0.9, { font: '"IM Fell English", serif' })
+          })
+          erode(g, w, h, 200, 5)
         }}
       />
-      {/* working notes inked on a smaller sheet beside the window */}
+      {/* working notes inked on a smaller sheet, back wall far-left */}
       <Inscription
-        position={[-6.35, 0.72, -5.46]}
+        position={[-6.55, 0.72, -5.46]}
         rotation={[0, 0, 0.015]}
-        size={[3.0, 2.0]}
+        size={[2.9, 1.95]}
         w={768}
         h={512}
         draw={(g, w, h) => {
@@ -419,11 +422,12 @@ function WallInscriptions() {
           erode(g, w, h, 320, 33)
         }}
       />
-      {/* the summoning circle: a neural network, chalked on the boards */}
+      {/* the summoning circle: a neural network, chalked on the clear
+          centre boards in front of the proclamation */}
       <Inscription
-        position={[0.85, -2.185, 0.35]}
+        position={[0, -2.185, 1.5]}
         rotation={[-Math.PI / 2, 0, 0.42]}
-        size={[4.4, 4.4]}
+        size={[4.6, 4.6]}
         w={1024}
         h={1024}
         opacity={0.62}
@@ -433,8 +437,8 @@ function WallInscriptions() {
   )
 }
 
-// ---------- the room ----------
-export default function HeroRoom({ lit }) {
+// ---------- the room (entrance) ----------
+export default function HeroRoom({ lit, lantern }) {
   const group = useRef()
   const fadeRef = useRef()
   const { camera } = useThree()
@@ -443,10 +447,10 @@ export default function HeroRoom({ lit }) {
 
   // exit: pull BACKWARD and up — the room recedes and shrinks away
   const path = useMemo(() => new THREE.CatmullRomCurve3([
-    new THREE.Vector3(0, -0.55, 6.6),
-    new THREE.Vector3(0.25, -0.1, 9.6),
-    new THREE.Vector3(0.45, 0.7, 12.6),
-    new THREE.Vector3(0.6, 1.4, 15.8),
+    new THREE.Vector3(0, -0.25, 8.0),
+    new THREE.Vector3(0.2, 0.3, 11.2),
+    new THREE.Vector3(0.4, 1.1, 14.4),
+    new THREE.Vector3(0.6, 1.9, 17.8),
   ]), [])
   const lookTarget = useMemo(() => new THREE.Vector3(), [])
   const camPos = useMemo(() => new THREE.Vector3(), [])
@@ -460,13 +464,15 @@ export default function HeroRoom({ lit }) {
 
     const walk = THREE.MathUtils.smoothstep(p, 0.42, 1)
     if (walk <= 0) {
+      // establishing rest: sit back and centre on the back wall so the
+      // hall reads open and the proclamation is large, centred and legible
       camPos.set(
         heroState.mouse.x * 0.5,
-        -0.55 + heroState.mouse.y * 0.28,
-        6.6
+        -0.25 + heroState.mouse.y * 0.26,
+        8.0
       )
       camera.position.lerp(camPos, 0.06)
-      lookTarget.set(heroState.mouse.x * 1.2, -0.45 + heroState.mouse.y * 0.5, -2.6)
+      lookTarget.set(heroState.mouse.x * 1.0, -0.3 + heroState.mouse.y * 0.45, -3.5)
       if (camera.fov !== 58) { camera.fov += (58 - camera.fov) * 0.08; camera.updateProjectionMatrix() }
     } else {
       path.getPointAt(Math.min(walk, 0.999), camPos)
@@ -489,7 +495,7 @@ export default function HeroRoom({ lit }) {
 
   return (
     <group ref={group}>
-      <Lighting lit={lit} />
+      <Lighting lit={lit} lantern={lantern} />
       <LanternOnHook lit={lit} />
       <ManorShell />
       <Dressing />
@@ -505,8 +511,8 @@ export default function HeroRoom({ lit }) {
         <lineBasicMaterial color="#d8d2c0" transparent opacity={0.45} />
       </lineSegments>
 
-      {/* the hanging spider silhouettes against the window light */}
-      <Spider anchor={[-2.0, 2.35, -5.5]} />
+      {/* the hanging spider silhouettes in the left corner, off the text */}
+      <Spider anchor={[-6.9, 2.35, -5.5]} />
       <Critters />
 
       {/* darkness closes over the receding room at the end of the pull */}

@@ -74,7 +74,8 @@ export default function Flashlight() {
       const sputter = s.ig >= 1
         ? 1
         : 0.55 + 0.45 * (0.5 + 0.5 * Math.sin(t * 0.05) * Math.sin(t * 0.017))
-      const lanternR = hasLantern ? 290 * (0.35 + 0.65 * s.ig) * sputter : 0
+      // a lantern casts a real, generous pool — not a keyhole
+      const lanternR = hasLantern ? 470 * (0.42 + 0.58 * s.ig) * sputter : 0
 
       // after the spread completes, crossfade the shade away — no pop
       if (isLit && s.spread > 0.985) {
@@ -110,13 +111,14 @@ export default function Flashlight() {
       // warm cast: strongest inside the lantern beam, plus a golden
       // afterglow that blooms outward mid-spread
       glow.style.display = ''
-      const lanternGlow = hasLantern ? 0.95 * (1 - s.spread) * (0.5 + 0.5 * s.ig) * sputter : 0
+      const lanternGlow = hasLantern ? 1 * (1 - s.spread) * (0.5 + 0.5 * s.ig) * sputter : 0
       const afterglow = 1.3 * s.spread * (1 - s.spread)
       glow.style.opacity = String(Math.max(lanternGlow, afterglow))
-      glow.style.background = `radial-gradient(circle ${Math.max(r * 0.85, 120)}px at ${ox}px ${oy}px,
-        rgba(255, 190, 100, 0.2) 0%,
-        rgba(255, 170, 80, 0.1) 45%,
-        rgba(255, 150, 60, 0.03) 75%,
+      glow.style.background = `radial-gradient(circle ${Math.max(r * 0.9, 160)}px at ${ox}px ${oy}px,
+        rgba(255, 198, 118, 0.42) 0%,
+        rgba(255, 176, 88, 0.26) 38%,
+        rgba(255, 156, 66, 0.1) 66%,
+        rgba(255, 150, 60, 0.02) 85%,
         rgba(255, 150, 60, 0) 100%)`
     }
     raf = requestAnimationFrame(loop)

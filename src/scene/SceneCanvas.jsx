@@ -21,7 +21,7 @@ function readCaps() {
 
 export default function SceneCanvas() {
   const { lowPower } = usePerformance()
-  const { lit } = useLight()
+  const { lit, lantern } = useLight()
 
   // re-evaluated on resize: a window opened small then maximized must
   // still get the room, and vice versa
@@ -59,7 +59,7 @@ export default function SceneCanvas() {
         <color attach="background" args={['#0d0b08']} />
         {caps.room && (
           <Suspense fallback={null}>
-            <HeroRoom lit={lit} />
+            <HeroRoom lit={lit} lantern={lantern} />
             <StudyRoom lit={lit} />
           </Suspense>
         )}
