@@ -25,3 +25,11 @@ dist-ssr
 
 # Vercel
 .vercel
+
+# Local project notes & tooling — kept on disk, not tracked
+/CLAUDE.md
+/AGENT_HANDOFF.md
+/VISION.md
+/TODO.md
+/SETBACKS.md
+/.claude/
