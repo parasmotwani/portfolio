@@ -28,6 +28,7 @@ export default function Contact() {
   return (
     <Chapter
       id="contact"
+      room={6}
       numeral="Room VI"
       title="Contact"
       subtitle="The telephone still works. Open to opportunities and collaborations."

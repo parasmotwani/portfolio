@@ -448,6 +448,7 @@ export default function WorldGame() {
   return (
     <Chapter
       id="world"
+      room={3}
       numeral="Room III"
       title="The Game Room"
       subtitle="An old machine still hums in the corner. It still takes players."

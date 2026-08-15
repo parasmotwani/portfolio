@@ -1,9 +1,9 @@
 import { useEffect, useRef } from 'react'
 import { useLight } from '../context/LightContext'
 
-// Darkness overlay + lantern beam. The room is pitch black until the
-// visitor strikes their lantern (first click) — the beam sputters to
-// life with a flicker, then follows the cursor with a warm penumbra.
+// Darkness overlay + lantern beam. The visitor arrives already carrying a
+// lit lantern: a steady warm pool follows the cursor from the first frame,
+// enough to read the room as dark-but-inhabited and go looking for the hook.
 // When the switch flips on, the light SPREADS from the switch across
 // the room, lingers as a golden afterglow, and crossfades away — it
 // never just disappears. Flipping off contracts back to the lantern.
@@ -21,8 +21,6 @@ export default function Flashlight() {
     cx: window.innerWidth / 2, cy: window.innerHeight / 2,
     spread: lit ? 1 : 0,
     fade: lit ? 1 : 0,
-    ig: 0,
-    igStart: 0,
     done: lit,
   }).current
 
@@ -66,16 +64,8 @@ export default function Flashlight() {
       last = t
       s.spread += ((isLit ? 1 : 0) - s.spread) * Math.min(1, dt * 2.1)
 
-      // lantern ignition: sputters for the first moment after striking
-      if (hasLantern) {
-        if (!s.igStart) s.igStart = t
-        s.ig = Math.min(1, (t - s.igStart) / 900)
-      }
-      const sputter = s.ig >= 1
-        ? 1
-        : 0.55 + 0.45 * (0.5 + 0.5 * Math.sin(t * 0.05) * Math.sin(t * 0.017))
       // a lantern casts a real, generous pool — not a keyhole
-      const lanternR = hasLantern ? 470 * (0.42 + 0.58 * s.ig) * sputter : 0
+      const lanternR = hasLantern ? 470 : 0
 
       // after the spread completes, crossfade the shade away — no pop
       if (isLit && s.spread > 0.985) {
@@ -111,7 +101,7 @@ export default function Flashlight() {
       // warm cast: strongest inside the lantern beam, plus a golden
       // afterglow that blooms outward mid-spread
       glow.style.display = ''
-      const lanternGlow = hasLantern ? 1 * (1 - s.spread) * (0.5 + 0.5 * s.ig) * sputter : 0
+      const lanternGlow = hasLantern ? 1 - s.spread : 0
       const afterglow = 1.3 * s.spread * (1 - s.spread)
       glow.style.opacity = String(Math.max(lanternGlow, afterglow))
       glow.style.background = `radial-gradient(circle ${Math.max(r * 0.9, 160)}px at ${ox}px ${oy}px,

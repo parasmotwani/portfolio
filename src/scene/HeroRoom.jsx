@@ -1,7 +1,7 @@
 import { useMemo, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
-import { heroState } from './heroState'
+import { journey, roomOffset } from './journey'
 import { Piece, preloadPieces } from './toonify'
 import { Flame } from './Flame'
 import { Inscription, roughText, erode, drawSigil, drawParchment, drawNightScene } from './inscriptions'
@@ -19,7 +19,7 @@ const S = 1.275            // kit walls are 4u; scaled to a 5.1u module
 const FT = -2.2            // floor-tile top surface (tiles are 0.19 thick)
 
 preloadPieces([
-  'wall', 'wall_cracked', 'wall_broken', 'wall_archedwindow_open', 'wall_shelves',
+  'wall', 'wall_cracked', 'wall_broken', 'wall_doorway', 'wall_archedwindow_open', 'wall_shelves',
   'floor_wood_large_dark', 'pillar', 'column',
   'rubble_large', 'rubble_half', 'table_medium_broken', 'chair', 'stool',
   'trunk_large_A', 'box_stacked', 'barrel_large', 'keg', 'crates_stacked', 'chest',
@@ -70,8 +70,8 @@ function Spider({ anchor }) {
     const s = state.current
 
     proj.set(anchor[0], s.y, anchor[2]).project(camera)
-    const dx = proj.x - heroState.mouse.x
-    const dy = proj.y - heroState.mouse.y
+    const dx = proj.x - journey.mouse.x
+    const dy = proj.y - journey.mouse.y
     const near = Math.hypot(dx, dy) < 0.22
     s.flee += ((near ? 1 : 0) - s.flee) * (near ? 0.14 : 0.015)
 
@@ -126,21 +126,33 @@ function Spider({ anchor }) {
 // two pillars frame the centre. Furniture is pushed to the sides (Dressing).
 function ManorShell() {
   const backX = [-7.65, -2.55, 2.55, 7.65]
-  const backKind = ['wall_cracked', 'wall', 'wall', 'wall_broken']
+  // far-right panel is the way out — the camera walks through this opening
+  // into Room I, so it must be an actual doorway and not a solid wall
+  const backKind = ['wall_cracked', 'wall', 'wall', 'wall_doorway']
   const floorX = [-7.65, -2.55, 2.55, 7.65]
   const floorZ = [-3.45, 1.65, 6.75]
   return (
     <group>
       {/* back wall — solid, centre kept clear for the name parchment */}
       {backKind.map((k, i) => (
-        <Piece key={k + i} file={k} position={[backX[i], -2.4, -6]} scale={S} tint="#cfc4b2" />
+        <Piece
+          key={k + i}
+          file={k}
+          position={[backX[i], -2.4, -6]}
+          scale={S}
+          tint="#cfc4b2"
+          stripDoor={k === 'wall_doorway'}
+        />
       ))}
       {/* left wall — the arched window; cold moonlight streams in from here */}
       <Piece file="wall_archedwindow_open" position={[-8, -2.4, -3.45]} rotation={[0, Math.PI / 2, 0]} scale={S} tint="#c4b8a4" />
       <Piece file="wall_cracked" position={[-8, -2.4, 1.65]} rotation={[0, Math.PI / 2, 0]} scale={S} tint="#b8ad9c" />
-      {/* right wall — shelves + stone */}
-      <Piece file="wall_shelves" position={[8, -2.4, -3.45]} rotation={[0, -Math.PI / 2, 0]} scale={S} tint="#c4b8a4" />
-      <Piece file="wall" position={[8, -2.4, 1.65]} rotation={[0, -Math.PI / 2, 0]} scale={S} tint="#c4b8a4" />
+      {/* right wall — pushed out to the floor's own edge (x 10.2). At x=8 it
+          cut straight across the back-wall doorway, half-blocking the only
+          way out of the hall. */}
+      <Piece file="wall_shelves" position={[10.2, -2.4, -3.45]} rotation={[0, -Math.PI / 2, 0]} scale={S} tint="#c4b8a4" />
+      <Piece file="wall" position={[10.2, -2.4, 1.65]} rotation={[0, -Math.PI / 2, 0]} scale={S} tint="#c4b8a4" />
+      <Piece file="wall" position={[10.2, -2.4, 6.75]} rotation={[0, -Math.PI / 2, 0]} scale={S} tint="#bcb1a0" />
       {/* pillars flanking the centre proclamation */}
       <Piece file="pillar" position={[-4.1, -2.4, -5.5]} scale={S} tint="#c9beac" />
       <Piece file="pillar" position={[4.1, -2.4, -5.5]} scale={S} tint="#c9beac" />
@@ -182,24 +194,27 @@ function Dressing() {
       <Piece file="crates_stacked" position={[-7.1, FT, -0.4]} rotation={[0, -0.4, 0]} scale={1.1} tint="#b09878" />
       <Piece file="chest" position={[-6.9, FT, 2.0]} rotation={[0, 2.35, 0]} scale={1.1} tint="#a8906c" />
 
-      {/* RIGHT — the interrupted meal: broken table, thrown chair, a candle */}
-      <Piece file="table_medium_broken" position={[5.4, FT, -2.3]} rotation={[0, -0.35, 0]} scale={1.2} tint="#a8906c" />
-      <Piece file="chair" position={[6.6, FT + 0.34, -1.3]} rotation={[-1.5, 0.4, 0.1]} scale={1.15} tint="#a8906c" anchor="none" />
+      {/* RIGHT — the interrupted meal: broken table, thrown chair, a candle.
+          Everything is kept west of x≈6, because the lane from x 6..8 is the
+          approach to the doorway and the camera walks down it. A hall whose
+          own exit is blocked by crates reads as a mistake, not as clutter. */}
+      <Piece file="table_medium_broken" position={[5.2, FT, -2.3]} rotation={[0, -0.35, 0]} scale={1.2} tint="#a8906c" />
+      <Piece file="chair" position={[5.3, FT + 0.34, -0.7]} rotation={[-1.5, 0.4, 0.1]} scale={1.15} tint="#a8906c" anchor="none" />
       <Piece file="stool" position={[4.5, FT, -1.1]} rotation={[0, 0.7, 0]} scale={1.1} tint="#9c845f" />
       <Piece file="bottle_A_green" position={[4.9, FT, -1.8]} scale={1.25} tint="#b8c49a" />
-      <Piece file="bottle_B_brown" position={[6.1, FT + 0.07, -0.6]} rotation={[0, 0.3, Math.PI / 2]} scale={1.2} tint="#c2a67c" anchor="none" />
+      <Piece file="bottle_B_brown" position={[5.6, FT + 0.07, -0.5]} rotation={[0, 0.3, Math.PI / 2]} scale={1.2} tint="#c2a67c" anchor="none" />
       <Piece file="plate_stack" position={[5.7, FT, -3.1]} scale={1.1} tint="#d8d2c0" />
       <Piece file="candle_lit" position={[4.9, FT, -2.15]} scale={1.35} tint="#b8ac92" />
-      <Piece file="candle_melted" position={[6.7, FT, -2.7]} scale={1.2} tint="#a89f8a" />
-      <Piece file="barrel_large" position={[7.5, FT, -4.2]} scale={1.1} tint="#a8906c" />
-      <Piece file="keg" position={[6.0, FT, -4.7]} scale={1.0} tint="#9c845f" />
-      <Piece file="box_stacked" position={[7.3, FT, 1.4]} scale={1.0} tint="#b09878" />
-      <Piece file="shelf_large" position={[7.85, -0.3, 0.4]} rotation={[0, -Math.PI / 2, 0]} scale={1.2} tint="#a8906c" anchor="none" />
-      <Piece file="bottle_A_green" position={[7.8, -0.14, 0.1]} rotation={[0, 0.4, 0]} scale={1.0} tint="#b8c49a" anchor="none" />
+      <Piece file="candle_melted" position={[5.9, FT, -3.2]} scale={1.2} tint="#a89f8a" />
+      <Piece file="barrel_large" position={[4.5, FT, -5.0]} scale={1.1} tint="#a8906c" />
+      <Piece file="keg" position={[3.6, FT, -4.7]} scale={1.0} tint="#9c845f" />
+      <Piece file="box_stacked" position={[6.6, FT, 4.2]} scale={1.0} tint="#b09878" />
+      <Piece file="shelf_large" position={[10.05, -0.3, 3.6]} rotation={[0, -Math.PI / 2, 0]} scale={1.2} tint="#a8906c" anchor="none" />
+      <Piece file="bottle_A_green" position={[10.0, -0.14, 3.3]} rotation={[0, 0.4, 0]} scale={1.0} tint="#b8c49a" anchor="none" />
 
       {/* wall dressing — torches on the side walls, well off the centre */}
       <Piece file="torch_mounted" position={[-7.85, -0.62, -3.45]} rotation={[0, Math.PI / 2, 0]} scale={1.2} tint="#b8a488" anchor="none" />
-      <Piece file="torch_mounted" position={[7.85, -0.62, -1.95]} rotation={[0, -Math.PI / 2, 0]} scale={1.2} tint="#b8a488" anchor="none" />
+      <Piece file="torch_mounted" position={[10.05, -0.62, -1.95]} rotation={[0, -Math.PI / 2, 0]} scale={1.2} tint="#b8a488" anchor="none" />
     </group>
   )
 }
@@ -220,7 +235,9 @@ function Lighting({ lit, lantern }) {
     const ignite = (delay) => lit
       ? THREE.MathUtils.smoothstep(since - delay, 0, 0.7)
       : Math.max(0, 1 - since / 0.5)
-    const leaving = 1 - Math.min(1, Math.max(0, (heroState.p - 0.45) / 0.4)) * 0.75
+    // the light handoff: as the visitor carries their lantern through the
+    // doorway, the hall they're leaving falls back into the dark behind them
+    const leaving = 1 - THREE.MathUtils.smoothstep(journey.t, 0.72, 1.3) * 0.82
     const ease = (ref, target, k = 0.05) => {
       if (ref.current) ref.current.intensity += (target - ref.current.intensity) * k
     }
@@ -306,7 +323,7 @@ function LanternOnHook({ lit }) {
   })
 
   return (
-    <group position={[7.68, 0.55, -3.0]} rotation={[0, -Math.PI / 2, 0]}>
+    <group position={[9.88, 0.55, -3.0]} rotation={[0, -Math.PI / 2, 0]}>
       {/* iron backplate + arm + upturned hook */}
       <mesh position={[0, 0.06, -0.03]}>
         <boxGeometry args={[0.09, 0.42, 0.05]} />
@@ -440,61 +457,18 @@ function WallInscriptions() {
 // ---------- the room (entrance) ----------
 export default function HeroRoom({ lit, lantern }) {
   const group = useRef()
-  const fadeRef = useRef()
-  const { camera } = useThree()
 
   const webGeo = useMemo(() => buildWeb(-7.6, 2.5, -5.82), [])
 
-  // exit: pull BACKWARD and up — the room recedes and shrinks away
-  const path = useMemo(() => new THREE.CatmullRomCurve3([
-    new THREE.Vector3(0, -0.25, 8.0),
-    new THREE.Vector3(0.2, 0.3, 11.2),
-    new THREE.Vector3(0.4, 1.1, 14.4),
-    new THREE.Vector3(0.6, 1.9, 17.8),
-  ]), [])
-  const lookTarget = useMemo(() => new THREE.Vector3(), [])
-  const camPos = useMemo(() => new THREE.Vector3(), [])
-
+  // The camera belongs to CameraRig now. A room's only job is to be a
+  // place: stand still, stay lit, and stop rendering once the visitor is
+  // two rooms away.
   useFrame(() => {
-    if (!group.current) return
-    const p = heroState.p
-    const active = heroState.active
-    group.current.visible = active
-    if (!active) return
-
-    const walk = THREE.MathUtils.smoothstep(p, 0.42, 1)
-    if (walk <= 0) {
-      // establishing rest: sit back and centre on the back wall so the
-      // hall reads open and the proclamation is large, centred and legible
-      camPos.set(
-        heroState.mouse.x * 0.5,
-        -0.25 + heroState.mouse.y * 0.26,
-        8.0
-      )
-      camera.position.lerp(camPos, 0.06)
-      lookTarget.set(heroState.mouse.x * 1.0, -0.3 + heroState.mouse.y * 0.45, -3.5)
-      if (camera.fov !== 58) { camera.fov += (58 - camera.fov) * 0.08; camera.updateProjectionMatrix() }
-    } else {
-      path.getPointAt(Math.min(walk, 0.999), camPos)
-      camera.position.lerp(camPos, 0.12)
-      const targetFov = 58 + THREE.MathUtils.smoothstep(walk, 0.3, 1) * 10
-      camera.fov += (targetFov - camera.fov) * 0.1
-      camera.updateProjectionMatrix()
-      lookTarget.set(
-        heroState.mouse.x * 0.4 * (1 - walk),
-        THREE.MathUtils.lerp(-0.45, -1.8, walk),
-        -2.8
-      )
-    }
-    camera.lookAt(lookTarget)
-
-    if (fadeRef.current) {
-      fadeRef.current.material.opacity = THREE.MathUtils.smoothstep(p, 0.78, 0.98)
-    }
+    if (group.current) group.current.visible = journey.visible[0]
   })
 
   return (
-    <group ref={group}>
+    <group ref={group} position={[0, 0, roomOffset(0)]}>
       <Lighting lit={lit} lantern={lantern} />
       <LanternOnHook lit={lit} />
       <ManorShell />
@@ -514,12 +488,6 @@ export default function HeroRoom({ lit, lantern }) {
       {/* the hanging spider silhouettes in the left corner, off the text */}
       <Spider anchor={[-6.9, 2.35, -5.5]} />
       <Critters />
-
-      {/* darkness closes over the receding room at the end of the pull */}
-      <mesh ref={fadeRef} position={[0.4, 0.6, 8.2]}>
-        <planeGeometry args={[46, 26]} />
-        <meshBasicMaterial color="#060504" transparent opacity={0} depthWrite={false} />
-      </mesh>
     </group>
   )
 }

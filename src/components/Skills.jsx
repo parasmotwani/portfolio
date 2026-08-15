@@ -34,6 +34,7 @@ export default function Skills() {
   return (
     <Chapter
       id="skills"
+      room={2}
       numeral="Room II"
       title="Skills & Tools"
       subtitle="Framed on the wall, under a decade of dust"

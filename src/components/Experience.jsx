@@ -71,6 +71,7 @@ export default function Experience() {
   return (
     <Chapter
       id="experience"
+      room={5}
       numeral="Room V"
       title="Experience"
       subtitle="The records room — everything filed, nothing forgotten"

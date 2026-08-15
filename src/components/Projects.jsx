@@ -1,7 +1,9 @@
 import { useEffect, useRef } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { usePerformance } from '../context/PerformanceContext'
+import { useDevice } from '../hooks/useDevice'
+import { journey } from '../scene/journey'
+import { plateStyle } from '../scene/plate'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -48,12 +50,10 @@ export default function Projects() {
   const outerRef = useRef(null)
   const trackRef = useRef(null)
   const shadeRef = useRef(null)
-  const { lowPower } = usePerformance()
+  const { immersive } = useDevice()
 
   useEffect(() => {
-    const isMobile = window.innerWidth < 768 || window.matchMedia('(pointer: coarse)').matches
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    if (isMobile || reduced || lowPower) return
+    if (!immersive) return
 
     const track = trackRef.current
     const getDistance = () => track.scrollWidth - window.innerWidth
@@ -68,20 +68,25 @@ export default function Projects() {
         pin: true,
         scrub: 0.6,
         invalidateOnRefresh: true,
+        // room IV of the manor — the gallery the camera walks along
+        onUpdate: (self) => { journey.t = 4 + self.progress },
       },
     })
-    tl.fromTo(shadeRef.current, { opacity: 1 }, { opacity: 0, duration: 0.1, ease: 'power2.out' }, 0)
     tl.to(track, { x: () => -getDistance(), ease: 'none', duration: 0.78 }, 0.08)
-    tl.to(shadeRef.current, { opacity: 1, duration: 0.12, ease: 'power2.in' }, 0.88)
 
     return () => {
       tl.scrollTrigger?.kill()
       tl.kill()
     }
-  }, [lowPower])
+  }, [immersive])
 
   return (
-    <section className="artifacts-outer" id="projects" ref={outerRef}>
+    <section
+      className={`artifacts-outer${immersive ? '' : ' chapter--plated'}`}
+      id="projects"
+      ref={outerRef}
+      style={immersive ? undefined : plateStyle(4)}
+    >
       <div className="room-shade" ref={shadeRef} aria-hidden="true" />
       <div className="chapter" style={{ minHeight: 'unset', paddingBottom: 36 }}>
         <header className="chapter-head" style={{ marginBottom: 0 }}>
@@ -98,6 +103,7 @@ export default function Projects() {
               key={project.title}
               className="artifact-card"
               data-hover
+              data-magnetic
               onClick={() => window.open(project.github, '_blank', 'noopener')}
             >
               <div className="artifact-idx">

@@ -4,8 +4,8 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Chapter from './Chapter'
 import Cobweb from './Cobweb'
 import Spider from './Spider'
-import { studyState } from '../scene/studyState'
-import { usePerformance } from '../context/PerformanceContext'
+import { journey } from '../scene/journey'
+import { useDevice } from '../hooks/useDevice'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -107,10 +107,33 @@ function StudyScene({ onDrawer, open }) {
 }
 
 function Booklet({ open, page, setPage, toggle }) {
+  // swipe to turn — on a phone the obvious gesture on something shaped
+  // like a book is to drag its page, not to hunt for a button
+  const swipe = useRef(null)
+  const onTouchStart = (e) => {
+    const t = e.changedTouches[0]
+    swipe.current = { x: t.clientX, y: t.clientY }
+  }
+  const onTouchEnd = (e) => {
+    const s = swipe.current
+    if (!s) return
+    swipe.current = null
+    const t = e.changedTouches[0]
+    const dx = t.clientX - s.x
+    // ignore vertical drags, which are the visitor scrolling past
+    if (Math.abs(dx) < 45 || Math.abs(t.clientY - s.y) > Math.abs(dx)) return
+    setPage((p) => Math.min(PAGES.length - 1, Math.max(0, p + (dx < 0 ? 1 : -1))))
+  }
+
   if (!open) return null
   return (
     <div className="booklet-backdrop" onClick={toggle}>
-      <div className="booklet" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="booklet"
+        onClick={(e) => e.stopPropagation()}
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+      >
         {PAGES.map((pg, i) => (
           <div
             key={i}
@@ -143,33 +166,21 @@ function Booklet({ open, page, setPage, toggle }) {
 }
 
 export default function DrawerRoom() {
-  const { lowPower } = usePerformance()
+  const { immersive } = useDevice()
   const [open, setOpen] = useState(false)
   const [page, setPage] = useState(0)
   const ref = useRef(null)
   const overlayRef = useRef(null)
 
-  const readSimple = () => (
-    lowPower ||
-    window.innerWidth < 768 ||
-    window.matchMedia('(pointer: coarse)').matches ||
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  )
-  const [simple, setSimple] = useState(readSimple)
-  useEffect(() => {
-    const update = () => setSimple(readSimple())
-    update()
-    window.addEventListener('resize', update)
-    return () => window.removeEventListener('resize', update)
-  }, [lowPower])
+  const simple = !immersive
 
   const toggle = () => {
     setOpen((v) => !v)
     setPage(0)
   }
 
-  // pinned pass through the 3D study — scroll scrubs studyState.p, the
-  // overlay copy inks in after the darkness lifts and out before exit
+  // pinned pass through the 3D study — scroll scrubs journey.t across
+  // room 1; the overlay copy inks in once the visitor is through the door
   useEffect(() => {
     if (simple || !ref.current) return
     const st = ScrollTrigger.create({
@@ -178,10 +189,10 @@ export default function DrawerRoom() {
       end: '+=170%',
       pin: true,
       scrub: 0.4,
-      onToggle: (self) => { studyState.active = self.isActive },
       onUpdate: (self) => {
         const p = self.progress
-        studyState.p = p
+        // room 1 occupies journey.t 1→2
+        journey.t = 1 + p
         if (overlayRef.current) {
           const fin = Math.min(1, Math.max(0, (p - 0.03) / 0.1))
           const fout = Math.min(1, Math.max(0, (p - 0.82) / 0.14))
@@ -191,16 +202,14 @@ export default function DrawerRoom() {
         }
       },
     })
-    return () => {
-      studyState.active = false
-      st.kill()
-    }
+    return () => st.kill()
   }, [simple])
 
   if (simple) {
     return (
       <Chapter
         id="about"
+        room={1}
         numeral="Room I"
         title="About"
         subtitle="A study, long unused. Something in here is worth opening."

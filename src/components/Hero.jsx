@@ -3,7 +3,9 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useScroll } from '../hooks/useScrollProgress'
 import { useLight } from '../context/LightContext'
-import { heroState } from '../scene/heroState'
+import { useDevice } from '../hooks/useDevice'
+import { journey } from '../scene/journey'
+import { plateStyle } from '../scene/plate'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -16,32 +18,16 @@ const ROLES = [
 export default function Hero() {
   const { started } = useScroll()
   const { lit } = useLight()
+  const { immersive, reduced } = useDevice()
   const [typed, setTyped] = useState('')
   const ref = useRef(null)
   const contentRef = useRef(null)
 
-  // pinned first-person exit: scroll scrubs heroState.p, the 3D camera
-  // is drawn out through the opening, and the text slips past the viewer.
-  // Gate is re-checked on resize — a window opened small must still pin
-  // once it grows past the breakpoint.
-  const [pinnable, setPinnable] = useState(() => (
-    window.innerWidth >= 768 &&
-    !window.matchMedia('(pointer: coarse)').matches &&
-    !window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  ))
+  // pinned first-person exit: scroll scrubs journey.t, the 3D camera
+  // is drawn out through the opening, and the text slips past the viewer
   useEffect(() => {
-    const update = () => setPinnable(
-      window.innerWidth >= 768 &&
-      !window.matchMedia('(pointer: coarse)').matches &&
-      !window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    )
-    window.addEventListener('resize', update)
-    return () => window.removeEventListener('resize', update)
-  }, [])
-
-  useEffect(() => {
-    if (!pinnable) {
-      heroState.p = 0
+    if (!immersive) {
+      journey.t = 0
       return
     }
 
@@ -55,8 +41,8 @@ export default function Hero() {
       scrub: 0.4,
       onUpdate: (self) => {
         const p = self.progress
-        heroState.p = p
-        heroState.active = p < 0.999
+        // room 0 occupies journey.t 0→1; the last stretch is the walk out
+        journey.t = p
         // text slips past the viewer as the walk begins — driven here so
         // it can never desync from the pin (a second ScrollTrigger would
         // measure against the pin spacer and drift)
@@ -72,12 +58,11 @@ export default function Hero() {
     })
 
     return () => st.kill()
-  }, [pinnable])
+  }, [immersive])
 
   useEffect(() => {
     if (!started) return
     const items = document.querySelectorAll('[data-hero-reveal]')
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     if (reduced) {
       gsap.set(items, { opacity: 1, y: 0 })
       return
@@ -89,7 +74,7 @@ export default function Hero() {
       0.3
     )
     return () => tl.kill()
-  }, [started])
+  }, [started, reduced])
 
   useEffect(() => {
     if (!started) return
@@ -123,7 +108,12 @@ export default function Hero() {
   return (
     // on desktop the copy lives ON the room's walls (WallInscriptions);
     // the DOM copy stays for screen readers, search, and the fallbacks
-    <section className={`hero${pinnable ? ' hero--diegetic' : ''}`} id="hero" ref={ref}>
+    <section
+      className={`hero${immersive ? ' hero--diegetic' : ' chapter--plated'}`}
+      id="hero"
+      ref={ref}
+      style={immersive ? undefined : plateStyle(0)}
+    >
       <div className="hero-content" ref={contentRef}>
         <p className="hero-epigraph" data-hero-reveal>
           {lit ? 'someone still lives here…' : 'the lights are out'}

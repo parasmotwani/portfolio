@@ -1,9 +1,10 @@
-import { useMemo, useRef } from 'react'
-import { useFrame, useThree } from '@react-three/fiber'
+import { useEffect, useMemo, useRef } from 'react'
+import { useFrame } from '@react-three/fiber'
 import { useTexture } from '@react-three/drei'
 import * as THREE from 'three'
-import { heroState } from './heroState'
-import { studyState } from './studyState'
+import { journey, roomOffset } from './journey'
+import { Flame } from './Flame'
+import { regrade } from './toonify'
 import { makeWebSheetTexture, SpiderModel } from './RoomDressing'
 
 // ============================================================
@@ -77,9 +78,13 @@ function Shell() {
         <planeGeometry args={[16, 14]} />
         <meshStandardMaterial map={plankD} normalMap={plankN} color="#9a8f7c" roughness={0.9} />
       </mesh>
-      {/* back wall around the window (opening x -3.0..-0.4, y -0.3..2.1) */}
+      {/* back wall around the window (opening x -3.0..-0.4, y -0.3..2.1)
+          and around the doorway to Room II (opening x 3.4..5.6, floor to
+          y 0.6) — the camera walks out through it */}
       <Wall size={[4.5, 5.1]} position={[-5.25, 0.15, -6]} />
-      <Wall size={[7.9, 5.1]} position={[3.55, 0.15, -6]} />
+      <Wall size={[3.8, 5.1]} position={[1.5, 0.15, -6]} />
+      <Wall size={[1.9, 5.1]} position={[6.55, 0.15, -6]} />
+      <Wall size={[2.2, 2.1]} position={[4.5, 1.65, -6]} />
       <Wall size={[2.6, 0.6]} position={[-1.7, 2.4, -6]} />
       <Wall size={[2.6, 2.1]} position={[-1.7, -1.35, -6]} />
       {/* sides */}
@@ -117,17 +122,19 @@ function Shell() {
 function StudyWindow({ lit }) {
   return (
     <group>
+      {/* the same night as the entrance hall — you walk here through a
+          doorway, so this cannot be a different time of day */}
       <mesh position={[-1.7, 0.9, -6.04]}>
         <planeGeometry args={[2.6, 2.4]} />
-        <meshBasicMaterial color="#f2f6ea" toneMapped={false} />
+        <meshBasicMaterial color="#8ea6c6" toneMapped={false} />
       </mesh>
       <mesh position={[-2.25, 0.35, -6.02]} rotation={[0, 0, 0.5]}>
         <planeGeometry args={[1.2, 0.9]} />
-        <meshBasicMaterial color="#b7c4a4" transparent opacity={0.45} toneMapped={false} />
+        <meshBasicMaterial color="#7c90ad" transparent opacity={0.45} toneMapped={false} />
       </mesh>
       <mesh position={[-1.15, 1.55, -6.02]} rotation={[0, 0, -0.3]}>
         <planeGeometry args={[0.9, 0.7]} />
-        <meshBasicMaterial color="#c2cdb0" transparent opacity={0.35} toneMapped={false} />
+        <meshBasicMaterial color="#8798b4" transparent opacity={0.35} toneMapped={false} />
       </mesh>
       {/* the dead pane, lower right */}
       <mesh position={[-1.05, 0.1, -6.01]}>
@@ -163,16 +170,17 @@ function StudyWindow({ lit }) {
         <meshStandardMaterial color="#d6ddcb" transparent opacity={0.35} roughness={0.1} side={THREE.DoubleSide} />
       </mesh>
 
-      {/* daylight */}
+      {/* moonlight — cold and weak, the same moon as the hall's window.
+          It shapes the room; it does not light it. The flames do that. */}
       <directionalLight
         position={[-1.7, 1.5, -5.4]}
         target-position={[1.8, -2.4, 1.6]}
-        color="#e9f1e2"
-        intensity={lit ? 3.6 : 1.05}
+        color="#cfdae8"
+        intensity={lit ? 1.0 : 0.62}
         castShadow
         shadow-mapSize={[1024, 1024]}
       />
-      <pointLight position={[-1.7, 0.9, -5.1]} color="#dfe8d8" intensity={lit ? 1.3 : 0.45} distance={9} decay={1.8} />
+      <pointLight position={[-1.7, 0.9, -5.1]} color="#c8d4e2" intensity={lit ? 0.42 : 0.3} distance={9} decay={1.8} />
       {/* volumetric shaft toward the table */}
       <mesh position={[-0.9, -0.7, -3.7]} rotation={[0.66, 0.14, 0]}>
         <planeGeometry args={[3.0, 5.4]} />
@@ -459,7 +467,7 @@ function Chair({ position, rotY = 0 }) {
 }
 
 // ---------- chandelier: iron, askew, one warm bulb ----------
-function Chandelier({ lit, swayRef, bulbRef }) {
+function Chandelier({ lit, swayRef }) {
   return (
     <group ref={swayRef} position={[0.3, 2.7, -2.1]}>
       <mesh position={[0, -0.27, 0]}>
@@ -470,6 +478,8 @@ function Chandelier({ lit, swayRef, bulbRef }) {
         <sphereGeometry args={[0.07, 10, 8]} />
         <meshStandardMaterial color="#17110a" roughness={0.6} metalness={0.3} />
       </mesh>
+      {/* four candles, and they are what lights this room — a house that
+          predates the light switch has no bulb to answer one */}
       {[0, Math.PI / 2, Math.PI, -Math.PI / 2].map((a, i) => (
         <group key={i} rotation={[0, a + 0.4, 0]}>
           <mesh position={[0.17, -0.62, 0]} rotation={[0, 0, 1.15]}>
@@ -484,19 +494,16 @@ function Chandelier({ lit, swayRef, bulbRef }) {
             <cylinderGeometry args={[0.02, 0.024, 0.12, 6]} />
             <meshStandardMaterial color="#c9c2b0" roughness={0.9} />
           </mesh>
+          <Flame
+            position={[0.32, -0.5, 0]}
+            lit={lit}
+            delay={0.3 + i * 0.22}
+            size={0.15}
+            light={2.1}
+            distance={11}
+          />
         </group>
       ))}
-      {/* the one bulb that still answers the switch */}
-      <mesh position={[0, -0.72, 0]}>
-        <sphereGeometry args={[0.055, 12, 10]} />
-        <meshStandardMaterial
-          color={lit ? '#f5cd85' : '#26201a'}
-          emissive={lit ? '#e8ab55' : '#000000'}
-          emissiveIntensity={lit ? 1.1 : 0}
-          roughness={0.35}
-        />
-      </mesh>
-      <pointLight ref={bulbRef} position={[0, -0.74, 0]} color="#ffbe70" distance={9} decay={1.9} />
     </group>
   )
 }
@@ -579,57 +586,31 @@ function StudySpider() {
 // ---------- the room ----------
 export default function StudyRoom({ lit }) {
   const group = useRef()
-  const fadeRef = useRef()
   const swayRef = useRef()
-  const bulbRef = useRef()
   const glintRef = useRef()
-  const { camera } = useThree()
-  const camPos = useMemo(() => new THREE.Vector3(), [])
-  const look = useMemo(() => new THREE.Vector3(), [])
+
+  // this room is authored in JSX rather than assembled from kit GLBs, so
+  // it needs pulling into the same 3-tone ramp the hall gets for free
+  useEffect(() => { regrade(group.current) }, [lit])
 
   useFrame(({ clock }) => {
     if (!group.current) return
-    const active = studyState.active && !heroState.active
-    group.current.visible = active
-    if (!active) return
+    group.current.visible = journey.visible[1]
+    if (!group.current.visible) return
     const t = clock.elapsedTime
-    const p = studyState.p
-
-    // camera: seated low in the room, slight parallax, slow push toward the table
-    camPos.set(
-      0.35 + heroState.mouse.x * 0.35,
-      -0.3 + heroState.mouse.y * 0.22,
-      5.8 - p * 0.7
-    )
-    camera.position.lerp(camPos, 0.07)
-    look.set(-0.3 + heroState.mouse.x * 0.8, -0.4 + heroState.mouse.y * 0.4, -2.2)
-    camera.lookAt(look)
-    if (Math.abs(camera.fov - 52) > 0.05) {
-      camera.fov += (52 - camera.fov) * 0.08
-      camera.updateProjectionMatrix()
-    }
 
     if (swayRef.current) {
       swayRef.current.rotation.z = Math.sin(t * 0.55) * 0.05
       swayRef.current.rotation.x = Math.sin(t * 0.38 + 1) * 0.03
     }
-    if (bulbRef.current) {
-      const flick = 0.9 + Math.sin(t * 11) * 0.02 + Math.sin(t * 23.7) * 0.03 + (Math.random() > 0.994 ? -0.3 : 0)
-      bulbRef.current.intensity = lit ? 1.7 * flick : 0
-    }
     if (glintRef.current) {
       glintRef.current.material.emissiveIntensity = 0.22 + Math.sin(t * 2.1) * 0.16
-    }
-    if (fadeRef.current) {
-      const fin = Math.max(0, 1 - p / 0.09)
-      const fout = Math.max(0, (p - 0.86) / 0.12)
-      fadeRef.current.material.opacity = Math.min(1, fin + fout)
     }
   })
 
   return (
-    <group ref={group} visible={false}>
-      <hemisphereLight args={['#b8c0b0', '#3a352c', lit ? 0.7 : 0.26]} />
+    <group ref={group} visible={false} position={[0, 0, roomOffset(1)]}>
+      <hemisphereLight args={['#8fa0b8', '#2c2820', lit ? 0.44 : 0.18]} />
       <Shell />
       <StudyWindow lit={lit} />
       <Wardrobe />
@@ -637,15 +618,10 @@ export default function StudyRoom({ lit }) {
       <Table />
       <Chair position={[1.35, 0, -1.05]} rotY={-0.5} />
       <Chair position={[-2.7, 0, -3.15]} rotY={3.5} />
-      <Chandelier lit={lit} swayRef={swayRef} bulbRef={bulbRef} />
+      <Chandelier lit={lit} swayRef={swayRef} />
       <Debris />
       <StudyWebs />
       <StudySpider />
-      {/* entry/exit darkness */}
-      <mesh ref={fadeRef} position={[0.3, 0, 4.5]}>
-        <planeGeometry args={[42, 24]} />
-        <meshBasicMaterial color="#060504" transparent opacity={1} depthWrite={false} />
-      </mesh>
     </group>
   )
 }

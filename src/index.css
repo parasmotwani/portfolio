@@ -48,12 +48,19 @@ html {
 html.lenis, html.lenis body { height: auto; }
 .lenis.lenis-smooth { scroll-behavior: auto !important; }
 
+/* `clip`, not `hidden`: hidden on body leaves fixed elements sized to an
+   already-widened layout viewport, so corner webs that hang past a room's
+   edge push the whole page sideways on phones. clip contains the axis
+   without creating a scroll container, so pinning and fixed layers still
+   behave. */
+html { overflow-x: clip; }
+
 body {
   font-family: var(--font-body);
   background: var(--bg);
   color: var(--ivory);
   line-height: 1.65;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 /* faint vignette + parchment grain feel */
@@ -311,6 +318,9 @@ button {
    ============================================================ */
 .chapter {
   position: relative;
+  /* corner webs and spider threads are drawn past the room's edge on
+     purpose — contain them sideways, but let them still hang vertically */
+  overflow-x: clip;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -1269,9 +1279,10 @@ button {
   .about-grid, .contact-grid { grid-template-columns: 1fr; }
   .divination-wrap { grid-template-columns: 1fr; }
   .spell-row { grid-template-columns: 44px 190px 1fr; gap: 16px; }
-}
 
-@media (max-width: 768px) {
+  /* six numbered links plus the room indicator stop fitting well before
+     the phone breakpoint — they were colliding with the wordmark around
+     800px, so the overlay takes over here rather than at 768 */
   .nav-links {
     display: none;
     position: fixed;
@@ -1286,7 +1297,9 @@ button {
   .nav-links a { font-size: 0.9rem; padding: 14px; }
   .mobile-toggle { display: block; z-index: 1002; }
   .nav-indicator { display: none; }
+}
 
+@media (max-width: 768px) {
   .stats-row { grid-template-columns: 1fr 1fr; }
   .stat:nth-child(2) { border-right: none; }
   .stat { border-bottom: 1px solid rgba(212, 169, 78, 0.12); }
@@ -2220,32 +2233,69 @@ html.lights-off .corner-whisper {
 }
 
 /* --- strike-a-light: the only ceremony before the dark --- */
-.strike-veil {
+/* The static track's scenery — the baked plate of the room the immersive
+   track walks through. Fixed attachment on desktop lets the copy scroll
+   over a held image; phones fall back to scroll (iOS never supported it
+   and it forces expensive repaints). */
+.chapter--plated {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+@media (hover: none), (pointer: coarse) {
+  .chapter--plated { background-attachment: scroll; }
+}
+
+/* ============================================================
+   THE CURSOR
+   While the house is dark the torch beam IS the cursor — a dot and ring
+   on top of it would be two cursors fighting. Once the lantern is hung
+   and the beam retires, this takes over: a gold point, a lagging ring
+   that opens over anything interactive, and magnetic pull on [data-magnetic].
+   GSAP drives x/y through transform, so centring is done with margins.
+   ============================================================ */
+.cursor-dot,
+.cursor-ring {
   position: fixed;
-  inset: 0;
-  z-index: 3000;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  padding-bottom: 16vh;
+  top: 0;
+  left: 0;
+  z-index: 4000;
   pointer-events: none;
-  transition: opacity 1s ease;
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.5s ease, width 0.25s ease, height 0.25s ease,
+              margin 0.25s ease, border-color 0.25s ease;
+  will-change: transform;
 }
 
-.strike-veil.struck { opacity: 0; }
-
-.strike-hint {
-  font-family: var(--font-flavor);
-  font-style: italic;
-  font-size: 1.05rem;
-  color: var(--ivory-dim);
-  animation: whisperFlicker 4.5s ease-in-out infinite;
+.cursor-dot {
+  width: 6px; height: 6px;
+  margin: -3px 0 0 -3px;
+  background: var(--gold);
 }
 
-.strike-hint span { color: var(--gold); }
+.cursor-ring {
+  width: 32px; height: 32px;
+  margin: -16px 0 0 -16px;
+  border: 1px solid var(--gold-faint);
+}
 
-@media (prefers-reduced-motion: reduce) {
-  .strike-hint { animation: none; }
+.cursor-ring.hovering {
+  width: 54px; height: 54px;
+  margin: -27px 0 0 -27px;
+  border-color: var(--gold);
+}
+
+html.lights-on .cursor-dot,
+html.lights-on .cursor-ring { opacity: 1; }
+
+@media (hover: fine) and (pointer: fine) {
+  html.lights-on, html.lights-on a, html.lights-on button { cursor: none; }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .cursor-dot, .cursor-ring { display: none; }
 }
 
 /* every room's way in and way out: darkness at both thresholds */

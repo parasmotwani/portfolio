@@ -1,7 +1,9 @@
 import { useEffect, useRef } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { usePerformance } from '../context/PerformanceContext'
+import { useDevice } from '../hooks/useDevice'
+import { journey } from '../scene/journey'
+import { plateStyle } from '../scene/plate'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -11,18 +13,18 @@ gsap.registerPlugin(ScrollTrigger)
 // content inks out and darkness swallows it before the pin releases — every
 // room has a way in AND a way out, except the last (`exit={false}`).
 // Mobile / reduced-motion / low-power fall back to simple play-once reveals.
-export default function Chapter({ id, numeral, title, subtitle, pin = true, exit = true, children, className = '' }) {
+// `room` ties the chapter to a room of the 3D manor: its pinned progress
+// becomes journey.t, and the black exit shade is suppressed — the walk
+// through the doorway replaces the cut it used to cover.
+export default function Chapter({ id, numeral, title, subtitle, pin = true, exit = true, room = null, children, className = '' }) {
   const ref = useRef(null)
   const shadeRef = useRef(null)
-  const { lowPower } = usePerformance()
+  const { immersive, reduced } = useDevice()
 
   useEffect(() => {
     const el = ref.current
     const shade = shadeRef.current
     if (!el) return
-
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    const mobile = window.innerWidth < 768 || window.matchMedia('(pointer: coarse)').matches
 
     const items = el.querySelectorAll('[data-reveal]')
     const strokes = el.querySelectorAll('[data-inscribe]')
@@ -40,8 +42,23 @@ export default function Chapter({ id, numeral, title, subtitle, pin = true, exit
     }
 
     let tl
+    let roomST
     const fades = []
-    if (mobile || lowPower || !pin) {
+
+    // Rooms that opt out of pinning (the game needs free scroll, the
+    // timeline is long) still have to move the camera through their room,
+    // so they get a scrub of their own rather than riding the pin.
+    if (immersive && room != null && !pin) {
+      roomST = ScrollTrigger.create({
+        trigger: el,
+        start: 'top 80%',
+        end: 'bottom 20%',
+        scrub: true,
+        onUpdate: (self) => { journey.t = room + self.progress },
+      })
+    }
+
+    if (!immersive || !pin) {
       tl = gsap.timeline({
         scrollTrigger: { trigger: el, start: 'top 72%', once: true },
       })
@@ -52,7 +69,7 @@ export default function Chapter({ id, numeral, title, subtitle, pin = true, exit
       tl.to(strokes, { strokeDashoffset: 0, duration: 1.4, stagger: 0.15, ease: 'power2.inOut' }, 0.1)
       // unpinned desktop rooms still get a way in and a way out: the shade
       // scrubs clear entering the viewport and closes again on the way off
-      if (exit && !mobile && !lowPower && shade) {
+      if (exit && immersive && shade) {
         fades.push(gsap.fromTo(shade, { opacity: 1 }, {
           opacity: 0, ease: 'none',
           scrollTrigger: { trigger: el, start: 'top 88%', end: 'top 32%', scrub: 0.5 },
@@ -71,6 +88,7 @@ export default function Chapter({ id, numeral, title, subtitle, pin = true, exit
           pin: true,
           scrub: 0.5,
           anticipatePin: 1,
+          onUpdate: room == null ? undefined : (self) => { journey.t = room + self.progress },
         },
       })
       // walk through the doorway: the room opens from a door-shaped arch
@@ -92,7 +110,7 @@ export default function Chapter({ id, numeral, title, subtitle, pin = true, exit
       tl.to(strokes, { strokeDashoffset: 0, stagger: 0.12, ease: 'none' }, 0.18)
       // dwell so the finished room holds before releasing
       tl.to({}, { duration: 0.25 })
-      if (exit && shade) {
+      if (exit && shade && room == null) {
         // leaving: the content inks back out and the dark takes the room
         tl.to(items, {
           opacity: 0, y: -16, filter: 'blur(4px)',
@@ -104,14 +122,20 @@ export default function Chapter({ id, numeral, title, subtitle, pin = true, exit
     }
 
     return () => {
+      roomST?.kill()
       tl?.scrollTrigger?.kill()
       tl?.kill()
       fades.forEach((f) => { f.scrollTrigger?.kill(); f.kill() })
     }
-  }, [pin, exit, lowPower])
+  }, [pin, exit, immersive, reduced, room])
 
   return (
-    <section className={`chapter ${className}`} id={id} ref={ref}>
+    <section
+      className={`chapter ${className}${!immersive && room != null ? ' chapter--plated' : ''}`}
+      id={id}
+      ref={ref}
+      style={immersive ? undefined : plateStyle(room)}
+    >
       {(numeral || title) && (
         <header className="chapter-head">
           {numeral && <span className="chapter-numeral" data-reveal>{numeral}</span>}
