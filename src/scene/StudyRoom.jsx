@@ -4,6 +4,7 @@ import { useTexture } from '@react-three/drei'
 import * as THREE from 'three'
 import { journey, roomOffset } from './journey'
 import { Flame } from './Flame'
+import { CANDLE_LIGHT, CANDLE_DIST } from './palette'
 import { Piece, regrade } from './toonify'
 import { Inscription, roughText } from './inscriptions'
 import { ProseBoard } from './RoomCopy'
@@ -250,11 +251,14 @@ function Wardrobe() {
 }
 
 // ---------- the hutch: shelves of what was left, and THE drawer ----------
+// Stands forward of the exit. Room I leaves by the door at x 4.5 and the
+// walk runs from z 1.0 back to z -5.7; the hutch used to sit at z -2.4,
+// squarely in that lane, so leaving the study went straight through it.
 function Hutch({ glintRef }) {
   const wood = { color: '#2e2114', roughness: 0.8 }
   const woodDark = { color: '#221709', roughness: 0.85 }
   return (
-    <group position={[5.55, 0, -2.4]} rotation={[0, -Math.PI / 2, 0]}>
+    <group position={[6.2, 0, 1.9]} rotation={[0, -Math.PI / 2, 0]}>
       {/* lower cabinet + counter */}
       <mesh position={[0, -1.72, 0]} castShadow receiveShadow>
         <boxGeometry args={[3.0, 1.35, 0.85]} />
@@ -680,9 +684,9 @@ export default function StudyRoom({ lit }) {
       {/* kept to the right of the table: dead centre they stood between
           the camera and the sheet on the wall and blocked the copy */}
       <Piece file="candle_triple" position={[-2.4, -1.25, 1.5]} scale={1.15} tint="#b8ac92" anchor="none" />
-      <Flame position={[-2.4, -0.82, 1.5]} lit={lit} base={0.45} delay={0.2} size={0.26} light={2.4} distance={11} />
+      <Flame position={[-2.4, -0.82, 1.5]} lit={lit} base={0.45} delay={0.2} size={0.26} light={CANDLE_LIGHT} distance={CANDLE_DIST} />
       <Piece file="candle_melted" position={[-3.4, -1.25, 0.7]} scale={0.9} tint="#a89f8a" anchor="none" />
-      <Flame position={[-3.4, -1.02, 0.7]} lit={lit} base={0.3} delay={0.9} size={0.18} light={1.2} distance={7} />
+      <Flame position={[-3.4, -1.02, 0.7]} lit={lit} base={0.3} delay={0.9} size={0.18} light={CANDLE_LIGHT} distance={CANDLE_DIST} />
       <Debris />
       <StudyWebs />
       <StudySpider />

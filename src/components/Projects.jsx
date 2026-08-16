@@ -10,7 +10,7 @@ gsap.registerPlugin(ScrollTrigger)
 const projects = [
   {
     title: 'Contract Intelligence System',
-    description: 'Databricks contract intelligence platform: large-scale document ingestion across 13 waves, 200–500 contracts per wave. Toggle-driven notebooks with Delta table persistence across 3+ pipeline stages.',
+    description: 'Databricks contract intelligence platform. Large-scale document ingestion across 13 waves at 200 to 500 contracts each, with toggle-driven notebooks persisting to Delta tables across 3+ pipeline stages.',
     tech: ['Python', 'Databricks', 'LLMs', 'Delta Lake'],
     github: 'https://github.com/parasmotwani',
   },
@@ -39,8 +39,8 @@ const projects = [
     github: 'https://github.com/parasmotwani/hybrid-recommendation-system',
   },
   {
-    title: 'SkimLit — NLP Paper Classifier',
-    description: 'NLP model classifying sentences in medical research abstracts — making literature skimming faster for researchers.',
+    title: 'SkimLit: NLP Paper Classifier',
+    description: 'NLP model classifying sentences in medical research abstracts, so researchers can skim literature faster.',
     tech: ['Python', 'TensorFlow', 'NLP', 'Deep Learning'],
     github: 'https://github.com/parasmotwani/Skim_Lit_NLP',
   },
@@ -93,7 +93,7 @@ export default function Projects() {
         <header className="chapter-head" style={{ marginBottom: 0 }}>
           <span className="chapter-numeral">Room IV</span>
           <h2 className="chapter-title">Projects</h2>
-          <p className="chapter-sub">A gallery of paintings nobody dusted — scroll, and it moves sideways</p>
+          <p className="chapter-sub">A gallery nobody dusted. Scroll, and it moves sideways.</p>
           <div className="orn-rule"><span className="gem" /></div>
         </header>
       </div>

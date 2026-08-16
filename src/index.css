@@ -2440,3 +2440,7 @@ html.lights-on .cursor-ring { opacity: 1; }
   background: var(--gold);
   color: var(--bg);
 }
+.contact-fallback--ok {
+  border-left-color: var(--gold);
+  background: rgba(212, 169, 78, 0.08);
+}

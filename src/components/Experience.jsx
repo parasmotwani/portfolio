@@ -95,7 +95,7 @@ export default function Experience() {
       room={5}
       numeral="Room V"
       title="Experience"
-      subtitle="The records room — everything filed, nothing forgotten"
+      subtitle="The records room. Everything filed, nothing forgotten."
       pin={false}
       className="room"
     >

@@ -25,8 +25,28 @@ const MONO = '"JetBrains Mono", monospace'
 // were slicing the heading off the top.
 const AT = [0, 0.1, -5.36]
 const SIZE = [8.2, 4.2]
+
+// Layout is authored once in this design space; the real canvas is derived
+// from the PLANE's own aspect and the context is scaled to match. The two
+// used to be independent — a fixed 1230x735 canvas (1.673) mapped onto an
+// 8.2x4.2 plane (1.952) — so every board was stretched 17% horizontally
+// and the text came out flattened. Deriving it also raises the resolution,
+// which is what made the lettering look soft up close.
 const W = 1230
 const H = 735
+const PPU = 190          // canvas pixels per world unit
+
+function boardCanvas([sw, sh]) {
+  return { cw: Math.round(sw * PPU), ch: Math.round(sh * PPU) }
+}
+
+// draw in design space no matter what the real canvas measures
+function inDesignSpace(g, cw, ch, fn) {
+  g.save()
+  g.scale(cw / W, ch / H)
+  fn()
+  g.restore()
+}
 
 function head(g, numeral, title, subtitle) {
   roughText(g, numeral.toUpperCase(), W / 2, 66, 26, INK_RULE, 0.7, { font: MONO })
@@ -44,13 +64,14 @@ function head(g, numeral, title, subtitle) {
 // Heading + running prose. Used where a room has something to say rather
 // than something to list.
 export function ProseBoard({ numeral, title, subtitle, lines, foot, at = AT, size = SIZE }) {
+  const { cw, ch } = boardCanvas(size)
   return (
     <Inscription
       position={at}
       size={size}
-      w={W}
-      h={H}
-      draw={(g) => {
+      w={cw}
+      h={ch}
+      draw={(g) => inDesignSpace(g, cw, ch, () => {
         drawParchment(g, W, H, 5)
         head(g, numeral, title, subtitle)
         lines.forEach((line, i) => {
@@ -61,21 +82,22 @@ export function ProseBoard({ numeral, title, subtitle, lines, foot, at = AT, siz
           roughText(g, foot, W / 2, H - 52, 30, INK_SOFT, 0.75, { font: SERIF, style: 'italic' })
         }
         erode(g, W, H, 170, 6)
-      }}
+      })}
     />
   )
 }
 
 // Heading + categories in two columns. Technical terms stay technical —
 // these are the real names, set as they are written.
-export function ListBoard({ numeral, title, subtitle, groups, foot }) {
+export function ListBoard({ numeral, title, subtitle, groups, foot, at = AT, size = SIZE }) {
+  const { cw, ch } = boardCanvas(size)
   return (
     <Inscription
-      position={AT}
-      size={SIZE}
-      w={W}
-      h={H}
-      draw={(g) => {
+      position={at}
+      size={size}
+      w={cw}
+      h={ch}
+      draw={(g) => inDesignSpace(g, cw, ch, () => {
         drawParchment(g, W, H, 9)
         head(g, numeral, title, subtitle)
 
@@ -104,7 +126,7 @@ export function ListBoard({ numeral, title, subtitle, groups, foot }) {
           roughText(g, foot, W / 2, H - 44, 28, INK_SOFT, 0.72, { font: SERIF, style: 'italic' })
         }
         erode(g, W, H, 170, 11)
-      }}
+      })}
     />
   )
 }

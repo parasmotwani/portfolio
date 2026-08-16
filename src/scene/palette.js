@@ -30,3 +30,13 @@ export const INK_BODY = '#43301a'
 export const INK_SOFT = '#5a4126'
 export const INK_RULE = '#7a4a20'
 export const INK_RED = '#7a2f22'
+
+// Candle light is uniform across the house on purpose. These ranged from
+// 1.0 to 2.4 with no logic to it, so identical candles read as "some are
+// dull, some are dead" rather than as one kind of object. A candle flame
+// lights at CANDLE_LIGHT over CANDLE_DIST; a mounted torch, being bigger,
+// gets TORCH_*. Nothing else in a room emits.
+export const CANDLE_LIGHT = 1.9
+export const CANDLE_DIST = 10
+export const TORCH_LIGHT = 2.4
+export const TORCH_DIST = 13

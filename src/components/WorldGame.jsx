@@ -437,9 +437,52 @@ export default function WorldGame() {
     const canvas = canvasRef.current
     if (!canvas) return
     const rect = canvas.getBoundingClientRect()
-    canvas.width = rect.width
-    canvas.height = rect.height
-    draw(canvas.getContext('2d'), canvas.width, canvas.height, 0)
+    canvas.width = Math.max(2, rect.width || 480)
+    canvas.height = Math.max(2, rect.height || 300)
+    const g = canvas.getContext('2d')
+
+    // An attract screen, not the game. The cabinet used to sit there
+    // running the world with nobody at it, which gives the whole thing
+    // away before the visitor has touched anything — the surprise of
+    // walking into a machine is the point. A real cabinet idles on a
+    // title card, and a blinking INSERT COIN is also the clearest
+    // possible signal that this is a thing you can play.
+    let raf
+    const loop = (ms) => {
+      raf = requestAnimationFrame(loop)
+      const t = ms / 1000
+      const w = canvas.width, h = canvas.height
+      g.fillStyle = '#0b0904'
+      g.fillRect(0, 0, w, h)
+
+      // slow scanline drift across the tube
+      g.globalAlpha = 0.05
+      g.fillStyle = '#ffb45e'
+      for (let y = (t * 26) % 5; y < h; y += 5) g.fillRect(0, y, w, 1)
+      g.globalAlpha = 1
+
+      g.textAlign = 'center'
+      g.fillStyle = '#e8c98a'
+      g.font = `bold ${Math.round(h * 0.13)}px "JetBrains Mono", monospace`
+      g.fillText('PM-2600', w / 2, h * 0.3)
+
+      g.fillStyle = '#8e6a2f'
+      g.font = `${Math.round(h * 0.062)}px "JetBrains Mono", monospace`
+      g.fillText('THE HOUSE, IN 2D', w / 2, h * 0.43)
+
+      // the blink
+      if (Math.sin(t * 3.4) > -0.25) {
+        g.fillStyle = '#ffcf7a'
+        g.font = `bold ${Math.round(h * 0.095)}px "JetBrains Mono", monospace`
+        g.fillText('INSERT COIN', w / 2, h * 0.68)
+      }
+
+      g.fillStyle = '#6b5228'
+      g.font = `${Math.round(h * 0.05)}px "JetBrains Mono", monospace`
+      g.fillText('WASD / ARROWS  ·  E TO INTERACT', w / 2, h * 0.85)
+    }
+    raf = requestAnimationFrame(loop)
+    return () => cancelAnimationFrame(raf)
   }, [playing, draw])
 
   // mobile d-pad handlers

@@ -5,6 +5,7 @@ import { journey, roomOffset } from './journey'
 import { Hotspot } from './Hotspot'
 import { Piece, preloadPieces } from './toonify'
 import { Flame } from './Flame'
+import { CANDLE_LIGHT, CANDLE_DIST } from './palette'
 import { Inscription, roughText, erode, drawSigil, drawParchment, drawNightScene } from './inscriptions'
 import { WebSheets, AnchorStrands, Critters, SpiderModel } from './RoomDressing'
 
@@ -278,10 +279,10 @@ function Lighting({ lit, lantern }) {
       <Flame position={[-4.0, 0.75, -5.42]} lit={lit} delay={0.35} size={0.3} light={1.5} distance={7} />
       <Flame position={[4.0, 0.75, -5.42]} lit={lit} delay={0.5} size={0.3} light={1.5} distance={7} />
       {/* the interrupted-meal candle keeps a pilot flame on the right */}
-      <Flame position={[4.9, -1.6, -2.15]} lit={lit} base={0.34} delay={0.8} size={0.3} light={1.6} distance={6.5} />
-      <Flame position={[6.7, -1.72, -2.7]} lit={lit} delay={1.1} size={0.24} light={1.0} distance={5} />
+      <Flame position={[4.9, -1.6, -2.15]} lit={lit} base={0.34} delay={0.8} size={0.3} light={CANDLE_LIGHT} distance={CANDLE_DIST} />
+      <Flame position={[5.9, -1.66, -3.2]} lit={lit} delay={1.1} size={0.24} light={CANDLE_LIGHT} distance={CANDLE_DIST} />
       {/* the triple candle on the trunk, left */}
-      <Flame position={[-6.0, -0.88, -2.4]} lit={lit} delay={1.3} size={0.3} light={1.3} distance={6} />
+      <Flame position={[-6.0, -0.88, -2.4]} lit={lit} delay={1.3} size={0.3} light={CANDLE_LIGHT} distance={CANDLE_DIST} />
       {/* the wall torches, last to catch */}
       <Flame position={[-7.55, 0.42, -3.45]} lit={lit} delay={1.6} size={0.44} light={2.0} distance={10} color="#ffab5e" />
       <Flame position={[7.55, 0.42, -1.95]} lit={lit} delay={1.9} size={0.44} light={1.9} distance={10} color="#ffab5e" />
@@ -400,9 +401,9 @@ function WallInscriptions() {
           g.globalAlpha = 1
           roughText(g, 'AI & DATA SCIENCE ENGINEER', w / 2, 424, 44, '#7a2f22', 0.96)
           const sum = [
-            'I build intelligent systems — agentic AI',
-            'workflows · contract intelligence · Databricks',
-            'autonomous data pipelines · AWS',
+            'I build intelligent systems: agentic AI',
+            'workflows, contract intelligence on',
+            'Databricks, data pipelines on AWS.',
           ]
           sum.forEach((line, i) => {
             roughText(g, line, w / 2, 494 + i * 46, 31, '#43301a', 0.9, { font: '"IM Fell English", serif' })
@@ -420,10 +421,10 @@ function WallInscriptions() {
         draw={(g, w, h) => {
           drawParchment(g, w, h, 11)
           const lines = [
-            ['agentic AI workflows', 0],
-            ['contract intelligence — Databricks', 1],
-            ['autonomous pipelines — AWS', 2],
-            ['B.Tech CSE — Manipal Univ. Jaipur', 3.1],
+            ['Agentic AI workflows', 0],
+            ['Contract intelligence, Databricks', 1],
+            ['Autonomous pipelines, AWS', 2],
+            ['B.Tech CSE, Manipal Univ. Jaipur', 3.1],
           ]
           lines.forEach(([txt, i]) => {
             roughText(g, txt, 100, 150 + i * 82, 40, '#43301a', 0.92, { align: 'left', rot: -0.006 * (i + 1), font: '"IM Fell English", serif' })

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import Chapter from './Chapter'
 import Cobweb from './Cobweb'
 import Spider from './Spider'
+import { sendMessage } from '../lib/sendMessage'
 
 const EMAIL = 'wparasmotwani@gmail.com'
 
@@ -15,7 +16,8 @@ const contactLinks = [
 
 export default function Contact() {
   const [formData, setFormData] = useState({ name: '', email: '', message: '' })
-  const [handedOff, setHandedOff] = useState(false)
+  // idle | sending | sent | failed
+  const [state, setState] = useState('idle')
   const [copied, setCopied] = useState('')
 
   const compose = () => {
@@ -26,19 +28,27 @@ export default function Contact() {
     }
   }
 
-  // This hands off to a mail client; it does not send anything itself. If
-  // the visitor has no mail app registered — routine on desktop Chrome and
-  // on most managed machines — the handoff silently does nothing. So the
-  // form must never claim the message went: it says what actually
-  // happened and offers the address and the drafted text instead.
-  const handleSubmit = (e) => {
+  // The form posts the message and reports what actually happened. It used
+  // to only open the visitor's mail client, which sends nothing at all when
+  // no mail app is registered — the message was lost and the sender was
+  // told it had gone.
+  const handleSubmit = async (e) => {
     e.preventDefault()
+    setState('sending')
+    try {
+      await sendMessage(formData)
+      setState('sent')
+    } catch {
+      // delivery failed (offline, blocked, endpoint not yet activated) —
+      // never claim it went; offer the routes that do not depend on us
+      setState('failed')
+    }
+  }
+
+  const openMailClient = () => {
     const { subject, body } = compose()
-    // location.href rather than window.open — a blocked popup leaves a
-    // dead blank tab and still no mail client
     window.location.href =
       `mailto:${EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
-    setHandedOff(true)
   }
 
   const copy = async (what, text) => {
@@ -105,17 +115,32 @@ export default function Contact() {
             onChange={(e) => setFormData({ ...formData, message: e.target.value })}
             required
           />
-          <button type="submit" className="btn solid" data-hover data-magnetic>
-            Compose email →
+          <button
+            type="submit"
+            className="btn solid"
+            data-hover
+            data-magnetic
+            disabled={state === 'sending' || state === 'sent'}
+          >
+            {state === 'sending' ? 'Sending…' : state === 'sent' ? '✓ Message sent' : 'Send message →'}
           </button>
 
-          {handedOff && (
+          {state === 'sent' && (
+            <div className="contact-fallback contact-fallback--ok" role="status">
+              <p>Delivered. A reply will come to {formData.email || 'the address you gave'}.</p>
+            </div>
+          )}
+
+          {state === 'failed' && (
             <div className="contact-fallback" role="status">
               <p>
-                Your mail app should have opened with this drafted. If it
-                didn’t, nothing has been sent — use one of these instead.
+                That didn’t send — nothing has reached Paras. Use one of
+                these instead; they don’t depend on this form.
               </p>
               <div className="contact-fallback-row">
+                <button type="button" data-hover onClick={openMailClient}>
+                  Open in mail app
+                </button>
                 <button type="button" data-hover onClick={() => copy('address', EMAIL)}>
                   {copied === 'address' ? '✓ address copied' : `Copy ${EMAIL}`}
                 </button>

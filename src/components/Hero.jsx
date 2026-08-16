@@ -127,9 +127,9 @@ export default function Hero() {
         </p>
         <p className="hero-summary" data-hero-reveal>
           Software Engineer at Celebal Technologies. I build intelligent
-          systems — agentic AI, MCP security middleware, and FinOps
-          tooling on Databricks. Computer Science graduate, Manipal
-          University Jaipur. The house holds the rest. Look carefully.
+          systems: agentic AI, MCP security middleware, and FinOps tooling
+          on Databricks. Computer Science graduate, Manipal University
+          Jaipur. The house holds the rest. Look carefully.
         </p>
       </div>
 
