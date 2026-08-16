@@ -324,7 +324,7 @@ function Hutch({ glintRef, leakRef, drawerRef }) {
           middle of the cabinet: it lit a different drawer entirely. It
           belongs in here, with the drawer it is coming out of. */}
       <group ref={drawerRef} position={[-0.55, -1.24, 0]}>
-        <Hotspot name="drawer" reach={22} />
+        <Hotspot name="drawer" room={1} reach={22} />
         <pointLight ref={leakRef} position={[0, 0.04, 0.66]} color="#f0c98a" intensity={0} distance={3.2} decay={2} />
         <mesh position={[0, 0, 0.3]} castShadow>
           <boxGeometry args={[0.95, 0.26, 0.6]} />

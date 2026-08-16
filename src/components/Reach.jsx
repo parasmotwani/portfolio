@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { hotspots } from '../scene/hotspots'
 
 // The DOM half of a hotspot: a round, borderless target that sits exactly
@@ -69,13 +70,32 @@ export default function Reach({ name, onClick, label, title }) {
     return () => cancelAnimationFrame(raf)
   }, [name])
 
-  return (
+  // Rendered into <body>, never into the room's own section.
+  //
+  // This is the bug that survived seven passes. .reach is position:fixed
+  // and is placed from coordinates the Hotspot projects in VIEWPORT space
+  // — but a transformed ancestor makes position:fixed resolve against that
+  // ancestor instead of the viewport, and both GSAP's pin and this file's
+  // own walk animation (scale + clipPath on the chapter) put a transform
+  // on the section these buttons lived inside. So the maths was right and
+  // the button still landed a page-length away: measured at a 1600x900
+  // viewport, the contact target sat at y=1907, a thousand pixels below
+  // the bottom of the screen, with elementFromPoint returning null.
+  //
+  // It read as "works" in every test because element.click() scrolls the
+  // node into view before clicking. Clicking the PIXEL is the test that
+  // catches it.
+  //
+  // Room III's arcade always worked, and that was the clue: it is the one
+  // unpinned room, so nothing ever transformed its ancestor.
+  return createPortal(
     <button
       ref={ref}
       className="reach"
       onClick={onClick}
       aria-label={label}
       title={title}
-    />
+    />,
+    document.body
   )
 }

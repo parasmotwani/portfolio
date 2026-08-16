@@ -339,7 +339,7 @@ function LanternOnHook({ lit }) {
     // anyway, and it stays framed at every aspect ratio.
     <group position={[4.1, 0.4, -4.92]}>
       {/* the DOM reach rides this, so it is always exactly on the hook */}
-      <Hotspot name="hook" reach={30} />
+      <Hotspot name="hook" room={0} reach={30} />
       {/* The house asks the visitor to find this, so it has to be findable.
           Unlit iron on a dark pillar is invisible; a slow pulse on the one
           interactive thing in a dark room is the oldest signal in games for
