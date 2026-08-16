@@ -9,6 +9,7 @@ import { Piece, regrade } from './toonify'
 import { Inscription, roughText } from './inscriptions'
 import { ProseBoard } from './RoomCopy'
 import { Hotspot } from './Hotspot'
+import { drawer } from './drawer'
 import { makeWebSheetTexture, SpiderModel } from './RoomDressing'
 
 // ============================================================
@@ -263,7 +264,7 @@ function Wardrobe() {
 // fix is to move Room I's DOORWAY left (doorCol) so the walk and the
 // furniture stop sharing the same three units, which is a change to the
 // room shell rather than the dressing.
-function Hutch({ glintRef, leakRef }) {
+function Hutch({ glintRef, leakRef, drawerRef }) {
   const wood = { color: '#2e2114', roughness: 0.8 }
   const woodDark = { color: '#221709', roughness: 0.85 }
   return (
@@ -318,9 +319,13 @@ function Hutch({ glintRef, leakRef }) {
           <meshStandardMaterial color={c} roughness={0.75} />
         </mesh>
       ))}
-      {/* THE DRAWER — pulled part-way, paper catching the light */}
-      <group position={[-0.55, -1.24, 0]}>
+      {/* THE DRAWER — pulled part-way, paper catching the light.
+          The leak used to sit at the hutch's own origin, which is the
+          middle of the cabinet: it lit a different drawer entirely. It
+          belongs in here, with the drawer it is coming out of. */}
+      <group ref={drawerRef} position={[-0.55, -1.24, 0]}>
         <Hotspot name="drawer" reach={22} />
+        <pointLight ref={leakRef} position={[0, 0.04, 0.66]} color="#f0c98a" intensity={0} distance={3.2} decay={2} />
         <mesh position={[0, 0, 0.3]} castShadow>
           <boxGeometry args={[0.95, 0.26, 0.6]} />
           <meshStandardMaterial color="#180f07" roughness={0.9} />
@@ -333,12 +338,6 @@ function Hutch({ glintRef, leakRef }) {
           <sphereGeometry args={[0.035, 10, 8]} />
           <meshStandardMaterial color="#6b5a3a" roughness={0.45} metalness={0.4} />
         </mesh>
-        {/* Light leaking out of the gap. The drawer being ajar was the only
-            signal that it opens, and an unlit crack in a dark room reads as
-            scenery — this is the difference between an object you notice
-            and one you walk past. Warm, weak, and slowly breathing, so it
-            draws the eye without announcing itself as UI. */}
-        <pointLight ref={leakRef} position={[0.1, 0.14, 0.6]} color="#f0c98a" intensity={0} distance={3.6} decay={2} />
         <mesh ref={glintRef} position={[0.1, 0.16, 0.5]} rotation={[-1.25, 0.1, 0.08]}>
           <planeGeometry args={[0.46, 0.14]} />
           <meshStandardMaterial
@@ -652,6 +651,7 @@ export default function StudyRoom({ lit }) {
   const swayRef = useRef()
   const glintRef = useRef()
   const leakRef = useRef()
+  const drawerRef = useRef()
 
   // this room is authored in JSX rather than assembled from kit GLBs, so
   // it needs pulling into the same 3-tone ramp the hall gets for free
@@ -667,8 +667,13 @@ export default function StudyRoom({ lit }) {
       swayRef.current.rotation.z = Math.sin(t * 0.55) * 0.05
       swayRef.current.rotation.x = Math.sin(t * 0.38 + 1) * 0.03
     }
+    // the pull: eased toward whatever the DOM asked for, so opening the
+    // drawer is something you watch happen rather than a cut to a booklet
+    drawer.at += (drawer.target - drawer.at) * 0.12
+    if (drawerRef.current) drawerRef.current.position.z = drawer.at * 0.62
     if (leakRef.current) {
-      leakRef.current.intensity = 3.6 + Math.sin(t * 1.6) * 1.1
+      // the gap widens as it comes out, so the light grows with it
+      leakRef.current.intensity = (3.4 + Math.sin(t * 1.6) * 1.0) * (1 + drawer.at * 1.6)
     }
     if (glintRef.current) {
       glintRef.current.material.emissiveIntensity = 0.5 + Math.sin(t * 2.1) * 0.3
@@ -681,7 +686,7 @@ export default function StudyRoom({ lit }) {
       <Shell />
       <StudyWindow lit={lit} />
       <Wardrobe />
-      <Hutch glintRef={glintRef} leakRef={leakRef} />
+      <Hutch glintRef={glintRef} leakRef={leakRef} drawerRef={drawerRef} />
       <Table />
       <Chair position={[-1.2, 0, 2.6]} rotY={-0.6} />
       <Chair position={[-4.4, 0, 0.2]} rotY={3.4} />

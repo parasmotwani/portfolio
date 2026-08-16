@@ -5,6 +5,7 @@ import Chapter from './Chapter'
 import Cobweb from './Cobweb'
 import Spider from './Spider'
 import { journey } from '../scene/journey'
+import { drawer } from '../scene/drawer'
 import Reach from './Reach'
 import { useDevice } from '../hooks/useDevice'
 
@@ -146,7 +147,7 @@ function Booklet({ open, page, setPage, toggle }) {
 
   if (!open) return null
   return (
-    <div className="booklet-backdrop" onClick={toggle}>
+    <div className="booklet-backdrop booklet-backdrop--wait" onClick={toggle}>
       <div
         className="booklet"
         onClick={(e) => e.stopPropagation()}
@@ -200,8 +201,19 @@ export default function DrawerRoom() {
 
   const simple = !immersive
 
+  // Opening is a short cutscene: the drawer slides out, and the booklet
+  // only comes up once it is actually open. Cutting straight to a panel
+  // made the egg feel like a button rather than a thing you found in a
+  // piece of furniture. Closing runs it backwards.
   const toggle = () => {
-    setOpen((v) => !v)
+    setOpen((wasOpen) => {
+      if (wasOpen) {
+        drawer.target = 0
+        return false
+      }
+      drawer.target = 1
+      return true
+    })
     setPage(0)
   }
 

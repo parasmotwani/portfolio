@@ -33,7 +33,7 @@ export default function Projects() {
         scrub: 0.6,
         invalidateOnRefresh: true,
         // room IV of the manor — the gallery the camera walks along
-        onUpdate: (self) => { journey.t = 4 + self.progress },
+        onUpdate: (self) => { if (self.isActive) journey.t = 4 + self.progress },
       },
     })
     tl.to(track, { x: () => -getDistance(), ease: 'none', duration: 0.78 }, 0.08)

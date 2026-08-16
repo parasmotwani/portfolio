@@ -42,7 +42,7 @@ export default function Hero() {
       onUpdate: (self) => {
         const p = self.progress
         // room 0 occupies journey.t 0→1; the last stretch is the walk out
-        journey.t = p
+        if (self.isActive) journey.t = p
         // text slips past the viewer as the walk begins — driven here so
         // it can never desync from the pin (a second ScrollTrigger would
         // measure against the pin spacer and drift)

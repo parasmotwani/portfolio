@@ -10,15 +10,23 @@ import Reach from './Reach'
 // fixed band down the right edge of the viewport, live on every room and
 // every scroll position, which made the light feel like a page-wide toggle
 // rather than an act you perform on an object.
+// Hanging the lantern is ONE WAY. It used to toggle, and taking it back
+// dropped the whole house to black — not just the hall. Deep in the manor
+// that means every room, the boards, and the nav all vanish behind a
+// full-page shade with only a small pool under the cursor, and the only
+// way out is to scroll all the way back to a hook you cannot see. Lighting
+// the house is something you do once.
 export default function LanternHook() {
   const { lit, setLit } = useLight()
+
+  if (lit) return null
 
   return (
     <Reach
       name="hook"
-      onClick={() => setLit(!lit)}
-      label={lit ? 'Take the lantern back from the hook' : 'Hang the lantern on the iron hook'}
-      title={lit ? 'Take the lantern back' : 'Hang the lantern'}
+      onClick={() => setLit(true)}
+      label="Hang the lantern on the iron hook"
+      title="Hang the lantern"
     />
   )
 }

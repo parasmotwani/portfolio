@@ -2570,3 +2570,23 @@ html.overflow-lock body {
 .hero--diegetic .room-shade {
   display: none !important;
 }
+
+/* The booklet waits for the drawer. The scene eases the drawer out over
+   roughly half a second; the panel fading in over the same beat is what
+   turns "a dialog opened" into "you pulled a drawer and there was
+   something in it". */
+.booklet-backdrop--wait {
+  animation: bookletWait 0.85s var(--ease-out) both;
+}
+@keyframes bookletWait {
+  0%   { opacity: 0; backdrop-filter: blur(0px); }
+  45%  { opacity: 0; backdrop-filter: blur(0px); }
+  100% { opacity: 1; }
+}
+.booklet-backdrop--wait .booklet {
+  animation: bookletRise 0.7s 0.36s var(--ease-out) both;
+}
+@keyframes bookletRise {
+  from { opacity: 0; transform: translateY(26px) scale(0.965); }
+  to   { opacity: 1; transform: none; }
+}

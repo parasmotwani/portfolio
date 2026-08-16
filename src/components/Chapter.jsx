@@ -54,7 +54,7 @@ export default function Chapter({ id, numeral, title, subtitle, pin = true, exit
         start: 'top 80%',
         end: 'bottom 20%',
         scrub: true,
-        onUpdate: (self) => { journey.t = room + self.progress },
+        onUpdate: (self) => { if (self.isActive) journey.t = room + self.progress },
       })
     }
 
@@ -93,7 +93,7 @@ export default function Chapter({ id, numeral, title, subtitle, pin = true, exit
           pin: true,
           scrub: 0.5,
           anticipatePin: 1,
-          onUpdate: room == null ? undefined : (self) => { journey.t = room + self.progress },
+          onUpdate: room == null ? undefined : (self) => { if (self.isActive) journey.t = room + self.progress },
         },
       })
       // walk through the doorway: the room opens from a door-shaped arch
