@@ -4,47 +4,11 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useDevice } from '../hooks/useDevice'
 import { journey } from '../scene/journey'
 import { plateStyle } from '../scene/plate'
+import Reach from './Reach'
+import { PROJECTS as projects } from '../scene/projects'
+import { projectAt } from '../scene/RoomCopy'
 
 gsap.registerPlugin(ScrollTrigger)
-
-const projects = [
-  {
-    title: 'Contract Intelligence System',
-    description: 'Databricks contract intelligence platform. Large-scale document ingestion across 13 waves at 200 to 500 contracts each, with toggle-driven notebooks persisting to Delta tables across 3+ pipeline stages.',
-    tech: ['Python', 'Databricks', 'LLMs', 'Delta Lake'],
-    github: 'https://github.com/parasmotwani',
-  },
-  {
-    title: 'Automated SAP Invoice Validation',
-    description: 'End-to-end autonomous browser workflow for SAP invoice validation using Amazon NovaAct. Upstream pipelines across 6 AWS services for zero-touch SAP interactions post-ingestion.',
-    tech: ['Python', 'AWS', 'Textract', 'Bedrock', 'NovaAct'],
-    github: 'https://github.com/parasmotwani/agentic_ai_invoice_validator',
-  },
-  {
-    title: 'Crypto Matching Engine',
-    description: 'Real-time trading pipeline handling 62K+ orders/sec with optimized concurrency. 3 modular ETL flows for ingesting, validating, and streaming trade data with automated PyTest checks.',
-    tech: ['Python', 'FastAPI', 'WebSocket', 'PyTest'],
-    github: 'https://github.com/parasmotwani/crypto-exchange-matching-engine',
-  },
-  {
-    title: 'Agentic AI Tutor',
-    description: 'AI-powered tutoring system delivering interactive, personalized learning through agentic AI workflows.',
-    tech: ['Python', 'AI Agents', 'LLMs'],
-    github: 'https://github.com/parasmotwani/agentic_ai_tutor',
-  },
-  {
-    title: 'Hybrid Recommendation System',
-    description: 'Content-based + collaborative filtering hybrid recommending top-10 products per user with improved accuracy over either approach alone.',
-    tech: ['Python', 'Scikit-learn', 'Pandas', 'ML'],
-    github: 'https://github.com/parasmotwani/hybrid-recommendation-system',
-  },
-  {
-    title: 'SkimLit: NLP Paper Classifier',
-    description: 'NLP model classifying sentences in medical research abstracts, so researchers can skim literature faster.',
-    tech: ['Python', 'TensorFlow', 'NLP', 'Deep Learning'],
-    github: 'https://github.com/parasmotwani/Skim_Lit_NLP',
-  },
-]
 
 export default function Projects() {
   const outerRef = useRef(null)
@@ -80,10 +44,23 @@ export default function Projects() {
     }
   }, [immersive])
 
+  // In the room the board shows one project at a time and scrolling walks
+  // along the wall, so the control here just opens whichever one the
+  // visitor is standing in front of. The cards stay in the DOM for screen
+  // readers, search and the static track — hidden, not deleted.
+  const openCurrent = () => {
+    const frac = Math.max(0, Math.min(0.999, journey.t - 4))
+    const p = projects[projectAt(frac, projects.length)]
+    if (p) window.open(p.github, '_blank', 'noopener')
+  }
+
   return (
     <div className="pin-slot">
+      {immersive && (
+        <Reach name="project" onClick={openCurrent} label="View this project on GitHub" title="View on GitHub" />
+      )}
     <section
-      className={`artifacts-outer${immersive ? '' : ' chapter--plated'}`}
+      className={`artifacts-outer${immersive ? ' chapter--diegetic' : ' chapter--plated'}`}
       id="projects"
       ref={outerRef}
       style={immersive ? undefined : plateStyle(4)}

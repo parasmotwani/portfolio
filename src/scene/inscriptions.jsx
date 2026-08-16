@@ -51,7 +51,7 @@ export function erode(g, w, h, n, seed = 7) {
 
 // A canvas-drawn plane pinned to a surface. Redraws once the site's
 // fonts are ready so the scrawl really is IM Fell, not a serif stand-in.
-export function Inscription({ draw, w = 1024, h = 512, position, rotation = [0, 0, 0], size = [4, 2], opacity = 1 }) {
+export function Inscription({ draw, w = 1024, h = 512, position, rotation = [0, 0, 0], size = [4, 2], opacity = 1, rev = 0 }) {
   const tex = useMemo(() => {
     const c = document.createElement('canvas')
     c.width = w; c.height = h
@@ -72,7 +72,9 @@ export function Inscription({ draw, w = 1024, h = 512, position, rotation = [0, 
     render()
     document.fonts.ready.then(render)
     return () => { alive = false }
-  }, [tex])
+    // `rev` lets a board redraw when what it says changes — the projects
+    // board is one plane showing a different project as you scroll
+  }, [tex, rev])
 
   return (
     <mesh position={position} rotation={rotation}>

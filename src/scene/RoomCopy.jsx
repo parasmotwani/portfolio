@@ -1,5 +1,6 @@
 import { Inscription, roughText, erode, drawParchment } from './inscriptions'
 import { INK, INK_BODY, INK_SOFT, INK_RULE, INK_RED } from './palette'
+import { THRESHOLD } from './journey'
 
 // ============================================================
 // A room's copy, inked on a board hung centre of its back wall.
@@ -142,6 +143,100 @@ export function ListBoard({ numeral, title, subtitle, groups, foot, at = AT, siz
           roughText(g, foot, W / 2, H - 44, 28, INK_SOFT, 0.72, { font: SERIF, style: 'italic' })
         }
         erode(g, W, H, 170, 11)
+      })}
+    />
+  )
+}
+
+// ---------------------------------------------------------------
+// One project, on the board, changed by scrolling.
+//
+// Room IV used to hang a horizontally-scrolling row of DOM cards in front
+// of the room while the board behind them listed the same six titles —
+// the gallery was a website sitting on top of a picture of a gallery.
+// This is the board doing the work: the wall shows the project you are
+// standing in front of, and scrolling walks you along the wall.
+// ---------------------------------------------------------------
+
+// Which project the visitor is in front of, from room IV's own 0..1
+// progress. Read by the scene (to draw it) and by the DOM (to open the
+// link), so it has to be one function.
+//
+// The six are packed into the front of the room's scroll, because the
+// camera does not hold still: it lerps from the viewing pose toward the
+// exit across the whole run-up to THRESHOLD, and past THRESHOLD it walks
+// out through the door. Mapped across the full range, the last projects
+// only ever appeared once the board had swung out of frame. Tied to
+// THRESHOLD so the two cannot drift apart.
+const VISIBLE = THRESHOLD * 0.62
+
+export function projectAt(progress, total) {
+  const p = Math.min(0.999, Math.max(0, progress) / VISIBLE)
+  return Math.max(0, Math.min(total - 1, Math.floor(p * total)))
+}
+
+function wrap(g, text, maxWidth) {
+  const words = text.split(' ')
+  const lines = []
+  let line = ''
+  words.forEach((word) => {
+    const test = line ? `${line} ${word}` : word
+    if (g.measureText(test).width > maxWidth && line) {
+      lines.push(line)
+      line = word
+    } else {
+      line = test
+    }
+  })
+  if (line) lines.push(line)
+  return lines
+}
+
+export function ProjectBoard({ project, index, total, action }) {
+  const { cw, ch } = boardCanvas(SIZE)
+  return (
+    <Inscription
+      position={AT}
+      size={SIZE}
+      w={cw}
+      h={ch}
+      rev={index}
+      draw={(g) => inDesignSpace(g, cw, ch, () => {
+        drawParchment(g, W, H, 5)
+        roughText(g, 'ROOM IV · PROJECTS', W / 2, 62, 24, INK_RULE, 0.7, { font: MONO })
+        roughText(g, `${String(index + 1).padStart(2, '0')} / ${String(total).padStart(2, '0')}`, W / 2, 104, 26, INK_RED, 0.8, { font: MONO })
+
+        roughText(g, project.title, W / 2, 176, 52, INK, 0.96)
+        g.strokeStyle = INK_RULE
+        g.globalAlpha = 0.5
+        g.lineWidth = 2.5
+        g.beginPath(); g.moveTo(W * 0.24, 202); g.lineTo(W * 0.76, 204); g.stroke()
+        g.globalAlpha = 1
+
+        // the description has to wrap: these run long and a fixed line
+        // break would clip the moment any copy changed
+        g.font = `30px ${SERIF}`
+        const lines = wrap(g, project.description, W * 0.72)
+        lines.slice(0, 5).forEach((line, i) => {
+          roughText(g, line, W / 2, 258 + i * 42, 30, INK_BODY, 0.92, { font: SERIF })
+        })
+
+        roughText(g, project.tech.join('  ·  '), W / 2, 258 + Math.min(lines.length, 5) * 42 + 34, 26, INK_SOFT, 0.85, { font: MONO })
+
+        if (action) {
+          const bw = 400, bh = 72, bx = W / 2 - bw / 2, by = H - 172
+          g.strokeStyle = INK_RED
+          g.globalAlpha = 0.6
+          g.lineWidth = 3
+          g.strokeRect(bx, by, bw, bh)
+          g.globalAlpha = 0.14
+          g.fillStyle = INK_RED
+          g.fillRect(bx, by, bw, bh)
+          g.globalAlpha = 1
+          roughText(g, action, W / 2, by + 48, 32, INK_RED, 0.95, { font: SERIF })
+        }
+        roughText(g, 'keep scrolling to walk along the wall', W / 2, H - 52, 27, INK_SOFT, 0.7, { font: SERIF, style: 'italic' })
+        erode(g, W, H, 170, 6)
       })}
     />
   )

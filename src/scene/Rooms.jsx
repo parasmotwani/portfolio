@@ -1,10 +1,11 @@
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
 import ManorRoom, { cols, FLOOR } from './ManorRoom'
 import { Piece, preloadPieces } from './toonify'
 import { Flame } from './Flame'
-import { ProseBoard, ListBoard } from './RoomCopy'
+import { ProseBoard, ListBoard, ProjectBoard, projectAt } from './RoomCopy'
 import { Hotspot } from './Hotspot'
+import { PROJECTS } from './projects'
 import Arcade from './Arcade'
 import { journey, roomOffset, roomShift } from './journey'
 import { WOOD, WOOD_DARK, STONE, CRATE, WAX, IRON, FLAME_WARM, CANDLE_LIGHT, CANDLE_DIST } from './palette'
@@ -119,23 +120,36 @@ export function GameRoom({ lit }) {
 }
 
 // ---------------- Room IV — Projects ----------------
+// The board shows the project you are standing in front of, and scrolling
+// walks you along the wall. journey.t carries room IV's own progress, so
+// the index comes from there — but journey.t moves every frame and nothing
+// in the scene may re-render per frame, so this watches it in a rAF loop
+// and only sets state when the project actually changes.
 export function ProjectsRoom({ lit }) {
+  const [idx, setIdx] = useState(0)
+
+  useEffect(() => {
+    let raf
+    const loop = () => {
+      raf = requestAnimationFrame(loop)
+      const frac = Math.max(0, Math.min(0.999, journey.t - 4))
+      const i = projectAt(frac, PROJECTS.length)
+      setIdx((prev) => (prev === i ? prev : i))
+    }
+    raf = requestAnimationFrame(loop)
+    return () => cancelAnimationFrame(raf)
+  }, [])
+
   return (
     <Room index={4} doorCol={0} lit={lit} windowSide="right" windowRow={1}>
-      <ListBoard
-        numeral="Room IV"
-        title="Projects"
-        subtitle="a gallery nobody dusted"
-        groups={[
-          { label: 'Contract Intelligence System', items: ['Python · Databricks · LLMs · Delta Lake'] },
-          { label: 'Automated SAP Invoice Validation', items: ['Python · AWS · Textract · Bedrock'] },
-          { label: 'Crypto Matching Engine', items: ['Python · FastAPI · WebSocket · PyTest'] },
-          { label: 'Agentic AI Tutor', items: ['Python · AI Agents · LLMs'] },
-          { label: 'Hybrid Recommendation System', items: ['Python · Scikit-learn · Pandas'] },
-          { label: 'SkimLit: NLP Paper Classifier', items: ['Python · TensorFlow · NLP'] },
-        ]}
-        foot="the frames below carry the links"
+      <ProjectBoard
+        project={PROJECTS[idx]}
+        index={idx}
+        total={PROJECTS.length}
+        action="View on GitHub"
       />
+      {/* rides the drawn control, so the link opens from the board itself */}
+      <Hotspot name="project" reach={30} position={[0, -0.58, -5.3]} />
       <BoardLights lit={lit} />
       <Piece file="pillar" position={[-6.4, FLOOR, 4.6]} scale={1.275} tint={STONE} />
       <Piece file="pillar" position={[6.4, FLOOR, -3.6]} scale={1.275} tint={STONE} />
