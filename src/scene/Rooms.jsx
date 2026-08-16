@@ -3,9 +3,10 @@ import { useFrame } from '@react-three/fiber'
 import ManorRoom, { cols, FLOOR } from './ManorRoom'
 import { Piece, preloadPieces } from './toonify'
 import { Flame } from './Flame'
-import { ProseBoard, ListBoard, ProjectBoard, projectAt } from './RoomCopy'
+import { ProseBoard, ListBoard, ProjectBoard, RecordBoard, projectAt } from './RoomCopy'
 import { Hotspot } from './Hotspot'
 import { PROJECTS } from './projects'
+import { RECORD } from './record'
 import Arcade from './Arcade'
 import { journey, roomOffset, roomShift } from './journey'
 import { WOOD, WOOD_DARK, STONE, CRATE, WAX, IRON, FLAME_WARM, CANDLE_LIGHT, CANDLE_DIST } from './palette'
@@ -166,24 +167,28 @@ export function ProjectsRoom({ lit }) {
 }
 
 // ---------------- Room V — Experience ----------------
+// The records wall, walked the same way as the gallery: one post at a
+// time, ending on the certifications. It used to be a single board listing
+// four job titles in three lines each, which is a resume screenshot rather
+// than a room.
 export function ExperienceRoom({ lit }) {
+  const [idx, setIdx] = useState(0)
+
+  useEffect(() => {
+    let raf
+    const loop = () => {
+      raf = requestAnimationFrame(loop)
+      const frac = Math.max(0, Math.min(0.999, journey.t - 5))
+      const i = projectAt(frac, RECORD.length)
+      setIdx((prev) => (prev === i ? prev : i))
+    }
+    raf = requestAnimationFrame(loop)
+    return () => cancelAnimationFrame(raf)
+  }, [])
+
   return (
     <Room index={5} doorCol={3} lit={lit} windowSide="left" windowRow={1}>
-      <ProseBoard
-        numeral="Room V"
-        title="Experience"
-        subtitle="the records room, everything filed"
-        lines={[
-          'Software Engineer, Celebal Technologies',
-          'Jun 2026 to present. BFF auth on Entra ID,',
-          'Pluto (AI FinOps agent), MCP security middleware.',
-          '',
-          'Data Science Trainee, Feb to May 2026',
-          'Data Science Intern, Oct 2025 to Jan 2026',
-          'AI Research Intern, Coding Jr, 2025',
-        ]}
-        foot="9+ certifications: NPTEL, Cisco, IBM, Red Hat, Oracle"
-      />
+      <RecordBoard entry={RECORD[idx]} index={idx} total={RECORD.length} />
       <BoardLights lit={lit} />
       <Piece file="chest" position={[-6.2, FLOOR, -4.0]} rotation={[0, 0.9, 0]} scale={1.2} tint={WOOD} />
       <Piece file="chest" position={[-6.6, FLOOR, -1.2]} rotation={[0, 1.3, 0]} scale={1.15} tint="#a08869" />

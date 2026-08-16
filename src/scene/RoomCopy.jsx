@@ -241,3 +241,45 @@ export function ProjectBoard({ project, index, total, action }) {
     />
   )
 }
+
+// One record at a time, same walk-along-the-wall as the projects board.
+export function RecordBoard({ entry, index, total }) {
+  const { cw, ch } = boardCanvas(SIZE)
+  return (
+    <Inscription
+      position={AT}
+      size={SIZE}
+      w={cw}
+      h={ch}
+      rev={index}
+      draw={(g) => inDesignSpace(g, cw, ch, () => {
+        drawParchment(g, W, H, 9)
+        roughText(g, 'ROOM V · EXPERIENCE', W / 2, 62, 24, INK_RULE, 0.7, { font: MONO })
+        roughText(g, `${String(index + 1).padStart(2, '0')} / ${String(total).padStart(2, '0')}`, W / 2, 104, 26, INK_RED, 0.8, { font: MONO })
+
+        roughText(g, entry.title, W / 2, 172, 48, INK, 0.96)
+        roughText(g, entry.where, W / 2, 216, 28, INK_BODY, 0.9, { font: SERIF })
+        roughText(g, entry.when, W / 2, 254, 25, INK_RED, 0.82, { font: MONO })
+
+        g.strokeStyle = INK_RULE
+        g.globalAlpha = 0.45
+        g.lineWidth = 2
+        g.beginPath(); g.moveTo(W * 0.26, 282); g.lineTo(W * 0.74, 284); g.stroke()
+        g.globalAlpha = 1
+
+        let y = 336
+        entry.lines.forEach((raw) => {
+          g.font = `27px ${SERIF}`
+          wrap(g, raw, W * 0.76).forEach((line) => {
+            roughText(g, line, W / 2, y, 27, INK_BODY, 0.9, { font: SERIF })
+            y += 36
+          })
+          y += 12
+        })
+
+        roughText(g, 'keep scrolling to walk along the records', W / 2, H - 52, 27, INK_SOFT, 0.7, { font: SERIF, style: 'italic' })
+        erode(g, W, H, 170, 11)
+      })}
+    />
+  )
+}

@@ -315,9 +315,16 @@ function Lighting({ lit, lantern }) {
 // ---------- the iron hook, and the lantern once it's hung ----------
 function LanternOnHook({ lit }) {
   const sway = useRef()
+  const beaconRef = useRef()
+  const beaconLightRef = useRef()
 
   useFrame(({ clock }) => {
     const t = clock.elapsedTime
+    // the beacon breathes: bright enough to catch the eye across a dark
+    // hall, slow enough not to read as a UI blink
+    const pulse = 0.5 + Math.sin(t * 1.9) * 0.5
+    if (beaconRef.current) beaconRef.current.material.opacity = 0.16 + pulse * 0.3
+    if (beaconLightRef.current) beaconLightRef.current.intensity = 1.4 + pulse * 2.6
     if (sway.current) {
       sway.current.rotation.z = Math.sin(t * 1.1) * 0.055
       sway.current.rotation.x = Math.sin(t * 0.7 + 1) * 0.03
@@ -333,6 +340,20 @@ function LanternOnHook({ lit }) {
     <group position={[4.1, 0.4, -4.92]}>
       {/* the DOM reach rides this, so it is always exactly on the hook */}
       <Hotspot name="hook" reach={30} />
+      {/* The house asks the visitor to find this, so it has to be findable.
+          Unlit iron on a dark pillar is invisible; a slow pulse on the one
+          interactive thing in a dark room is the oldest signal in games for
+          "go here". It fades out once the lantern is hung, because then
+          there is nothing left to find. */}
+      {!lit && (
+        <>
+          <mesh ref={beaconRef} position={[0, 0.16, 0.26]}>
+            <sphereGeometry args={[0.13, 14, 12]} />
+            <meshBasicMaterial color="#f0c98a" transparent opacity={0.34} toneMapped={false} />
+          </mesh>
+          <pointLight ref={beaconLightRef} position={[0, 0.16, 0.3]} color="#f0c98a" intensity={0} distance={4.2} decay={1.8} />
+        </>
+      )}
       {/* iron backplate + arm + upturned hook */}
       <mesh position={[0, 0.06, -0.03]}>
         <boxGeometry args={[0.09, 0.42, 0.05]} />
@@ -411,13 +432,21 @@ function WallInscriptions() {
           erode(g, w, h, 200, 5)
         }}
       />
-      {/* working notes inked on a smaller sheet, back wall far-left */}
+      {/* Working notes, back wall left of centre.
+          The first letters of some lines were being eaten, and it was NOT
+          a canvas margin — the text is drawn well inside PARCHMENT_SAFE.
+          The sheet itself was too far left and too wide: centred at -6.55
+          at 3.5 units across it spanned -8.3, and the left wall stands at
+          x -8 (panels ~0.38 thick, so -8.19..-7.81). Its left edge was
+          simply buried in the masonry, which cuts a clean vertical line
+          and takes whatever letters are behind it. Narrower, and moved
+          right, it clears the wall with room to spare. */}
       <Inscription
-        position={[-6.55, 0.72, -5.46]}
+        position={[-5.85, 0.72, -5.46]}
         rotation={[0, 0, 0.015]}
-        size={[2.9, 1.95]}
-        w={768}
-        h={512}
+        size={[3.2, 2.0]}
+        w={980}
+        h={612}
         draw={(g, w, h) => {
           drawParchment(g, w, h, 11)
           const lines = [
@@ -427,12 +456,12 @@ function WallInscriptions() {
             ['B.Tech CSE, Manipal Univ. Jaipur', 3.1],
           ]
           lines.forEach(([txt, i]) => {
-            roughText(g, txt, 100, 150 + i * 82, 40, '#43301a', 0.92, { align: 'left', rot: -0.006 * (i + 1), font: '"IM Fell English", serif' })
+            roughText(g, txt, 178, 168 + i * 92, 38, '#43301a', 0.92, { align: 'left', rot: -0.006 * (i + 1), font: '"IM Fell English", serif' })
           })
           g.strokeStyle = '#43301a'
           g.globalAlpha = 0.6
           g.lineWidth = 2
-          g.beginPath(); g.moveTo(98, 174); g.lineTo(430, 180); g.stroke()
+          g.beginPath(); g.moveTo(176, 194); g.lineTo(560, 200); g.stroke()
           g.globalAlpha = 1
           erode(g, w, h, 260, 21)
         }}
@@ -500,7 +529,9 @@ export default function HeroRoom({ lit, lantern }) {
       </lineSegments>
 
       {/* the hanging spider silhouettes in the left corner, off the text */}
-      <Spider anchor={[-6.9, 2.35, -5.5]} />
+      {/* Hangs clear of the working notes. At x -6.9 it dangled straight
+          down the middle of the sheet and sat on the copy. */}
+      <Spider anchor={[-8.6, 2.35, -4.6]} />
       <Critters />
     </group>
   )

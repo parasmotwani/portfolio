@@ -67,9 +67,14 @@ export default function Chapter({ id, numeral, title, subtitle, pin = true, exit
         duration: 0.8, stagger: 0.09, ease: 'power3.out',
       }, 0)
       tl.to(strokes, { strokeDashoffset: 0, duration: 1.4, stagger: 0.15, ease: 'power2.inOut' }, 0.1)
-      // unpinned desktop rooms still get a way in and a way out: the shade
-      // scrubs clear entering the viewport and closes again on the way off
-      if (exit && immersive && shade) {
+      // Unpinned rooms get a way in and a way out — EXCEPT rooms of the
+      // manor. A room tied to `room` is walked into through a doorway, and
+      // laying a black shade over it as well means the Game Room darkens
+      // and lifts for no reason while you scroll past a machine that is
+      // already the only light in it. The pinned branch below has always
+      // suppressed the shade for manor rooms; this one did not, which is
+      // the odd fade in Room III.
+      if (exit && immersive && shade && room == null) {
         fades.push(gsap.fromTo(shade, { opacity: 1 }, {
           opacity: 0, ease: 'none',
           scrollTrigger: { trigger: el, start: 'top 88%', end: 'top 32%', scrub: 0.5 },
