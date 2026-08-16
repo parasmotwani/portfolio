@@ -15,16 +15,40 @@ const contactLinks = [
 
 export default function Contact() {
   const [formData, setFormData] = useState({ name: '', email: '', message: '' })
-  const [sent, setSent] = useState(false)
+  const [handedOff, setHandedOff] = useState(false)
+  const [copied, setCopied] = useState('')
 
+  const compose = () => {
+    const { name, email, message } = formData
+    return {
+      subject: `Portfolio enquiry from ${name || 'a visitor'}`,
+      body: `${message}\n\n—\n${name}\n${email}`,
+    }
+  }
+
+  // This hands off to a mail client; it does not send anything itself. If
+  // the visitor has no mail app registered — routine on desktop Chrome and
+  // on most managed machines — the handoff silently does nothing. So the
+  // form must never claim the message went: it says what actually
+  // happened and offers the address and the drafted text instead.
   const handleSubmit = (e) => {
     e.preventDefault()
-    const { name, email, message } = formData
-    const subject = encodeURIComponent(`Portfolio Contact from ${name}`)
-    const body = encodeURIComponent(`Name: ${name}\nEmail: ${email}\n\n${message}`)
-    window.open(`mailto:${EMAIL}?subject=${subject}&body=${body}`)
-    setSent(true)
-    setTimeout(() => setSent(false), 3000)
+    const { subject, body } = compose()
+    // location.href rather than window.open — a blocked popup leaves a
+    // dead blank tab and still no mail client
+    window.location.href =
+      `mailto:${EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+    setHandedOff(true)
+  }
+
+  const copy = async (what, text) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopied(what)
+      setTimeout(() => setCopied(''), 2400)
+    } catch {
+      setCopied('')
+    }
   }
 
   return (
@@ -82,8 +106,32 @@ export default function Contact() {
             required
           />
           <button type="submit" className="btn solid" data-hover data-magnetic>
-            {sent ? '✓ Opening email client' : 'Send Message →'}
+            Compose email →
           </button>
+
+          {handedOff && (
+            <div className="contact-fallback" role="status">
+              <p>
+                Your mail app should have opened with this drafted. If it
+                didn’t, nothing has been sent — use one of these instead.
+              </p>
+              <div className="contact-fallback-row">
+                <button type="button" data-hover onClick={() => copy('address', EMAIL)}>
+                  {copied === 'address' ? '✓ address copied' : `Copy ${EMAIL}`}
+                </button>
+                <button
+                  type="button"
+                  data-hover
+                  onClick={() => {
+                    const { subject, body } = compose()
+                    copy('message', `${subject}\n\n${body}`)
+                  }}
+                >
+                  {copied === 'message' ? '✓ message copied' : 'Copy the message'}
+                </button>
+              </div>
+            </div>
+          )}
         </form>
       </div>
     </Chapter>

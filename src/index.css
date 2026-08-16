@@ -2401,3 +2401,42 @@ html.lights-on .cursor-ring { opacity: 1; }
    toggle (which swaps the whole tree) threw removeChild/insertBefore and
    blanked the page. Purely structural — no layout of its own. */
 .pin-slot { position: relative; }
+
+/* Shown after the mail handoff. The form cannot send anything itself — it
+   opens the visitor's mail app — so when there is no mail app registered
+   the message goes nowhere. Rather than claim success, say what happened
+   and give two paths that always work. */
+.contact-fallback {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border: 1px solid var(--gold-faint);
+  border-left: 2px solid var(--gold-dim);
+  background: rgba(212, 169, 78, 0.05);
+}
+.contact-fallback p {
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: var(--ivory-dim);
+  margin-bottom: 12px;
+}
+.contact-fallback-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.contact-fallback-row button {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  padding: 9px 14px;
+  color: var(--gold);
+  background: transparent;
+  border: 1px solid var(--gold-dim);
+  cursor: pointer;
+  transition: background 0.25s var(--ease-out), color 0.25s var(--ease-out);
+}
+.contact-fallback-row button:hover {
+  background: var(--gold);
+  color: var(--bg);
+}
