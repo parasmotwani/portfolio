@@ -10,9 +10,13 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
+        // three is deliberately NOT a manual chunk: naming it here puts it in
+        // the initial graph, so Vite emits a modulepreload for it in
+        // index.html and every static (mobile) visit downloads ~1 MB it will
+        // never use. Left alone, Rollup keeps it inside the lazy SceneCanvas
+        // chunk, which only an immersive visit ever imports.
         manualChunks: {
-          three: ['three', '@react-three/fiber', '@react-three/drei'],
-          motion: ['framer-motion', 'gsap', 'lenis'],
+          motion: ['gsap', 'lenis'],
         }
       }
     }

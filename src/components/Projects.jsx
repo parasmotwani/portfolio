@@ -1,7 +1,9 @@
 import { useEffect, useRef } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { usePerformance } from '../context/PerformanceContext'
+import { useDevice } from '../hooks/useDevice'
+import { journey } from '../scene/journey'
+import { plateStyle } from '../scene/plate'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -47,37 +49,46 @@ const projects = [
 export default function Projects() {
   const outerRef = useRef(null)
   const trackRef = useRef(null)
-  const { lowPower } = usePerformance()
+  const shadeRef = useRef(null)
+  const { immersive } = useDevice()
 
   useEffect(() => {
-    const isMobile = window.innerWidth < 768 || window.matchMedia('(pointer: coarse)').matches
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    if (isMobile || reduced || lowPower) return
+    if (!immersive) return
 
     const track = trackRef.current
     const getDistance = () => track.scrollWidth - window.innerWidth
 
-    const tween = gsap.to(track, {
-      x: () => -getDistance(),
-      ease: 'none',
+    // one pinned pass: dark → gallery slides sideways → dark again,
+    // so the room has both a way in and a way out
+    const tl = gsap.timeline({
       scrollTrigger: {
         trigger: outerRef.current,
         start: 'top top',
-        end: () => `+=${getDistance()}`,
+        end: () => `+=${getDistance() + window.innerHeight * 0.7}`,
         pin: true,
         scrub: 0.6,
         invalidateOnRefresh: true,
+        // room IV of the manor — the gallery the camera walks along
+        onUpdate: (self) => { journey.t = 4 + self.progress },
       },
     })
+    tl.to(track, { x: () => -getDistance(), ease: 'none', duration: 0.78 }, 0.08)
 
     return () => {
-      tween.scrollTrigger?.kill()
-      tween.kill()
+      tl.scrollTrigger?.kill()
+      tl.kill()
     }
-  }, [lowPower])
+  }, [immersive])
 
   return (
-    <section className="artifacts-outer" id="projects" ref={outerRef}>
+    <div className="pin-slot">
+    <section
+      className={`artifacts-outer${immersive ? '' : ' chapter--plated'}`}
+      id="projects"
+      ref={outerRef}
+      style={immersive ? undefined : plateStyle(4)}
+    >
+      <div className="room-shade" ref={shadeRef} aria-hidden="true" />
       <div className="chapter" style={{ minHeight: 'unset', paddingBottom: 36 }}>
         <header className="chapter-head" style={{ marginBottom: 0 }}>
           <span className="chapter-numeral">Room IV</span>
@@ -93,6 +104,7 @@ export default function Projects() {
               key={project.title}
               className="artifact-card"
               data-hover
+              data-magnetic
               onClick={() => window.open(project.github, '_blank', 'noopener')}
             >
               <div className="artifact-idx">
@@ -110,5 +122,6 @@ export default function Projects() {
       </div>
       <div style={{ height: 'clamp(60px, 10vh, 120px)' }} />
     </section>
+    </div>
   )
 }

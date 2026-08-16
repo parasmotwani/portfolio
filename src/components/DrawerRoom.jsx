@@ -1,11 +1,20 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Chapter from './Chapter'
 import Cobweb from './Cobweb'
 import Spider from './Spider'
+import { journey } from '../scene/journey'
+import Reach from './Reach'
+import { useDevice } from '../hooks/useDevice'
 
-// Room I — the study. The visible content is the bio. The desk in the
-// scene has a drawer left slightly ajar — an easter egg. Pull it and a
-// dusty booklet comes out, pages you can turn.
+gsap.registerPlugin(ScrollTrigger)
+
+// Room I — the study. On desktop the WHOLE section is the 3D room
+// (src/scene/StudyRoom.jsx) behind this pinned overlay: the bio floats
+// over the room, and an invisible hotspot sits on the hutch drawer —
+// the easter egg. Pull it and a dusty booklet comes out, pages you can
+// turn. Mobile / reduced-motion / low-power fall back to a drawn scene.
 const PAGES = [
   {
     kind: 'cover',
@@ -15,70 +24,73 @@ const PAGES = [
   {
     heading: 'Who I am',
     body: [
-      'AI & Data Science Engineer, Jaipur, IN.',
-      'I build intelligent systems — agentic AI workflows, contract intelligence on Databricks, autonomous SAP pipelines on AWS.',
-      'Co-founded a gamified ed-tech startup. Won top honors at The Startup Mela 2.0, Jaipur.',
+      'Software Engineer at Celebal Technologies, Jaipur.',
+      'I build intelligent systems — BFF authentication on Microsoft Entra ID, Pluto (an enterprise AI FinOps agent on Databricks), and MCP security middleware that validates every tool request before execution.',
+      'Before that: deterministic Playwright automation that cut LLM runtime cost to zero, and Lexi, a production contract-querying chatbot.',
     ],
-    stats: '16+ projects · 2 internships · 9+ certifications',
+    stats: 'Celebal Technologies · Coding Jr · 9+ certifications',
   },
   {
     heading: 'Schooling',
     body: [
       'B.Tech, Computer Science & Engineering — Manipal University Jaipur, Oct 2021 – Jul 2025.',
-      'Senior Secondary (12th), 92.75% — Academic World School, Mar 2020 – Jul 2021.',
+      'Senior Secondary, 92.75% — Academic World School, Mar 2020 – Jul 2021.',
     ],
     stats: 'the rest of the records are in the other rooms…',
   },
 ]
 
+// fallback scene for devices that don't get the 3D room
 function StudyScene({ onDrawer, open }) {
   return (
-    <svg className="study-svg" viewBox="0 0 980 400" data-reveal aria-hidden="false">
-      {/* floor line */}
-      <line x1="20" y1="360" x2="960" y2="360" stroke="var(--gold-ghost)" strokeWidth="1.5" />
-
-      {/* bookshelf, left */}
-      <g stroke="var(--gold-dim)" strokeWidth="1.2" fill="var(--surface)">
-        <rect x="60" y="90" width="180" height="270" />
-        <line x1="60" y1="158" x2="240" y2="158" />
-        <line x1="60" y1="226" x2="240" y2="226" />
-        <line x1="60" y1="294" x2="240" y2="294" />
+    <svg className="study-svg" viewBox="0 0 980 600" data-reveal role="img" aria-label="An abandoned study">
+      <defs>
+        <radialGradient id="winHalo" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#d8d2c0" stopOpacity="0.22" />
+          <stop offset="55%" stopColor="#d8d2c0" stopOpacity="0.08" />
+          <stop offset="100%" stopColor="#d8d2c0" stopOpacity="0" />
+        </radialGradient>
+        <radialGradient id="dayGlow" cx="50%" cy="42%" r="70%">
+          <stop offset="0%" stopColor="#f6f2e4" />
+          <stop offset="100%" stopColor="#d2cab4" />
+        </radialGradient>
+        <radialGradient id="roomVig" cx="50%" cy="44%" r="72%">
+          <stop offset="0%" stopColor="#000" stopOpacity="0" />
+          <stop offset="62%" stopColor="#000" stopOpacity="0" />
+          <stop offset="100%" stopColor="#000" stopOpacity="0.55" />
+        </radialGradient>
+        <clipPath id="floorClip"><polygon points="170,430 810,430 980,600 0,600" /></clipPath>
+      </defs>
+      <polygon points="0,0 980,0 810,90 170,90" fill="#0a0806" />
+      <polygon points="0,0 170,90 170,430 0,600" fill="#0b0906" />
+      <polygon points="980,0 810,90 810,430 980,600" fill="#0b0906" />
+      <rect x="170" y="90" width="640" height="340" fill="var(--surface)" />
+      <polygon points="170,430 810,430 980,600 0,600" fill="#100d08" />
+      <ellipse cx="500" cy="108" rx="190" ry="30" fill="#000" opacity="0.22" />
+      <ellipse cx="315" cy="232" rx="195" ry="155" fill="url(#winHalo)" />
+      <rect x="222" y="128" width="186" height="212" fill="#241d13" />
+      <rect x="230" y="135" width="170" height="195" fill="url(#dayGlow)" />
+      <g fill="#3a3128">
+        <rect x="310" y="135" width="8" height="195" />
+        <rect x="230" y="196" width="170" height="7" />
+        <rect x="230" y="262" width="170" height="7" />
       </g>
-      {/* books — a few leaning */}
-      <g fill="var(--surface-2)" stroke="var(--gold-dim)" strokeWidth="0.8">
-        <rect x="72" y="112" width="13" height="46" />
-        <rect x="88" y="118" width="11" height="40" />
-        <rect x="103" y="108" width="14" height="50" />
-        <rect x="122" y="120" width="10" height="38" transform="rotate(8 127 158)" />
-        <rect x="150" y="180" width="12" height="46" />
-        <rect x="166" y="186" width="10" height="40" />
-        <rect x="70" y="250" width="14" height="44" />
-        <rect x="90" y="256" width="10" height="38" transform="rotate(-7 95 294)" />
+      <g transform="rotate(-2.5 620 190)">
+        <rect x="558" y="112" width="124" height="156" fill="var(--surface)" stroke="var(--gold-dim)" strokeWidth="2" />
+        <ellipse cx="620" cy="172" rx="22" ry="26" fill="var(--surface-2)" />
+        <path d="M584 258 Q620 212 656 258" fill="var(--surface-2)" />
       </g>
-
-      {/* crooked portrait, center wall */}
-      <g transform="rotate(-3 490 150)">
-        <rect x="420" y="80" width="140" height="170" fill="var(--surface)" stroke="var(--gold-dim)" strokeWidth="2" />
-        <rect x="432" y="92" width="116" height="146" fill="none" stroke="var(--gold-ghost)" strokeWidth="1" />
-        {/* faceless silhouette */}
-        <ellipse cx="490" cy="150" rx="26" ry="30" fill="var(--surface-2)" />
-        <path d="M450 238 Q490 185 530 238" fill="var(--surface-2)" />
+      <text x="620" y="296" textAnchor="middle" className="scene-caption">the last resident</text>
+      <g clipPath="url(#floorClip)" stroke="#000" strokeOpacity="0.35" strokeWidth="1.2">
+        <line x1="330" y1="430" x2="245" y2="600" />
+        <line x1="490" y1="430" x2="490" y2="600" />
+        <line x1="650" y1="430" x2="735" y2="600" />
       </g>
-      <text x="490" y="272" textAnchor="middle" className="scene-caption">the last resident</text>
-
-      {/* desk, right — with the ajar drawer (the easter egg) */}
-      <g stroke="var(--gold-dim)" strokeWidth="1.2" fill="var(--surface)">
-        <rect x="660" y="240" width="260" height="18" />
-        <rect x="676" y="258" width="228" height="86" fill="var(--surface-2)" />
-        <rect x="684" y="344" width="14" height="16" />
-        <rect x="882" y="344" width="14" height="16" />
-      </g>
-      {/* candle on desk */}
-      <g>
-        <rect x="700" y="216" width="9" height="24" fill="var(--paper)" stroke="var(--gold-dim)" strokeWidth="0.8" />
-        <ellipse className="candle-flame" cx="704.5" cy="209" rx="3.5" ry="7" fill="var(--gold)" />
-      </g>
-      {/* the drawer — slightly ajar, paper corner glinting */}
+      <polygon points="55,140 165,185 165,500 55,560" fill="#0d0a06" />
+      <polygon points="694,124 946,78 946,552 694,474" fill="#14100a" />
+      <polygon points="694,316 946,296 946,308 694,328" fill="#1e170e" />
+      <ellipse cx="470" cy="445" rx="110" ry="26" fill="var(--surface-2)" stroke="#3a3128" strokeWidth="1.5" />
+      <rect x="462" y="468" width="16" height="58" fill="#17120b" />
       <g
         className={`scene-drawer${open ? ' open' : ''}`}
         onClick={onDrawer}
@@ -86,83 +98,194 @@ function StudyScene({ onDrawer, open }) {
         role="button"
         aria-label="An old drawer, slightly open"
       >
-        <rect x="700" y="272" width="180" height="34" fill="var(--surface)" stroke="var(--gold-dim)" strokeWidth="1.1" />
-        <circle cx="790" cy="289" r="4" fill="var(--gold-dim)" />
-        <rect className="drawer-glint" x="742" y="268" width="96" height="5" fill="var(--paper)" />
+        <rect x="735" y="340" width="150" height="36" fill="var(--surface)" stroke="var(--gold-dim)" strokeWidth="1.1" />
+        <rect className="drawer-glint" x="743" y="334" width="92" height="6" fill="var(--paper)" />
+        <circle cx="810" cy="358" r="4.5" fill="var(--gold-dim)" />
       </g>
+      <rect x="0" y="0" width="980" height="600" fill="url(#roomVig)" pointerEvents="none" />
     </svg>
   )
 }
 
+function Booklet({ open, page, setPage, toggle }) {
+  // swipe to turn — on a phone the obvious gesture on something shaped
+  // like a book is to drag its page, not to hunt for a button
+  const swipe = useRef(null)
+  const onTouchStart = (e) => {
+    const t = e.changedTouches[0]
+    swipe.current = { x: t.clientX, y: t.clientY }
+  }
+  const onTouchEnd = (e) => {
+    const s = swipe.current
+    if (!s) return
+    swipe.current = null
+    const t = e.changedTouches[0]
+    const dx = t.clientX - s.x
+    // ignore vertical drags, which are the visitor scrolling past
+    if (Math.abs(dx) < 45 || Math.abs(t.clientY - s.y) > Math.abs(dx)) return
+    setPage((p) => Math.min(PAGES.length - 1, Math.max(0, p + (dx < 0 ? 1 : -1))))
+  }
+
+  // Esc closes it, like anything else you can put down
+  useEffect(() => {
+    if (!open) return
+    const onKey = (e) => {
+      if (e.key === 'Escape') toggle()
+      if (e.key === 'ArrowRight') setPage((p) => Math.min(PAGES.length - 1, p + 1))
+      if (e.key === 'ArrowLeft') setPage((p) => Math.max(0, p - 1))
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [open, toggle, setPage])
+
+  if (!open) return null
+  return (
+    <div className="booklet-backdrop" onClick={toggle}>
+      <div
+        className="booklet"
+        onClick={(e) => e.stopPropagation()}
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+      >
+        {PAGES.map((pg, i) => (
+          <div
+            key={i}
+            className={`booklet-page${i < page ? ' turned' : ''}${pg.kind === 'cover' ? ' booklet-page--cover' : ''}`}
+            style={{ zIndex: i < page ? i : PAGES.length - i }}
+          >
+            {pg.kind === 'cover' ? (
+              <div className="booklet-cover">
+                <span className="scrawl">{pg.scrawl}</span>
+                <span className="scrawl-note">{pg.note}</span>
+              </div>
+            ) : (
+              <div className="booklet-body">
+                <h5 className="scrawl">{pg.heading}</h5>
+                {pg.body.map((line, j) => <p key={j}>{line}</p>)}
+                <div className="booklet-stats">{pg.stats}</div>
+              </div>
+            )}
+            <span className="booklet-pageno">{i + 1}</span>
+          </div>
+        ))}
+        <button
+          className="booklet-turn booklet-turn--back"
+          disabled={page === 0}
+          onClick={() => setPage((p) => p - 1)}
+          aria-label="Previous page"
+        />
+        <button
+          className="booklet-turn booklet-turn--fwd"
+          disabled={page === PAGES.length - 1}
+          onClick={() => setPage((p) => p + 1)}
+          aria-label="Next page"
+        />
+      </div>
+    </div>
+  )
+}
+
 export default function DrawerRoom() {
+  const { immersive } = useDevice()
   const [open, setOpen] = useState(false)
   const [page, setPage] = useState(0)
+  const ref = useRef(null)
+  const overlayRef = useRef(null)
+
+  const simple = !immersive
 
   const toggle = () => {
     setOpen((v) => !v)
     setPage(0)
   }
 
-  return (
-    <Chapter
-      id="about"
-      numeral="Room I"
-      title="About"
-      subtitle="A study, long unused. Something in here is worth opening."
-      className="room"
-    >
-      <Cobweb corner="tr" size={170} />
-      <Cobweb corner="bl" size={120} />
-      <Spider left="78%" delay={7} />
+  // pinned pass through the 3D study — scroll scrubs journey.t across
+  // room 1; the overlay copy inks in once the visitor is through the door
+  useEffect(() => {
+    if (simple || !ref.current) return
+    const st = ScrollTrigger.create({
+      trigger: ref.current,
+      start: 'top top',
+      end: '+=170%',
+      pin: true,
+      scrub: 0.4,
+      onUpdate: (self) => {
+        const p = self.progress
+        // room 1 occupies journey.t 1→2
+        journey.t = 1 + p
+        if (overlayRef.current) {
+          const fin = Math.min(1, Math.max(0, (p - 0.03) / 0.1))
+          const fout = Math.min(1, Math.max(0, (p - 0.82) / 0.14))
+          const o = fin * (1 - fout)
+          overlayRef.current.style.opacity = String(o)
+          overlayRef.current.style.transform = `translateY(${(1 - fin) * 30 - fout * 24}px)`
+        }
+      },
+    })
+    return () => st.kill()
+  }, [simple])
 
-      <div className="about-split">
-        <div className="about-side" data-reveal>
-          <p className="about-lede">
-            I build <span className="gold">intelligent systems</span> — from
-            agentic AI workflows to data pipelines at production scale.
-          </p>
-          <p className="about-body">
-            Computer Science graduate from Manipal University Jaipur, focused
-            on AI, Data Science, and Generative AI. Contract intelligence on
-            Databricks; autonomous SAP workflows on AWS; a co-founded ed-tech
-            startup and a win at The Startup Mela 2.0.
-          </p>
-        </div>
-        <StudyScene onDrawer={toggle} open={open} />
-      </div>
-
-      {open && (
-        <div className="booklet-backdrop" onClick={toggle}>
-          <div className="booklet" onClick={(e) => e.stopPropagation()}>
-            {PAGES.map((pg, i) => (
-              <div
-                key={i}
-                className={`booklet-page${i < page ? ' turned' : ''}`}
-                style={{ zIndex: i < page ? i : PAGES.length - i }}
-              >
-                {pg.kind === 'cover' ? (
-                  <div className="booklet-cover">
-                    <span className="scrawl">{pg.scrawl}</span>
-                    <span className="scrawl-note">{pg.note}</span>
-                  </div>
-                ) : (
-                  <div className="booklet-body">
-                    <h5 className="scrawl">{pg.heading}</h5>
-                    {pg.body.map((line, j) => <p key={j}>{line}</p>)}
-                    <div className="booklet-stats">{pg.stats}</div>
-                  </div>
-                )}
-                <span className="booklet-pageno">{i + 1}</span>
-              </div>
-            ))}
-            <div className="booklet-nav">
-              <button data-hover disabled={page === 0} onClick={() => setPage((p) => p - 1)}>‹ back</button>
-              <button data-hover disabled={page === PAGES.length - 1} onClick={() => setPage((p) => p + 1)}>turn ›</button>
-              <button data-hover onClick={toggle}>put it back ✕</button>
-            </div>
+  if (simple) {
+    return (
+      <Chapter
+        id="about"
+        room={1}
+        numeral="Room I"
+        title="About"
+        subtitle="A study, long unused. Something in here is worth opening."
+        className="room"
+      >
+        <Cobweb corner="tr" size={170} />
+        <Cobweb corner="bl" size={120} />
+        <Spider left="78%" delay={7} />
+        <div className="about-split">
+          <div className="about-side" data-reveal>
+            <p className="about-lede">
+              I build <span className="gold">intelligent systems</span> — from
+              agentic AI workflows to data pipelines at production scale.
+            </p>
+            <p className="about-body">
+              Computer Science graduate from Manipal University Jaipur, focused
+              on AI, Data Science, and Generative AI. Contract intelligence on
+              Databricks; autonomous SAP workflows on AWS; a co-founded ed-tech
+              startup and a win at The Startup Mela 2.0.
+            </p>
           </div>
+          <StudyScene onDrawer={toggle} open={open} />
         </div>
-      )}
-    </Chapter>
+        <Booklet open={open} page={page} setPage={setPage} toggle={toggle} />
+      </Chapter>
+    )
+  }
+
+  return (
+    <div className="pin-slot">
+    <section className="study-stage" id="about" ref={ref}>
+      {/* The visible copy is inked on the sheet pinned to the study's back
+          wall (StudyCopy). This is the same text kept for screen readers,
+          search engines and anyone using find-in-page — a canvas texture is
+          none of those things. */}
+      <div className="sr-only">
+        <h2>About</h2>
+        <p>
+          I build intelligent systems — from agentic AI workflows to data
+          pipelines at production scale.
+        </p>
+        <p>
+          Computer Science graduate from Manipal University Jaipur, focused
+          on AI, Data Science, and Generative AI. Contract intelligence on
+          Databricks; autonomous SAP workflows on AWS; a co-founded ed-tech
+          startup and a win at The Startup Mela 2.0.
+        </p>
+      </div>
+      <Reach
+        name="drawer"
+        onClick={toggle}
+        label="An old drawer, slightly open"
+        title="Something is in the drawer"
+      />
+      <Booklet open={open} page={page} setPage={setPage} toggle={toggle} />
+    </section>
+    </div>
   )
 }

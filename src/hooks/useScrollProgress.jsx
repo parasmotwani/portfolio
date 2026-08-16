@@ -19,6 +19,10 @@ export function ScrollProvider({ children }) {
   // scroll offsets (px) where each scene state begins; measured from [data-scene] sections
   const boundariesRef = useRef([])
   const [started, setStarted] = useState(false)
+  // start() may legitimately run BEFORE the Lenis effect (child effects
+  // fire before parent effects) — remember the intent and honor it when
+  // Lenis is created, or the page is scroll-locked forever
+  const startedRef = useRef(false)
 
   const measure = useCallback(() => {
     const sections = document.querySelectorAll('[data-scene]')
@@ -37,7 +41,8 @@ export function ScrollProvider({ children }) {
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
     })
     lenisRef.current = lenis
-    lenis.stop()
+    if (startedRef.current) lenis.start()
+    else lenis.stop()
 
     lenis.on('scroll', (e) => {
       scrollRef.current = e.scroll
@@ -70,6 +75,7 @@ export function ScrollProvider({ children }) {
   }, [measure])
 
   const start = useCallback(() => {
+    startedRef.current = true
     lenisRef.current?.start()
     measure()
     ScrollTrigger.refresh()

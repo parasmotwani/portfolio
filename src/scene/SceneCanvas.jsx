@@ -1,46 +1,83 @@
-import { useMemo, useEffect } from 'react'
-import { Canvas } from '@react-three/fiber'
+import { useEffect, useState, Suspense } from 'react'
+import { Canvas, useFrame } from '@react-three/fiber'
+import { EffectComposer, Bloom, Vignette, Noise } from '@react-three/postprocessing'
+import * as THREE from 'three'
 import EmberField from './EmberField'
 import HeroRoom from './HeroRoom'
-import { heroState } from './heroState'
-import { usePerformance } from '../context/PerformanceContext'
+import StudyRoom from './StudyRoom'
+import { SkillsRoom, GameRoom, ProjectsRoom, ExperienceRoom, ContactRoom } from './Rooms'
+import CameraRig from './CameraRig'
+import { journey, ROOMS } from './journey'
+import { useDevice } from '../hooks/useDevice'
 import { useLight } from '../context/LightContext'
 
-export default function SceneCanvas() {
-  const { lowPower } = usePerformance()
-  const { lit } = useLight()
+// Which rooms are built at all. `visible` is flipped per frame by the rig,
+// but a hidden room still costs its geometry and its GLB clones, so rooms
+// far from the visitor are unmounted outright. The state only changes when
+// the integer room index does — never per frame.
+function useMountedRooms() {
+  const [near, setNear] = useState(0)
+  useFrame(() => {
+    const i = Math.max(0, Math.min(ROOMS.length - 1, Math.round(journey.t)))
+    if (i !== near) setNear(i)
+  })
+  return near
+}
 
-  const caps = useMemo(() => {
-    const coarse = window.matchMedia('(pointer: coarse)').matches
-    const small = window.innerWidth < 768
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    return {
-      dust: coarse || small ? 120 : 260,
-      room: !coarse && !small && !reduced, // the 3D room is a desktop experience
-    }
-  }, [])
+function Manor({ lit, lantern }) {
+  const near = useMountedRooms()
+  const on = (i) => Math.abs(i - near) <= 1
+
+  return (
+    <Suspense fallback={null}>
+      {on(0) && <HeroRoom lit={lit} lantern={lantern} />}
+      {on(1) && <StudyRoom lit={lit} />}
+      {on(2) && <SkillsRoom lit={lit} />}
+      {on(3) && <GameRoom lit={lit} />}
+      {on(4) && <ProjectsRoom lit={lit} />}
+      {on(5) && <ExperienceRoom lit={lit} />}
+      {on(6) && <ContactRoom lit={lit} />}
+    </Suspense>
+  )
+}
+
+// Only ever mounted in immersive mode — App owns that gate, so there are
+// no capability checks left in here.
+export default function SceneCanvas() {
+  const { dust } = useDevice()
+  const { lit, lantern } = useLight()
 
   useEffect(() => {
     const onMove = (e) => {
-      heroState.mouse.x = (e.clientX / window.innerWidth) * 2 - 1
-      heroState.mouse.y = -((e.clientY / window.innerHeight) * 2 - 1)
+      journey.mouse.x = (e.clientX / window.innerWidth) * 2 - 1
+      journey.mouse.y = -((e.clientY / window.innerHeight) * 2 - 1)
     }
     window.addEventListener('pointermove', onMove, { passive: true })
     return () => window.removeEventListener('pointermove', onMove)
   }, [])
 
-  if (lowPower) return <div className="static-bg" />
-
   return (
     <div className="scene-canvas">
       <Canvas
-        camera={{ position: [0, 0.25, 7.4], fov: 55 }}
+        shadows
+        camera={{ position: [0, -0.55, 6.6], fov: 58 }}
         dpr={[1, 1.5]}
         gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
+        onCreated={({ gl }) => {
+          gl.toneMapping = THREE.ACESFilmicToneMapping
+          gl.toneMappingExposure = 1.12
+        }}
         performance={{ min: 0.5 }}
       >
-        {caps.room && <HeroRoom lit={lit} />}
-        <EmberField count={caps.dust} />
+        <color attach="background" args={['#0d0b08']} />
+        <CameraRig />
+        <Manor lit={lit} lantern={lantern} />
+        <EmberField count={dust} />
+        <EffectComposer multisampling={0}>
+          <Bloom intensity={0.55} luminanceThreshold={0.62} luminanceSmoothing={0.25} mipmapBlur />
+          <Vignette eskil={false} offset={0.22} darkness={0.72} />
+          <Noise premultiply opacity={0.55} />
+        </EffectComposer>
       </Canvas>
     </div>
   )

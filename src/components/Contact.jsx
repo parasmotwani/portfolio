@@ -3,11 +3,13 @@ import Chapter from './Chapter'
 import Cobweb from './Cobweb'
 import Spider from './Spider'
 
+const EMAIL = 'wparasmotwani@gmail.com'
+
 const contactLinks = [
-  { label: 'Email', value: 'parasmotwani@gmail.com', href: 'mailto:parasmotwani@gmail.com' },
+  { label: 'Email', value: EMAIL, href: `mailto:${EMAIL}` },
   { label: 'LinkedIn', value: 'linkedin.com/in/parasmotwani', href: 'https://www.linkedin.com/in/parasmotwani' },
   { label: 'GitHub', value: 'github.com/parasmotwani', href: 'https://github.com/parasmotwani' },
-  { label: 'Phone', value: '+91 7000 439 613', href: 'tel:+917000439613' },
+  { label: 'Phone', value: '+91 70004 39613', href: 'tel:+917000439613' },
   { label: 'Résumé', value: 'Paras_Motwani.pdf', href: '/Paras_Motwani.pdf' },
 ]
 
@@ -20,7 +22,7 @@ export default function Contact() {
     const { name, email, message } = formData
     const subject = encodeURIComponent(`Portfolio Contact from ${name}`)
     const body = encodeURIComponent(`Name: ${name}\nEmail: ${email}\n\n${message}`)
-    window.open(`mailto:parasmotwani@gmail.com?subject=${subject}&body=${body}`)
+    window.open(`mailto:${EMAIL}?subject=${subject}&body=${body}`)
     setSent(true)
     setTimeout(() => setSent(false), 3000)
   }
@@ -28,10 +30,12 @@ export default function Contact() {
   return (
     <Chapter
       id="contact"
+      room={6}
       numeral="Room VI"
       title="Contact"
       subtitle="The telephone still works. Open to opportunities and collaborations."
       className="room"
+      exit={false}
     >
       <Cobweb corner="tl" size={150} />
       <Cobweb corner="br" size={180} />

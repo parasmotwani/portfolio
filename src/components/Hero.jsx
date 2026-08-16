@@ -3,30 +3,31 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useScroll } from '../hooks/useScrollProgress'
 import { useLight } from '../context/LightContext'
-import { heroState } from '../scene/heroState'
+import { useDevice } from '../hooks/useDevice'
+import { journey } from '../scene/journey'
+import { plateStyle } from '../scene/plate'
 
 gsap.registerPlugin(ScrollTrigger)
 
 const ROLES = [
-  'AI & Data Science Engineer',
-  'Building agentic AI systems',
-  'Data pipelines at production scale',
+  'Software Engineer, Celebal Technologies',
+  'Agentic AI & MCP security middleware',
+  'FinOps tooling on Databricks',
 ]
 
 export default function Hero() {
   const { started } = useScroll()
   const { lit } = useLight()
+  const { immersive, reduced } = useDevice()
   const [typed, setTyped] = useState('')
   const ref = useRef(null)
   const contentRef = useRef(null)
 
-  // pinned first-person exit: scroll scrubs heroState.p, the 3D camera
+  // pinned first-person exit: scroll scrubs journey.t, the 3D camera
   // is drawn out through the opening, and the text slips past the viewer
   useEffect(() => {
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    const mobile = window.innerWidth < 768 || window.matchMedia('(pointer: coarse)').matches
-    if (reduced || mobile) {
-      heroState.p = 0
+    if (!immersive) {
+      journey.t = 0
       return
     }
 
@@ -35,33 +36,33 @@ export default function Hero() {
     const st = ScrollTrigger.create({
       trigger: ref.current,
       start: 'top top',
-      end: '+=170%',
+      end: '+=150%',
       pin: true,
       scrub: 0.4,
       onUpdate: (self) => {
         const p = self.progress
-        heroState.p = p
-        heroState.active = p < 0.999
+        // room 0 occupies journey.t 0→1; the last stretch is the walk out
+        journey.t = p
         // text slips past the viewer as the walk begins — driven here so
         // it can never desync from the pin (a second ScrollTrigger would
         // measure against the pin spacer and drift)
+        // zoom-out: the name shrinks and sinks with the receding room
         const f = Math.min(1, Math.max(0, (p - 0.3) / 0.32))
         if (contentRef.current) {
           contentRef.current.style.opacity = String(1 - f)
-          contentRef.current.style.transform = `scale(${1 + f * 0.55})`
-          contentRef.current.style.filter = `blur(${f * 9}px)`
+          contentRef.current.style.transform = `scale(${1 - f * 0.38}) translateY(${f * 60}px)`
+          contentRef.current.style.filter = `blur(${f * 6}px)`
         }
         if (foot) foot.style.opacity = String(1 - Math.min(1, p / 0.25))
       },
     })
 
     return () => st.kill()
-  }, [])
+  }, [immersive])
 
   useEffect(() => {
     if (!started) return
     const items = document.querySelectorAll('[data-hero-reveal]')
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     if (reduced) {
       gsap.set(items, { opacity: 1, y: 0 })
       return
@@ -73,7 +74,7 @@ export default function Hero() {
       0.3
     )
     return () => tl.kill()
-  }, [started])
+  }, [started, reduced])
 
   useEffect(() => {
     if (!started) return
@@ -105,7 +106,15 @@ export default function Hero() {
   }, [started])
 
   return (
-    <section className="hero" id="hero" ref={ref}>
+    // on desktop the copy lives ON the room's walls (WallInscriptions);
+    // the DOM copy stays for screen readers, search, and the fallbacks
+    <div className="pin-slot">
+      <section
+        className={`hero${immersive ? ' hero--diegetic' : ' chapter--plated'}`}
+        id="hero"
+        ref={ref}
+        style={immersive ? undefined : plateStyle(0)}
+      >
       <div className="hero-content" ref={contentRef}>
         <p className="hero-epigraph" data-hero-reveal>
           {lit ? 'someone still lives here…' : 'the lights are out'}
@@ -117,17 +126,21 @@ export default function Hero() {
           {typed}<span className="caret" />
         </p>
         <p className="hero-summary" data-hero-reveal>
-          I build intelligent systems — agentic AI workflows, contract
-          intelligence on Databricks, autonomous pipelines on AWS.
-          Computer Science graduate, Manipal University Jaipur.
-          The house holds the rest. Look carefully.
+          Software Engineer at Celebal Technologies. I build intelligent
+          systems — agentic AI, MCP security middleware, and FinOps
+          tooling on Databricks. Computer Science graduate, Manipal
+          University Jaipur. The house holds the rest. Look carefully.
         </p>
       </div>
 
-      <div className="hero-foot">
-        <span>scroll — leave the room when you're ready</span>
+      {/* The affordance without the sentence. A line of small-caps mono
+          telling the visitor to scroll is website furniture standing in
+          the middle of a room; a mark that falls like ink says the same
+          thing and belongs to the house. */}
+      <div className="hero-foot" aria-hidden="true">
         <div className="quill" />
       </div>
-    </section>
+      </section>
+    </div>
   )
 }
