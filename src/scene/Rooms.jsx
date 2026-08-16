@@ -3,7 +3,7 @@ import { useFrame } from '@react-three/fiber'
 import ManorRoom, { cols, FLOOR } from './ManorRoom'
 import { Piece, preloadPieces } from './toonify'
 import { Flame } from './Flame'
-import { ProseBoard, ListBoard, ProjectBoard, RecordBoard, projectAt } from './RoomCopy'
+import { ProseBoard, ListBoard, ProjectBoard, RecordBoard, projectAt, actionAnchor } from './RoomCopy'
 import { Hotspot } from './Hotspot'
 import { PROJECTS } from './projects'
 import { RECORD } from './record'
@@ -150,7 +150,7 @@ export function ProjectsRoom({ lit }) {
         action="View on GitHub"
       />
       {/* rides the drawn control, so the link opens from the board itself */}
-      <Hotspot name="project" reach={30} position={[0, -0.58, -5.3]} />
+      <Hotspot name="project" reach={30} position={actionAnchor()} />
       <BoardLights lit={lit} />
       <Piece file="pillar" position={[-6.4, FLOOR, 4.6]} scale={1.275} tint={STONE} />
       <Piece file="pillar" position={[6.4, FLOOR, -3.6]} scale={1.275} tint={STONE} />
@@ -225,7 +225,7 @@ export function ContactRoom({ lit }) {
       />
       {/* rides the drawn control on the board, so the button the visitor
           sees and the thing they click are the same object */}
-      <Hotspot name="contact" reach={30} position={[0, -0.66, -5.3]} />
+      <Hotspot name="contact" reach={30} position={actionAnchor()} />
       <BoardLights lit={lit} />
       <Piece file="table_small_decorated_A" position={[-5.2, FLOOR, -1.4]} rotation={[0, 0.4, 0]} scale={1.35} tint={WOOD} />
       <Piece file="candle_triple" position={[-5.2, FLOOR + 1.04, -1.4]} scale={1.25} tint={WAX} anchor="none" />

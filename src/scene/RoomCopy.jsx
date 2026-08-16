@@ -37,6 +37,31 @@ const W = 1230
 const H = 735
 const PPU = 190          // canvas pixels per world unit
 
+// The action control, defined ONCE. Both the drawing and the hotspot that
+// makes it clickable come from these numbers.
+//
+// They were independent before: the button was drawn near the bottom of
+// the sheet while the hotspot was hand-placed by eye about half a unit
+// higher, so the circle you could click floated above the button you could
+// see. Hovering the button did nothing, which is exactly what it looked
+// like from the outside.
+const ACTION = { w: 430, h: 78, bottom: 186 }
+
+// design-space centre of that control
+function actionCentre() {
+  return { x: W / 2, y: H - ACTION.bottom + ACTION.h / 2 }
+}
+
+// …and the same point in the room, for the Hotspot to ride
+export function actionAnchor(at = AT, size = SIZE) {
+  const c = actionCentre()
+  return [
+    (c.x / W - 0.5) * size[0] + at[0],
+    (0.5 - c.y / H) * size[1] + at[1],
+    at[2] + 0.06,
+  ]
+}
+
 function boardCanvas([sw, sh]) {
   return { cw: Math.round(sw * PPU), ch: Math.round(sh * PPU) }
 }
@@ -84,7 +109,7 @@ export function ProseBoard({ numeral, title, subtitle, lines, foot, action, at =
           roughText(g, line, W / 2, 290 + i * 46, 33, INK_BODY, 0.93, { font: SERIF })
         })
         if (action) {
-          const bw = 430, bh = 78, bx = W / 2 - bw / 2, by = H - 186
+          const bw = ACTION.w, bh = ACTION.h, bx = W / 2 - bw / 2, by = H - ACTION.bottom
           g.strokeStyle = INK_RED
           g.globalAlpha = 0.62
           g.lineWidth = 3
@@ -224,7 +249,7 @@ export function ProjectBoard({ project, index, total, action }) {
         roughText(g, project.tech.join('  ·  '), W / 2, 258 + Math.min(lines.length, 5) * 42 + 34, 26, INK_SOFT, 0.85, { font: MONO })
 
         if (action) {
-          const bw = 400, bh = 72, bx = W / 2 - bw / 2, by = H - 172
+          const bw = ACTION.w, bh = ACTION.h, bx = W / 2 - bw / 2, by = H - ACTION.bottom
           g.strokeStyle = INK_RED
           g.globalAlpha = 0.6
           g.lineWidth = 3

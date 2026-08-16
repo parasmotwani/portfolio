@@ -66,7 +66,35 @@ export function ScrollProvider({ children }) {
       ScrollTrigger.update()
     })
 
-    const raf = (time) => lenis.raf(time * 1000)
+    // Safety net: the scene must never disagree with the page.
+    //
+    // journey.t is driven by ScrollTrigger, and ScrollTrigger is updated
+    // from lenis's own 'scroll' event — so any scrolling lenis does not
+    // author is invisible to it. That happens more often than it sounds:
+    // lenis is stopped until the intro gate opens and while an overlay is
+    // up, and anything that moves the page natively in those windows
+    // leaves journey.t frozen where it was. The result is the 3D showing
+    // one room while the DOM is at another, which reads as rooms that
+    // won't change and screens that stay black.
+    //
+    // This watches the real scroll position and forces an update whenever
+    // it has moved without lenis saying so.
+    let lastSeen = window.scrollY
+    const reconcile = () => {
+      const y = window.scrollY
+      if (Math.abs(y - lastSeen) > 0.5) {
+        lastSeen = y
+        scrollRef.current = y
+        const max = document.documentElement.scrollHeight - window.innerHeight
+        progressRef.current = max > 0 ? y / max : 0
+        ScrollTrigger.update()
+      }
+    }
+
+    const raf = (time) => {
+      lenis.raf(time * 1000)
+      reconcile()
+    }
     gsap.ticker.add(raf)
     gsap.ticker.lagSmoothing(0)
 
