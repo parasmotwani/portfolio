@@ -11,8 +11,33 @@ import { hotspots } from '../scene/hotspots'
 export default function Reach({ name, onClick, label, title }) {
   const ref = useRef(null)
 
+  // The target stops moving once you are on it.
+  //
+  // These ride a projected 3D point, and the camera sways with the cursor —
+  // so moving the pointer toward the control moved the control, and you
+  // ended up chasing a circle that slid away from you. Headless clicks
+  // failed on it with "element is not stable", which is the machine saying
+  // the same thing a person feels. While the pointer is inside the target
+  // its screen position is frozen; it resumes tracking when you leave.
+  const frozen = useRef(false)
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const enter = () => { frozen.current = true }
+    const leave = () => { frozen.current = false }
+    el.addEventListener('pointerenter', enter)
+    el.addEventListener('pointerleave', leave)
+    return () => {
+      el.removeEventListener('pointerenter', enter)
+      el.removeEventListener('pointerleave', leave)
+    }
+  }, [])
+
   useEffect(() => {
     let raf
+    let lastX = null
+    let lastY = null
+    let lastS = null
     const loop = () => {
       raf = requestAnimationFrame(loop)
       const el = ref.current
@@ -27,9 +52,18 @@ export default function Reach({ name, onClick, label, title }) {
       }
       el.style.opacity = '1'
       el.style.pointerEvents = 'auto'
-      el.style.width = `${h.size}px`
-      el.style.height = `${h.size}px`
-      el.style.transform = `translate(${h.x - h.size / 2}px, ${h.y - h.size / 2}px)`
+      if (frozen.current) return
+
+      // whole pixels, and only when it actually moved: sub-pixel churn every
+      // frame is what makes a target feel slippery
+      const x = Math.round(h.x - h.size / 2)
+      const y = Math.round(h.y - h.size / 2)
+      const s = Math.round(h.size)
+      if (x === lastX && y === lastY && s === lastS) return
+      lastX = x; lastY = y; lastS = s
+      el.style.width = `${s}px`
+      el.style.height = `${s}px`
+      el.style.transform = `translate(${x}px, ${y}px)`
     }
     raf = requestAnimationFrame(loop)
     return () => cancelAnimationFrame(raf)

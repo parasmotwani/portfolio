@@ -338,7 +338,7 @@ function Hutch({ glintRef, leakRef }) {
             scenery — this is the difference between an object you notice
             and one you walk past. Warm, weak, and slowly breathing, so it
             draws the eye without announcing itself as UI. */}
-        <pointLight ref={leakRef} position={[0, 0.05, 0.7]} color="#f0c98a" intensity={0} distance={4.2} decay={1.9} />
+        <pointLight ref={leakRef} position={[0.1, 0.14, 0.6]} color="#f0c98a" intensity={0} distance={3.6} decay={2} />
         <mesh ref={glintRef} position={[0.1, 0.16, 0.5]} rotation={[-1.25, 0.1, 0.08]}>
           <planeGeometry args={[0.46, 0.14]} />
           <meshStandardMaterial
@@ -668,7 +668,7 @@ export default function StudyRoom({ lit }) {
       swayRef.current.rotation.x = Math.sin(t * 0.38 + 1) * 0.03
     }
     if (leakRef.current) {
-      leakRef.current.intensity = 5.4 + Math.sin(t * 1.6) * 1.8
+      leakRef.current.intensity = 3.6 + Math.sin(t * 1.6) * 1.1
     }
     if (glintRef.current) {
       glintRef.current.material.emissiveIntensity = 0.5 + Math.sin(t * 2.1) * 0.3

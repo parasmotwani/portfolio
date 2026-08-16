@@ -9,7 +9,7 @@ import { PROJECTS } from './projects'
 import { RECORD } from './record'
 import Arcade from './Arcade'
 import { journey, roomOffset, roomShift } from './journey'
-import { WOOD, WOOD_DARK, STONE, CRATE, WAX, IRON, FLAME_WARM, CANDLE_LIGHT, CANDLE_DIST } from './palette'
+import { WOOD, WOOD_DARK, STONE, CRATE, WAX, IRON, FLAME_WARM, CANDLE_LIGHT, CANDLE_DIST, TORCH_LIGHT, TORCH_DIST } from './palette'
 
 // ============================================================
 // Rooms II–VI. Each is the shared manor shell, its copy inked on a board
@@ -59,9 +59,9 @@ function BoardLights({ lit }) {
   return (
     <>
       <Piece file="torch_mounted" position={[-5.0, -0.5, -5.78]} scale={1.2} tint={IRON} anchor="none" />
-      <Flame position={[-5.0, 0.18, -5.5]} lit={lit} delay={0.35} size={0.42} light={2.4} distance={13} color={FLAME_WARM} />
+      <Flame position={[-5.0, 0.18, -5.5]} lit={lit} delay={0.35} size={0.42} light={TORCH_LIGHT} distance={TORCH_DIST} color={FLAME_WARM} />
       <Piece file="torch_mounted" position={[5.0, -0.5, -5.78]} scale={1.2} tint={IRON} anchor="none" />
-      <Flame position={[5.0, 0.18, -5.5]} lit={lit} delay={0.55} size={0.42} light={2.4} distance={13} color={FLAME_WARM} />
+      <Flame position={[5.0, 0.18, -5.5]} lit={lit} delay={0.55} size={0.42} light={TORCH_LIGHT} distance={TORCH_DIST} color={FLAME_WARM} />
     </>
   )
 }

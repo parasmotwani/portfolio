@@ -9,3 +9,8 @@
 // Mutable module state read from a rAF loop, like journey — nothing here
 // may cause a React render per frame.
 export const hotspots = Object.create(null)
+
+// exposed for the verify harness: a hotspot that never resolves is
+// indistinguishable from one that resolves off-screen unless you can read
+// the numbers
+if (typeof window !== 'undefined') window.__hotspots = hotspots

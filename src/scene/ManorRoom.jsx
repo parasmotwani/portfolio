@@ -62,26 +62,28 @@ export default function ManorRoom({
 
           A `dark` room has no window at all and is lit purely by what is
           standing in it. */}
-      <hemisphereLight args={['#8fa0b8', '#2c2820', dark ? 0.02 : 0.06]} />
+      <hemisphereLight args={['#8fa0b8', '#2c2820', dark ? 0.05 : 0.13]} />
       {!dark && (
         <>
           <spotLight
             position={[winX + inward * 0.2, 2.0, winZ]}
             target-position={[winX + inward * 6.5, -2.4, winZ + 1.2]}
             color={MOON}
-            intensity={lit ? 42 : 30}
+            intensity={lit ? 26 : 19}
             distance={20}
-            decay={1.55}
+            decay={1.35}
             angle={0.95}
-            penumbra={0.92}
+            penumbra={1}
             castShadow
-            shadow-mapSize={[1024, 1024]}
+            shadow-mapSize={[2048, 2048]}
+            shadow-radius={7}
+            shadow-bias={-0.0006}
           />
           {/* the sill itself catching light, tight and local */}
           <pointLight
             position={[winX + inward * 0.5, 0.5, winZ]}
             color={MOON_FILL}
-            intensity={lit ? 5 : 3.4}
+            intensity={lit ? 3.4 : 2.4}
             distance={7}
             decay={2}
           />

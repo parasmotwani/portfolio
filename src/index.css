@@ -2554,21 +2554,11 @@ html.overflow-lock body {
   touch-action: none;
 }
 
-/* The site draws its own cursor (a gold dot with a lagging ring) and
-   carries a lantern besides. The OS arrow on top of that is a third
-   pointer competing with two the house already provides. */
-html.lenis, html.lenis * { cursor: none; }
-/* …but never take the cursor away from something a visitor has to type in
-   or aim at precisely. */
-html.lenis input,
-html.lenis textarea,
-html.lenis select,
-html.lenis .letter,
-html.lenis .letter * { cursor: auto; }
-html.lenis a,
-html.lenis button,
-html.lenis [role="button"],
-html.lenis [data-hover] { cursor: none; }
+/* The OS cursor STAYS. Hiding it was a mistake: the in-room controls are
+   small round targets projected from 3D objects, and with no pointer there
+   is no way to aim at them — which is why "Contact me" and "View on
+   GitHub" stopped working. The house's own gold dot is decoration on top
+   of a real pointer, not a replacement for one. */
 
 /* No shade over a room of the manor. The shade is a full-bleed black panel
    used to close a section before the next one opens — it belongs to the

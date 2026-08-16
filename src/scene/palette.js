@@ -36,7 +36,7 @@ export const INK_RED = '#7a2f22'
 // dull, some are dead" rather than as one kind of object. A candle flame
 // lights at CANDLE_LIGHT over CANDLE_DIST; a mounted torch, being bigger,
 // gets TORCH_*. Nothing else in a room emits.
-export const CANDLE_LIGHT = 1.9
+export const CANDLE_LIGHT = 1.5
 export const CANDLE_DIST = 10
-export const TORCH_LIGHT = 2.4
+export const TORCH_LIGHT = 1.9
 export const TORCH_DIST = 13
