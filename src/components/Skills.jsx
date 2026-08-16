@@ -5,28 +5,28 @@ import Cobweb from './Cobweb'
 const categories = [
   {
     sigil: 'tongue',
-    title: 'Languages & Frameworks',
-    skills: ['Python', 'SQL', 'Go', 'FastAPI'],
-  },
-  {
-    sigil: 'lens',
-    title: 'Machine Learning',
-    skills: ['NumPy', 'Pandas', 'Scikit-learn', 'TensorFlow', 'Matplotlib', 'Seaborn'],
+    title: 'Programming & Frameworks',
+    skills: ['Python', 'SQL', 'FastAPI'],
   },
   {
     sigil: 'spark',
-    title: 'GenAI & Agents',
-    skills: ['LLMs', 'AI Agents', 'RAG', 'Amazon Bedrock', 'Hugging Face'],
+    title: 'AI & Agents',
+    skills: ['LLM Agents', 'Model Context Protocol (MCP)', 'Claude Code', 'Codex', 'Playwright Automation'],
   },
   {
-    sigil: 'vessel',
-    title: 'Data Engineering',
-    skills: ['Databricks', 'Delta Lake', 'MySQL', 'PostgreSQL', 'ETL Pipelines'],
+    sigil: 'lens',
+    title: 'Libraries',
+    skills: ['Pandas', 'NumPy', 'Matplotlib', 'Seaborn', 'requests', 'BeautifulSoup'],
   },
   {
     sigil: 'tower',
-    title: 'Cloud & DevOps',
-    skills: ['AWS', 'Docker', 'Git', 'Jenkins', 'Vercel'],
+    title: 'Cloud, Identity & MLOps',
+    skills: ['AWS', 'Databricks', 'Microsoft Entra ID', 'BFF Architecture', 'Docker', 'Jenkins'],
+  },
+  {
+    sigil: 'vessel',
+    title: 'Databases',
+    skills: ['MySQL', 'PostgreSQL'],
   },
 ]
 

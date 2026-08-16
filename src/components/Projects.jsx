@@ -81,6 +81,7 @@ export default function Projects() {
   }, [immersive])
 
   return (
+    <div className="pin-slot">
     <section
       className={`artifacts-outer${immersive ? '' : ' chapter--plated'}`}
       id="projects"
@@ -121,5 +122,6 @@ export default function Projects() {
       </div>
       <div style={{ height: 'clamp(60px, 10vh, 120px)' }} />
     </section>
+    </div>
   )
 }

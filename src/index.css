@@ -2395,3 +2395,9 @@ html.lights-on .cursor-ring { opacity: 1; }
   pointer-events: none;
   transform: rotate(-1.6deg) scale(0.96);
 }
+
+/* A wrapper React owns outright, so GSAP's pin-spacer is created inside it
+   rather than around a node React is tracking. Without it, flipping the 3D
+   toggle (which swaps the whole tree) threw removeChild/insertBefore and
+   blanked the page. Purely structural — no layout of its own. */
+.pin-slot { position: relative; }

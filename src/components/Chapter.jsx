@@ -130,7 +130,15 @@ export default function Chapter({ id, numeral, title, subtitle, pin = true, exit
   }, [pin, exit, immersive, reduced, room])
 
   return (
-    <section
+    <div className="pin-slot">
+      {/* Stable slot. GSAP's pin reparents the pinned element into a
+          .pin-spacer it creates, which React knows nothing about — so when
+          React later unmounts or reorders siblings it calls removeChild on
+          a node that has moved, and the whole tree dies with
+          "node to be removed is not a child of this node". That is what
+          made the 3D toggle wipe the page. React owns this wrapper and
+          GSAP never touches it; the spacer goes INSIDE. */}
+      <section
       className={`chapter ${className}${!immersive && room != null ? ' chapter--plated' : ''}${immersive && room != null ? ' chapter--diegetic' : ''}`}
       id={id}
       ref={ref}
@@ -144,8 +152,9 @@ export default function Chapter({ id, numeral, title, subtitle, pin = true, exit
           <div className="orn-rule" data-reveal><span className="gem" /></div>
         </header>
       )}
-      {children}
-      <div className="room-shade" ref={shadeRef} aria-hidden="true" />
-    </section>
+        {children}
+        <div className="room-shade" ref={shadeRef} aria-hidden="true" />
+      </section>
+    </div>
   )
 }

@@ -1,6 +1,8 @@
 import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
+import * as THREE from 'three'
 import { WOOD_DARK, IRON } from './palette'
+import { screen } from './screen'
 import { Hotspot } from './Hotspot'
 
 // ============================================================
@@ -16,13 +18,30 @@ import { Hotspot } from './Hotspot'
 export default function Arcade({ lit, position = [0, -2.4, -4.4], rotation = [0, 0, 0] }) {
   const glow = useRef()
   const scan = useRef()
+  const tube = useRef()
+  const tex = useRef(null)
 
   useFrame(({ clock }) => {
     const t = clock.elapsedTime
     // a tube that has been left on for a very long time
     const flick = 0.82 + Math.sin(t * 9.1) * 0.03 + Math.sin(t * 21.3) * 0.02
     if (glow.current) glow.current.intensity = (lit ? 1.5 : 1.05) * flick
-    if (scan.current) scan.current.material.opacity = 0.5 + Math.sin(t * 2.2) * 0.08
+    // a whisper of phosphor bloom, not a wash — at any strength this
+    // overlay simply hides the game it is sitting on
+    if (scan.current) scan.current.material.opacity = 0.05 + Math.sin(t * 2.2) * 0.02
+
+    // The game's canvas arrives late — WorldGame is lazy-loaded — so pick
+    // it up whenever it appears rather than assuming it is there at mount.
+    if (!tex.current && screen.canvas && tube.current) {
+      const ct = new THREE.CanvasTexture(screen.canvas)
+      ct.colorSpace = THREE.SRGBColorSpace
+      ct.minFilter = THREE.LinearFilter
+      tex.current = ct
+      tube.current.material.map = ct
+      tube.current.material.color.set('#ffffff')
+      tube.current.material.needsUpdate = true
+    }
+    if (tex.current) tex.current.needsUpdate = true
   })
 
   const body = { color: '#2a1d12', roughness: 0.82 }
@@ -57,13 +76,14 @@ export default function Arcade({ lit, position = [0, -2.4, -4.4], rotation = [0,
         <boxGeometry args={[1.35, 1.0, 0.12]} />
         <meshStandardMaterial color="#0d0a06" roughness={0.6} />
       </mesh>
-      <mesh position={[0, 1.78, 0.7]}>
+      {/* the tube itself — shows the game that is actually running */}
+      <mesh ref={tube} position={[0, 1.78, 0.7]}>
         <planeGeometry args={[1.12, 0.8]} />
         <meshBasicMaterial color="#3a2a12" toneMapped={false} />
       </mesh>
       <mesh ref={scan} position={[0, 1.78, 0.71]}>
         <planeGeometry args={[1.12, 0.8]} />
-        <meshBasicMaterial color="#ffb04e" transparent opacity={0.5} toneMapped={false} />
+        <meshBasicMaterial color="#ffb04e" transparent opacity={0.05} toneMapped={false} />
       </mesh>
       {/* the tube's own light, thrown onto the room */}
       <pointLight ref={glow} position={[0, 1.78, 1.15]} color="#ffb45e" distance={9} decay={1.7} />

@@ -7,12 +7,33 @@ gsap.registerPlugin(ScrollTrigger)
 
 const experiences = [
   {
-    role: 'Data Science Intern',
-    company: 'Celebal Technologies · On-Site',
-    date: 'Oct 2025 – Present',
+    role: 'Software Engineer',
+    company: 'Celebal Technologies · Jaipur',
+    date: 'Jun 2026 – Present',
     points: [
-      'Developed a Databricks-based contract intelligence system supporting large-scale document ingestion, metadata processing, and search pipelines.',
-      'Implemented a proof-of-concept for automated SAP invoice validation using AWS-based document ingestion, OCR, and structured data extraction.',
+      'Engineered a reusable BFF authentication architecture enabling Microsoft Entra ID users without native Databricks accounts to securely access Databricks Apps, evolving the platform into a centralized App Center.',
+      'Built Pluto, an enterprise AI FinOps agent for natural-language querying of cost, usage, forecasting and optimization insights across all Databricks workspaces, powered by Databricks system tables.',
+      "Cut Pluto's maximum response time by 96% (236 sec to 8.6 sec) by materializing frequently queried views and engineering hourly data refresh pipelines.",
+      'Architecting enterprise MCP security middleware that validates every tool request against organizational security policies before execution, enforcing least-privilege access.',
+    ],
+  },
+  {
+    role: 'Data Science Trainee',
+    company: 'Celebal Technologies · Jaipur',
+    date: 'Feb 2026 – May 2026',
+    points: [
+      'Removed LLM dependency as a point of failure and cost, cutting execution latency by up to 46% and reducing LLM runtime cost to 0 by replacing agentic decision loops with deterministic Playwright DOM-based automation.',
+      'Benchmarked fully LLM-driven, hybrid Playwright+LLM and deterministic Playwright strategies for Oracle Transportation Management, comparing latency, reliability, hallucination risk and operational cost.',
+      'Designed a toggle-driven notebook enabling 1-configuration control for test-to-production environment switching, persisting validated outputs into Delta tables across 3+ pipeline stages.',
+    ],
+  },
+  {
+    role: 'Data Science Intern',
+    company: 'Celebal Technologies · Jaipur',
+    date: 'Oct 2025 – Jan 2026',
+    points: [
+      "Redesigned Lexi, a production chatbot for querying enterprise contracts, consolidating 3 manual notebooks into a single curated workflow processing 27 waves of 20–50 contracts each, with OCR fallback when Databricks' ai_parse_document missed content.",
+      'Automated invoice validation end-to-end using Amazon NovaAct (Preview), building upstream pipelines across 6 AWS services to extract and structure invoice data across ingestion, OCR, structuring and SAP execution.',
     ],
   },
   {
@@ -20,21 +41,21 @@ const experiences = [
     company: 'Coding Jr · Remote',
     date: 'Feb 2025 – Jun 2025',
     points: [
-      'Delivered backend features for 3+ AI copilot workflows, including code assistance and documentation querying.',
-      'Conducted data research across 20+ unicorns, producing insights that shaped product roadmap priorities.',
+      "Built backend workflows for Coding Jr's VS Code extension AI copilot, enabling code rewriting, explanation and test generation on selected code portions.",
+      'Delivered 3+ production features for code assistance and documentation querying, directly shaping product capabilities used by developers.',
     ],
   },
 ]
 
 const certifications = [
-  { name: 'Design & Analysis of Algorithms', issuer: 'NPTEL' },
-  { name: 'Enterprise Networking & Security', issuer: 'Cisco' },
-  { name: 'Switching, Routing & Wireless', issuer: 'Cisco' },
-  { name: 'Enterprise-grade AI', issuer: 'IBM' },
-  { name: 'System Administration II', issuer: 'Red Hat' },
-  { name: 'Database Foundations', issuer: 'Oracle' },
+  { name: 'Design and Analysis of Algorithms', issuer: 'NPTEL' },
+  { name: 'CCNAv7: Enterprise Networking, Security & Automation', issuer: 'Cisco' },
+  { name: 'CCNAv7: Switching, Routing & Wireless Essentials', issuer: 'Cisco' },
+  { name: 'Getting Started with Enterprise-grade AI', issuer: 'IBM' },
+  { name: 'Red Hat System Administration II (RH134)', issuer: 'Red Hat' },
+  { name: 'Database Foundations', issuer: 'Oracle Academy' },
   { name: 'Tools for Data Science', issuer: 'Coursera' },
-  { name: 'Python Essentials', issuer: 'Cisco' },
+  { name: 'Python Essentials 1', issuer: 'Cisco' },
   { name: 'Fundamentals of Agents', issuer: 'Hugging Face' },
 ]
 

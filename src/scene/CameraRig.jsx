@@ -106,8 +106,20 @@ export default function CameraRig() {
 
     camera.position.copy(pos)
     camera.lookAt(tgt)
-    if (Math.abs(camera.fov - fov) > 0.02) {
-      camera.fov += (fov - camera.fov) * k
+
+    // Rooms declare framing as a HORIZONTAL field of view, converted here
+    // against the live aspect. three's `fov` is vertical, so on a narrow
+    // window the same number shows less of the room sideways — which is
+    // what cut the entrance's board in half on anything below 16:9. Framing
+    // a wall means holding the horizontal angle and letting the vertical
+    // give, never the reverse.
+    const hFov = THREE.MathUtils.degToRad(fov * 1.42)
+    const vFov = THREE.MathUtils.radToDeg(
+      2 * Math.atan(Math.tan(hFov / 2) / Math.max(0.6, camera.aspect))
+    )
+    const want = THREE.MathUtils.clamp(vFov, 34, 86)
+    if (Math.abs(camera.fov - want) > 0.02) {
+      camera.fov += (want - camera.fov) * k
       camera.updateProjectionMatrix()
     }
 

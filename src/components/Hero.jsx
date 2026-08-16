@@ -10,9 +10,9 @@ import { plateStyle } from '../scene/plate'
 gsap.registerPlugin(ScrollTrigger)
 
 const ROLES = [
-  'AI & Data Science Engineer',
-  'Building agentic AI systems',
-  'Data pipelines at production scale',
+  'Software Engineer, Celebal Technologies',
+  'Agentic AI & MCP security middleware',
+  'FinOps tooling on Databricks',
 ]
 
 export default function Hero() {
@@ -108,12 +108,13 @@ export default function Hero() {
   return (
     // on desktop the copy lives ON the room's walls (WallInscriptions);
     // the DOM copy stays for screen readers, search, and the fallbacks
-    <section
-      className={`hero${immersive ? ' hero--diegetic' : ' chapter--plated'}`}
-      id="hero"
-      ref={ref}
-      style={immersive ? undefined : plateStyle(0)}
-    >
+    <div className="pin-slot">
+      <section
+        className={`hero${immersive ? ' hero--diegetic' : ' chapter--plated'}`}
+        id="hero"
+        ref={ref}
+        style={immersive ? undefined : plateStyle(0)}
+      >
       <div className="hero-content" ref={contentRef}>
         <p className="hero-epigraph" data-hero-reveal>
           {lit ? 'someone still lives here…' : 'the lights are out'}
@@ -125,10 +126,10 @@ export default function Hero() {
           {typed}<span className="caret" />
         </p>
         <p className="hero-summary" data-hero-reveal>
-          I build intelligent systems — agentic AI workflows, contract
-          intelligence on Databricks, autonomous pipelines on AWS.
-          Computer Science graduate, Manipal University Jaipur.
-          The house holds the rest. Look carefully.
+          Software Engineer at Celebal Technologies. I build intelligent
+          systems — agentic AI, MCP security middleware, and FinOps
+          tooling on Databricks. Computer Science graduate, Manipal
+          University Jaipur. The house holds the rest. Look carefully.
         </p>
       </div>
 
@@ -139,6 +140,7 @@ export default function Hero() {
       <div className="hero-foot" aria-hidden="true">
         <div className="quill" />
       </div>
-    </section>
+      </section>
+    </div>
   )
 }

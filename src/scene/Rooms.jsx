@@ -72,11 +72,11 @@ export function SkillsRoom({ lit }) {
         title="Skills &amp; Tools"
         subtitle="what the house was built with"
         groups={[
-          { label: 'Languages & Frameworks', items: ['Python · SQL · Go · FastAPI'] },
-          { label: 'Machine Learning', items: ['NumPy · Pandas · Scikit-learn', 'TensorFlow · Matplotlib · Seaborn'] },
-          { label: 'GenAI & Agents', items: ['LLMs · AI Agents · RAG', 'Amazon Bedrock · Hugging Face'] },
-          { label: 'Data Engineering', items: ['Databricks · Delta Lake', 'MySQL · PostgreSQL · ETL Pipelines'] },
-          { label: 'Cloud & DevOps', items: ['AWS · Docker · Git', 'Jenkins · Vercel'] },
+          { label: 'Programming & Frameworks', items: ['Python · SQL · FastAPI'] },
+          { label: 'AI & Agents', items: ['LLM Agents · Model Context Protocol', 'Claude Code · Codex · Playwright'] },
+          { label: 'Libraries', items: ['Pandas · NumPy · Matplotlib', 'Seaborn · requests · BeautifulSoup'] },
+          { label: 'Cloud, Identity & MLOps', items: ['AWS · Databricks · Docker · Jenkins', 'Microsoft Entra ID · BFF Architecture'] },
+          { label: 'Databases', items: ['MySQL · PostgreSQL'] },
         ]}
       />
       <BoardLights lit={lit} />
@@ -159,13 +159,13 @@ export function ExperienceRoom({ lit }) {
         title="Experience"
         subtitle="the records room — everything filed"
         lines={[
-          'Data Science Intern — Celebal Technologies',
-          'Oct 2025 – Present · Databricks contract',
-          'intelligence, SAP invoice validation on AWS.',
+          'Software Engineer — Celebal Technologies',
+          'Jun 2026 – Present · BFF auth on Entra ID,',
+          'Pluto (AI FinOps agent), MCP security middleware.',
           '',
-          'AI Research Intern — Coding Jr',
-          'Feb 2025 – Jun 2025 · backend for 3+ AI',
-          'copilot workflows, research across 20+ unicorns.',
+          'Data Science Trainee — Feb 2026 – May 2026',
+          'Data Science Intern — Oct 2025 – Jan 2026',
+          'AI Research Intern, Coding Jr — Feb – Jun 2025',
         ]}
         foot="9+ certifications — NPTEL, Cisco, IBM, Red Hat, Oracle"
       />
@@ -193,7 +193,8 @@ export function ContactRoom({ lit }) {
         title="Contact"
         subtitle="the telephone still works"
         lines={[
-          'parasmotwani@gmail.com',
+          'wparasmotwani@gmail.com',
+          '+91 70004 39613',
           'linkedin.com/in/parasmotwani',
           'github.com/parasmotwani',
           '',

@@ -24,17 +24,17 @@ const PAGES = [
   {
     heading: 'Who I am',
     body: [
-      'AI & Data Science Engineer, Jaipur, IN.',
-      'I build intelligent systems — agentic AI workflows, contract intelligence on Databricks, autonomous SAP pipelines on AWS.',
-      'Co-founded a gamified ed-tech startup. Won top honors at The Startup Mela 2.0, Jaipur.',
+      'Software Engineer at Celebal Technologies, Jaipur.',
+      'I build intelligent systems — BFF authentication on Microsoft Entra ID, Pluto (an enterprise AI FinOps agent on Databricks), and MCP security middleware that validates every tool request before execution.',
+      'Before that: deterministic Playwright automation that cut LLM runtime cost to zero, and Lexi, a production contract-querying chatbot.',
     ],
-    stats: '16+ projects · 2 internships · 9+ certifications',
+    stats: 'Celebal Technologies · Coding Jr · 9+ certifications',
   },
   {
     heading: 'Schooling',
     body: [
       'B.Tech, Computer Science & Engineering — Manipal University Jaipur, Oct 2021 – Jul 2025.',
-      'Senior Secondary (12th), 92.75% — Academic World School, Mar 2020 – Jul 2021.',
+      'Senior Secondary, 92.75% — Academic World School, Mar 2020 – Jul 2021.',
     ],
     stats: 'the rest of the records are in the other rooms…',
   },
@@ -259,6 +259,7 @@ export default function DrawerRoom() {
   }
 
   return (
+    <div className="pin-slot">
     <section className="study-stage" id="about" ref={ref}>
       {/* The visible copy is inked on the sheet pinned to the study's back
           wall (StudyCopy). This is the same text kept for screen readers,
@@ -285,5 +286,6 @@ export default function DrawerRoom() {
       />
       <Booklet open={open} page={page} setPage={setPage} toggle={toggle} />
     </section>
+    </div>
   )
 }

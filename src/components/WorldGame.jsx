@@ -3,6 +3,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Chapter from './Chapter'
 import Reach from './Reach'
 import { useDevice } from '../hooks/useDevice'
+import { screen } from '../scene/screen'
 
 // ============================================================
 // A retro 2D open world. Walk around, approach a building,
@@ -96,7 +97,7 @@ const BUILDINGS = [
     id: 'contact', x: 30, y: 16, w: 7, h: 5, label: 'CONTACT',
     title: 'Contact',
     lines: [
-      'Email     parasmotwani@gmail.com',
+      'Email     wparasmotwani@gmail.com',
       'LinkedIn  linkedin.com/in/parasmotwani',
       'GitHub    github.com/parasmotwani',
       'Phone     +91 7000 439 613',
@@ -141,6 +142,13 @@ export default function WorldGame() {
   const wrapRef = useRef(null)
   const { immersive } = useDevice()
   const [playing, setPlaying] = useState(false)
+
+  // hand the canvas to the scene: the cabinet in Room III samples it, so
+  // the machine displays the game it is offering
+  useEffect(() => {
+    screen.canvas = canvasRef.current
+    return () => { screen.canvas = null }
+  }, [])
   const [panel, setPanel] = useState(null) // building object or null
   const [prompt, setPrompt] = useState(null) // label of nearby building
   const stateRef = useRef({
