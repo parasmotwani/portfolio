@@ -26,7 +26,7 @@ export default function Arcade({ lit, position = [0, -2.4, -4.4], rotation = [0,
     // a tube that has been left on for a very long time
     const flick = 0.82 + Math.sin(t * 9.1) * 0.03 + Math.sin(t * 21.3) * 0.02
     // this is the ONLY light in Room III, so it has to reach the walls
-    if (glow.current) glow.current.intensity = (lit ? 26 : 20) * flick
+    if (glow.current) glow.current.intensity = (lit ? 5.2 : 4.2) * flick
     // a whisper of phosphor bloom, not a wash — at any strength this
     // overlay simply hides the game it is sitting on
     if (scan.current) scan.current.material.opacity = 0.05 + Math.sin(t * 2.2) * 0.02
@@ -45,8 +45,14 @@ export default function Arcade({ lit, position = [0, -2.4, -4.4], rotation = [0,
     if (tex.current) tex.current.needsUpdate = true
   })
 
-  const body = { color: '#2a1d12', roughness: 0.82 }
-  const trim = { color: WOOD_DARK, roughness: 0.7 }
+  // The cabinet is a dark box. Its own woodwork sits within half a unit of
+  // the tube, so at any usable brightness a mid-tone reads as a glowing
+  // table rather than a machine with a lit screen in it — the panel under
+  // the glass was the worst offender. These are near-black on purpose: the
+  // screen is the only thing in this room that is supposed to look lit.
+  const body = { color: '#150e07', roughness: 0.9 }
+  const trim = { color: '#1b120a', roughness: 0.85 }
+  const panel = { color: '#120c06', roughness: 0.9 }
 
   return (
     <group position={position} rotation={rotation}>
@@ -86,15 +92,26 @@ export default function Arcade({ lit, position = [0, -2.4, -4.4], rotation = [0,
         <planeGeometry args={[1.12, 0.8]} />
         <meshBasicMaterial color="#ffb04e" transparent opacity={0.05} toneMapped={false} />
       </mesh>
-      {/* the tube's own light, thrown onto the room */}
-      <pointLight ref={glow} position={[0, 1.78, 1.15]} color="#ffb45e" distance={17} decay={1.5} castShadow />
-      {/* spill from the marquee, so the cabinet reads as lit from within */}
-      <pointLight position={[0, 2.42, 0.7]} color="#c98a2e" intensity={lit ? 5 : 3.6} distance={7} decay={2} />
+      {/* The tube's light, sitting just off the glass where a screen's
+          light actually comes from. It is deliberately weak: at 26 it blew
+          the cabinet's own woodwork out to flat yellow and the whole unit
+          read as a glowing table rather than a dark box with a lit screen
+          in it. Pushing the lamp out into the room instead was worse —
+          that floodlights the walls and throws the cabinet's shadow behind
+          it. The screen plane is unlit material, so IT stays bright on its
+          own; this only has to spill a pool onto the floor. */}
+      <pointLight
+        ref={glow}
+        position={[0, 1.86, 0.95]}
+        color="#ffb45e"
+        distance={13}
+        decay={1.7}
+      />
 
       {/* control panel */}
       <mesh position={[0, 1.02, 0.78]} rotation={[-0.34, 0, 0]} castShadow>
         <boxGeometry args={[1.6, 0.62, 0.1]} />
-        <meshStandardMaterial {...trim} />
+        <meshStandardMaterial {...panel} />
       </mesh>
       {/* stick + two buttons */}
       <mesh position={[-0.38, 1.16, 0.86]} rotation={[-0.34, 0, 0]} castShadow>
