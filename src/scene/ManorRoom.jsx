@@ -62,7 +62,13 @@ export default function ManorRoom({
 
           A `dark` room has no window at all and is lit purely by what is
           standing in it. */}
-      <hemisphereLight args={['#8fa0b8', '#2c2820', dark ? 0.05 : 0.13]} />
+      {/* The ground colour is what DOWNWARD-facing surfaces receive, and the
+          ceiling is the biggest one in the room. At near-black it rendered
+          as a void — the hard dark band across the top of the picture,
+          which raycasting showed was the ceiling plane and not an overlay.
+          A warm, dim ground term reads as candlelight bouncing up off the
+          floor, and only affects surfaces that face down. */}
+      <hemisphereLight args={['#8fa0b8', '#4a3d2c', dark ? 0.07 : 0.17]} />
       {!dark && (
         <>
           <spotLight

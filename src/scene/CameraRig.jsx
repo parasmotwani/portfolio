@@ -21,15 +21,39 @@ const _b = new THREE.Vector3()
 // One curve per doorway, built once. Catmull-Rom rather than a Bézier
 // because the camera has to pass THROUGH the opening — a Bézier only bends
 // toward its control point, which walks you into the wall beside the door.
+// How wide a doorway actually is, and how far either side of it the walk is
+// held straight. The opening is one wall panel; staying within about a
+// metre of its centre keeps the camera inside the frame of the door.
+const DOOR_APPROACH = 1.35
+
 const WALKS = ROOMS.slice(0, -1).map((room, i) => {
   const next = ROOMS[i + 1]
   const off = roomOffset(i), sx = roomShift(i)
   const nOff = roomOffset(i + 1), nsx = roomShift(i + 1)
-  return new THREE.CatmullRomCurve3([
-    new THREE.Vector3(room.exit[0] + sx, room.exit[1], room.exit[2] + off),
-    new THREE.Vector3(room.door[0] + sx, room.door[1], room.door[2] + off),
-    new THREE.Vector3(next.eye[0] + nsx, next.eye[1], next.eye[2] + nOff),
-  ], false, 'catmullrom', 0.5)
+
+  const exit = new THREE.Vector3(room.exit[0] + sx, room.exit[1], room.exit[2] + off)
+  const door = new THREE.Vector3(room.door[0] + sx, room.door[1], room.door[2] + off)
+  const eye = new THREE.Vector3(next.eye[0] + nsx, next.eye[1], next.eye[2] + nOff)
+
+  // Two guide points on the door's own axis, one either side.
+  //
+  // With just [exit, door, eye] the Catmull-Rom tangent AT the door is
+  // (eye - exit) / 2, which already points off toward the next room — so
+  // the curve bows PAST the opening on the way in and comes back, and the
+  // camera goes through the wall and whatever is standing against it
+  // rather than through the door. That is the phasing, and it is the path
+  // at fault, not the furniture. Pinning a point just before and just
+  // after the doorway forces the curve to arrive and leave along the axis
+  // of the opening, so the camera goes through the hole in the wall.
+  const before = door.clone(); before.z += DOOR_APPROACH
+  const after = door.clone(); after.z -= DOOR_APPROACH
+
+  return new THREE.CatmullRomCurve3(
+    [exit, before, door, after, eye],
+    false,
+    'catmullrom',
+    0.5
+  )
 })
 
 function poseAt(t, eye, look) {

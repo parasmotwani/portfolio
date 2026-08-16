@@ -63,13 +63,45 @@ export default function SceneCanvas() {
         camera={{ position: [0, -0.55, 6.6], fov: 58 }}
         dpr={[1, 1.5]}
         gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
-        onCreated={({ gl }) => {
+        onCreated={({ gl, scene, camera, raycaster }) => {
           gl.toneMapping = THREE.ACESFilmicToneMapping
           gl.toneMappingExposure = 1.12
+          // A hook for the verify harness. Asking "what is that dark band"
+          // from the DOM side is unanswerable — every layer is transparent
+          // because the thing is in the scene. This lets a test fire a ray
+          // at a screen pixel and name the mesh it hits.
+          if (typeof window !== 'undefined') {
+            window.__camPos = () => camera.position.toArray().map((n) => +n.toFixed(2))
+            window.__probe = (px, py) => {
+              const r = gl.domElement.getBoundingClientRect()
+              const ndc = new THREE.Vector2(
+                ((px - r.left) / r.width) * 2 - 1,
+                -((py - r.top) / r.height) * 2 + 1
+              )
+              raycaster.setFromCamera(ndc, camera)
+              return raycaster.intersectObjects(scene.children, true).slice(0, 4).map((h) => ({
+                name: h.object.name || h.object.type,
+                dist: +h.distance.toFixed(2),
+                mat: h.object.material?.type,
+                colour: h.object.material?.color?.getHexString?.(),
+                transparent: h.object.material?.transparent,
+                opacity: h.object.material?.opacity,
+                world: h.object.getWorldPosition(new THREE.Vector3()).toArray().map((n) => +n.toFixed(2)),
+              }))
+            }
+          }
         }}
         performance={{ min: 0.5 }}
       >
         <color attach="background" args={['#0d0b08']} />
+        {/* Distance fades into the room's own dark instead of showing as
+            flat black shapes. Looking through a doorway you can see three
+            rooms down the line, and the geometry back there catches no
+            light — which rendered as a hard-edged black band across the
+            middle of the picture. Raycasting into it hit nothing for 11
+            units and then a ceiling plane. Fog is the honest fix: the far
+            room is still there, it just recedes. */}
+        <fog attach="fog" args={['#0d0b08', 11, 34]} />
         <CameraRig />
         <Manor lit={lit} lantern={lantern} />
         <EmberField count={dust} />
