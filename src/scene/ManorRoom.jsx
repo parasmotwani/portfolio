@@ -1,4 +1,5 @@
 import { Piece } from './toonify'
+import { WALL, WALL_BACK, FLOOR as FLOOR_TINT, CEIL, MOON, MOON_FILL, NIGHT_GLASS } from './palette'
 
 // ============================================================
 // A room of the manor, assembled from the kit on the same 5.1u module the
@@ -28,9 +29,10 @@ export default function ManorRoom({
   lit = false,
   windowSide = 'left',
   windowRow = 0,
-  tint = '#c4b8a4',
-  floorTint = '#b5a690',
-  ceilTint = '#6e6152',
+  tint = WALL,
+  backTint = WALL_BACK,
+  floorTint = FLOOR_TINT,
+  ceilTint = CEIL,
   floor = 'floor_wood_large_dark',
   ceiling = true,
 }) {
@@ -51,12 +53,12 @@ export default function ManorRoom({
       <directionalLight
         position={[winX, 1.6, winZ]}
         target-position={[winX + inward * 8, -2.4, winZ + 2]}
-        color="#cfdae8"
+        color={MOON}
         intensity={lit ? 1.05 : 0.72}
         castShadow
         shadow-mapSize={[1024, 1024]}
       />
-      <pointLight position={[winX + inward * 0.6, 0.5, winZ]} color="#c8d4e2" intensity={lit ? 0.5 : 0.36} distance={11} decay={1.7} />
+      <pointLight position={[winX + inward * 0.6, 0.5, winZ]} color={MOON_FILL} intensity={lit ? 0.5 : 0.36} distance={11} decay={1.7} />
       {/* back wall — one panel of it is the way out */}
       {xs.map((x, i) => {
         const isDoor = i === doorCol
@@ -67,7 +69,7 @@ export default function ManorRoom({
             file={kind}
             position={[x, FLOOR, backZ]}
             scale={S}
-            tint={tint}
+            tint={backTint}
             stripDoor={isDoor}
           />
         )
@@ -93,7 +95,7 @@ export default function ManorRoom({
       {/* the night beyond the window */}
       <mesh position={[winX - inward * 0.12, 0.35, winZ]} rotation={[0, inward * Math.PI / 2, 0]}>
         <planeGeometry args={[4.4, 3.6]} />
-        <meshBasicMaterial color="#7c90ad" toneMapped={false} />
+        <meshBasicMaterial color={NIGHT_GLASS} toneMapped={false} />
       </mesh>
 
       {/* floor */}

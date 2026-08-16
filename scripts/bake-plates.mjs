@@ -49,7 +49,13 @@ const page = await ctx.newPage()
 await page.goto(URL, { waitUntil: 'networkidle' })
 await sleep(3000)
 
-// hang the lantern: the plates are the lit house
+// Hang the lantern: the plates are the lit house. Wait for the hook's
+// hotspot to resolve — it is positioned from the 3D object, so it does not
+// exist until the scene has streamed in.
+await page.waitForFunction(() => {
+  const e = [...document.querySelectorAll('.reach')].find((x) => /hook/.test(x.getAttribute('aria-label') || ''))
+  return e && e.style.opacity === '1'
+}, null, { timeout: 60000 })
 await page.click('button[aria-label*="hook"]', { force: true })
 await sleep(3500)
 

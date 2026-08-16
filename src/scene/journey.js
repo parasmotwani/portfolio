@@ -47,21 +47,21 @@ export const ROOMS = [
     // shifted right so its own right wall (local 7.5) still contains the
     // hall's doorway at world x 7.65
     fov: 52, front: 7.4, back: -6, x: 2.2, sway: 0.8,
-    eye: [4.4, -0.3, 5.0],
-    look: [-2.4, -0.15, -3.2],
+    eye: [0.1, -0.2, 5.2],
+    look: [-0.15, 0.2, -5.88],
     exit: [3.2, -0.35, 1.0],
     lookExit: [4.5, -0.85, -7.0],
     door: [4.5, -0.8, -5.7],
   },
-  // Rooms II–VI stand back near the front wall and look DOWN into the
-  // room. Level with the back wall, a 20-unit-wide room just fills the
-  // frame with masonry; tilted down, the floor, the dressing and the
-  // candle pools carry the shot.
+  // Rooms II–VI face their own back wall square on, because that is where
+  // the room's copy hangs. Entry is still through the previous room's
+  // doorway — the walk curve delivers the camera here and it turns to
+  // read the board, which is what the visitor came in for.
   {
     id: 'skills',
     fov: 55, front: 9.3, back: -6, x: 0, sway: 0.85,
-    eye: [5.0, -0.05, 7.6],
-    look: [0.4, -1.4, -2.6],
+    eye: [0.2, -0.15, 6.6],
+    look: [0, 0.15, -5.36],
     exit: [-4.6, -0.4, 0.6],
     lookExit: [-7.65, -0.9, -7.0],
     door: [-7.65, -0.85, -5.9],
@@ -69,8 +69,8 @@ export const ROOMS = [
   {
     id: 'world',
     fov: 55, front: 9.3, back: -6, x: 0, sway: 0.85,
-    eye: [-5.6, -0.05, 7.6],
-    look: [-0.6, -1.4, -2.8],
+    eye: [-0.2, -0.15, 6.6],
+    look: [0, 0.15, -5.36],
     exit: [4.6, -0.4, 0.6],
     lookExit: [7.65, -0.9, -7.0],
     door: [7.65, -0.85, -5.9],
@@ -78,8 +78,8 @@ export const ROOMS = [
   {
     id: 'projects',
     fov: 56, front: 9.3, back: -6, x: 0, sway: 0.85,
-    eye: [5.6, -0.05, 7.6],
-    look: [0.2, -1.4, -2.6],
+    eye: [0.2, -0.15, 6.6],
+    look: [0, 0.15, -5.36],
     exit: [-4.6, -0.4, 0.6],
     lookExit: [-7.65, -0.9, -7.0],
     door: [-7.65, -0.85, -5.9],
@@ -87,8 +87,8 @@ export const ROOMS = [
   {
     id: 'experience',
     fov: 55, front: 9.3, back: -6, x: 0, sway: 0.85,
-    eye: [-5.6, -0.05, 7.6],
-    look: [0.2, -1.4, -2.8],
+    eye: [-0.2, -0.15, 6.6],
+    look: [0, 0.15, -5.36],
     exit: [4.6, -0.4, 0.6],
     lookExit: [7.65, -0.9, -7.0],
     door: [7.65, -0.85, -5.9],
@@ -97,8 +97,8 @@ export const ROOMS = [
     id: 'contact',
     // the last room — entered, never left
     fov: 54, front: 9.3, back: -6, x: 0, sway: 0.7,
-    eye: [5.6, -0.05, 7.6],
-    look: [0, -1.4, -2.6],
+    eye: [0.2, -0.15, 6.6],
+    look: [0, 0.15, -5.36],
     exit: [0.4, -0.4, 2.2],
     lookExit: [0, -1.2, -3.2],
     door: [0, -0.85, -5.9],

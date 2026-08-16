@@ -13,11 +13,15 @@ import * as THREE from 'three'
 const FELL_SC = '"IM Fell English SC", serif'
 const FELL_IT = '"IM Fell English", serif'
 
-export function roughText(g, text, x, y, size, color, alpha, { font = FELL_SC, rot = 0, align = 'center' } = {}) {
+// `style` is separate from `font` on purpose. The CSS font shorthand is
+// [style] [size] [family] in that order, so folding "italic 30px …" into
+// `font` yields "30px italic 30px …" — invalid, silently ignored by canvas,
+// and the text renders at the default 10px. Pass style here instead.
+export function roughText(g, text, x, y, size, color, alpha, { font = FELL_SC, style = '', rot = 0, align = 'center' } = {}) {
   g.save()
   g.translate(x, y)
   g.rotate(rot)
-  g.font = `${size}px ${font}`
+  g.font = `${style} ${size}px ${font}`.trim()
   g.textAlign = align
   g.fillStyle = color
   g.globalAlpha = alpha * 0.45

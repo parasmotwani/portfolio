@@ -3,19 +3,19 @@ import { useFrame } from '@react-three/fiber'
 import ManorRoom, { cols, FLOOR } from './ManorRoom'
 import { Piece, preloadPieces } from './toonify'
 import { Flame } from './Flame'
+import { ProseBoard, ListBoard } from './RoomCopy'
+import Arcade from './Arcade'
 import { journey, roomOffset, roomShift } from './journey'
+import { WOOD, WOOD_DARK, STONE, CRATE, WAX, IRON, FLAME_WARM } from './palette'
 
 // ============================================================
-// Rooms II–VI. Each is the shared manor shell plus its own dressing, lit
-// only by flames and one cold window. The copy stays in the DOM overlay
-// above — text baked into a canvas is text nobody can select, search or
-// read with a screen reader, and these rooms carry real skill and project
-// names.
+// Rooms II–VI. Each is the shared manor shell, its copy inked on a board
+// hung centre of the back wall, and dressing arranged so the board is
+// never blocked.
 //
-// Dressing is deliberately centre-weighted. These rooms are 20 units wide
-// and the camera reads them from the front, so anything pushed against the
-// far walls simply falls outside the frame and the room reads as empty
-// rather than as left behind.
+// Dressing stays out of the middle third: the camera enters facing the
+// board, and anything standing at x -3..3 in front of it covers the room's
+// own words.
 // ============================================================
 
 preloadPieces([
@@ -46,13 +46,14 @@ function Room({ index, children, ...shell }) {
   )
 }
 
-// A torch beside the way out, so the exit reads before you reach it.
-function DoorTorch({ x, lit, delay = 0.4 }) {
-  const inward = -Math.sign(x) || 1
+// Two torches flanking the board, so the room's copy is the lit thing in it.
+function BoardLights({ lit }) {
   return (
     <>
-      <Piece file="torch_mounted" position={[x + inward * 2.4, -0.62, -5.78]} scale={1.2} tint="#b8a488" anchor="none" />
-      <Flame position={[x + inward * 2.4, 0.06, -5.5]} lit={lit} delay={delay} size={0.42} light={2.2} distance={12} color="#ffab5e" />
+      <Piece file="torch_mounted" position={[-5.0, -0.5, -5.78]} scale={1.2} tint={IRON} anchor="none" />
+      <Flame position={[-5.0, 0.18, -5.5]} lit={lit} delay={0.35} size={0.42} light={2.4} distance={13} color={FLAME_WARM} />
+      <Piece file="torch_mounted" position={[5.0, -0.5, -5.78]} scale={1.2} tint={IRON} anchor="none" />
+      <Flame position={[5.0, 0.18, -5.5]} lit={lit} delay={0.55} size={0.42} light={2.4} distance={13} color={FLAME_WARM} />
     </>
   )
 }
@@ -60,45 +61,61 @@ function DoorTorch({ x, lit, delay = 0.4 }) {
 // ---------------- Room II — Skills ----------------
 export function SkillsRoom({ lit }) {
   return (
-    <Room index={2} doorCol={0} wallKinds={['wall', 'wall_cracked', 'wall', 'wall']} tint="#c0b4a0" lit={lit} windowSide="right" windowRow={1}>
-      {/* the working library — shelving stood against the back wall */}
-      <Piece file="shelves" position={[-1.4, FLOOR, -5.5]} scale={1.35} tint="#a8906c" />
-      <Piece file="shelves" position={[2.4, FLOOR, -5.5]} scale={1.35} tint="#a08869" />
-      <Piece file="shelf_large" position={[5.6, -0.35, -5.6]} scale={1.3} tint="#a8906c" anchor="none" />
-      <Piece file="bottle_A_green" position={[5.1, -0.16, -5.5]} scale={1.1} tint="#b8c49a" anchor="none" />
-      <Piece file="bottle_B_brown" position={[6.1, -0.16, -5.5]} scale={1.1} tint="#c2a67c" anchor="none" />
-      {/* the table someone was working at */}
-      <Piece file="table_small_decorated_A" position={[0.6, FLOOR, -1.4]} rotation={[0, 0.24, 0]} scale={1.35} tint="#a8906c" />
-      <Piece file="candle_triple" position={[0.6, FLOOR + 1.06, -1.4]} scale={1.2} tint="#b8ac92" anchor="none" />
-      <Flame position={[0.6, FLOOR + 1.5, -1.4]} lit={lit} base={0.32} delay={0.5} size={0.3} light={2.0} distance={11} />
-      <Piece file="stool" position={[2.5, FLOOR, -0.2]} rotation={[0, 0.9, 0]} scale={1.15} tint="#9c845f" />
-      <Piece file="chair" position={[-1.3, FLOOR, 0.3]} rotation={[0, 2.6, 0]} scale={1.2} tint="#a8906c" />
-      <Piece file="crates_stacked" position={[-6.2, FLOOR, -3.2]} rotation={[0, 0.5, 0]} scale={1.15} tint="#b09878" />
-      <Piece file="box_stacked" position={[6.4, FLOOR, 1.6]} rotation={[0, -0.4, 0]} scale={1.1} tint="#b09878" />
-      <Piece file="trunk_large_A" position={[-5.4, FLOOR, 2.4]} rotation={[0, 0.8, 0]} scale={1.2} tint="#a8906c" />
-      <DoorTorch x={-7.65} lit={lit} />
+    <Room index={2} doorCol={0} lit={lit} windowSide="right" windowRow={1}>
+      <ListBoard
+        numeral="Room II"
+        title="Skills &amp; Tools"
+        subtitle="what the house was built with"
+        groups={[
+          { label: 'Languages & Frameworks', items: ['Python · SQL · Go · FastAPI'] },
+          { label: 'Machine Learning', items: ['NumPy · Pandas · Scikit-learn', 'TensorFlow · Matplotlib · Seaborn'] },
+          { label: 'GenAI & Agents', items: ['LLMs · AI Agents · RAG', 'Amazon Bedrock · Hugging Face'] },
+          { label: 'Data Engineering', items: ['Databricks · Delta Lake', 'MySQL · PostgreSQL · ETL Pipelines'] },
+          { label: 'Cloud & DevOps', items: ['AWS · Docker · Git', 'Jenkins · Vercel'] },
+        ]}
+      />
+      <BoardLights lit={lit} />
+      {/* shelving to the sides, clear of the board */}
+      <Piece file="shelves" position={[-7.6, FLOOR, -5.4]} scale={1.35} tint={WOOD} />
+      <Piece file="shelves" position={[7.6, FLOOR, -5.4]} scale={1.35} tint="#a08869" />
+      <Piece file="table_small_decorated_A" position={[-5.4, FLOOR, -0.6]} rotation={[0, 0.3, 0]} scale={1.3} tint={WOOD} />
+      <Piece file="candle_triple" position={[-5.4, FLOOR + 1.02, -0.6]} scale={1.15} tint={WAX} anchor="none" />
+      <Flame position={[-5.4, FLOOR + 1.46, -0.6]} lit={lit} base={0.3} delay={0.8} size={0.26} light={1.7} distance={9} />
+      <Piece file="stool" position={[-3.9, FLOOR, 0.8]} rotation={[0, 0.9, 0]} scale={1.15} tint={WOOD_DARK} />
+      <Piece file="chair" position={[4.4, FLOOR, -0.4]} rotation={[0, -2.6, 0]} scale={1.2} tint={WOOD} />
+      <Piece file="crates_stacked" position={[-7.4, FLOOR, 3.0]} rotation={[0, 0.5, 0]} scale={1.15} tint={CRATE} />
+      <Piece file="box_stacked" position={[7.2, FLOOR, 2.2]} rotation={[0, -0.4, 0]} scale={1.1} tint={CRATE} />
+      <Piece file="trunk_large_A" position={[6.6, FLOOR, -1.8]} rotation={[0, -0.8, 0]} scale={1.2} tint={WOOD} />
     </Room>
   )
 }
 
 // ---------------- Room III — the Game Room ----------------
-// The CRT itself is the DOM easter egg above; this is the room around it.
 export function GameRoom({ lit }) {
   return (
-    <Room index={3} doorCol={3} wallKinds={['wall_cracked', 'wall', 'wall', 'wall']} tint="#bcb0a0" floorTint="#a89a84" lit={lit} windowSide="left" windowRow={0}>
-      {/* the bench the machine stands on, left of centre so the CRT that
-          expands over it doesn't bury the room */}
-      <Piece file="table_medium_broken" position={[-3.4, FLOOR, -4.4]} rotation={[0, 0.18, 0]} scale={1.35} tint="#a8906c" />
-      <Piece file="crates_stacked" position={[3.2, FLOOR, -5.0]} rotation={[0, -0.35, 0]} scale={1.2} tint="#b09878" />
-      <Piece file="box_stacked" position={[5.6, FLOOR, -3.4]} rotation={[0, 0.2, 0]} scale={1.1} tint="#b09878" />
-      <Piece file="chair" position={[-1.4, FLOOR, -1.6]} rotation={[0, 2.9, 0]} scale={1.2} tint="#a8906c" />
-      <Piece file="stool" position={[1.8, FLOOR, -0.6]} rotation={[0, 0.4, 0]} scale={1.15} tint="#9c845f" />
-      <Piece file="candle_lit" position={[-3.0, FLOOR + 0.72, -3.8]} scale={1.1} tint="#b8ac92" anchor="none" />
-      <Flame position={[-3.0, FLOOR + 1.04, -3.8]} lit={lit} base={0.42} delay={0.3} size={0.28} light={2.0} distance={11} />
-      <Piece file="candle_melted" position={[2.6, FLOOR, 1.4]} scale={1.25} tint="#a89f8a" />
-      <Piece file="keg" position={[-6.4, FLOOR, 1.2]} scale={1.05} tint="#9c845f" />
-      <Piece file="barrel_large" position={[-6.8, FLOOR, 3.8]} scale={1.15} tint="#a8906c" />
-      <DoorTorch x={7.65} lit={lit} />
+    <Room index={3} doorCol={3} lit={lit} windowSide="left" windowRow={0}>
+      <ProseBoard
+        numeral="Room III"
+        title="The Game Room"
+        subtitle="an old machine still hums in the corner"
+        lines={[
+          'It still takes players.',
+          'Everything in this house is somewhere',
+          'inside it — walk in and find out.',
+        ]}
+        foot="insert coin"
+      />
+      <BoardLights lit={lit} />
+      {/* the machine itself, standing where you can see it from the door */}
+      <Arcade lit={lit} position={[-4.4, FLOOR, -3.2]} rotation={[0, 0.5, 0]} />
+      <Piece file="stool" position={[-4.6, FLOOR, -1.5]} rotation={[0, 0.4, 0]} scale={1.15} tint={WOOD_DARK} />
+      <Piece file="table_medium_broken" position={[5.6, FLOOR, -3.4]} rotation={[0, -0.3, 0]} scale={1.3} tint={WOOD} />
+      <Piece file="candle_lit" position={[5.6, FLOOR + 0.72, -3.4]} scale={1.1} tint={WAX} anchor="none" />
+      <Flame position={[5.6, FLOOR + 1.04, -3.4]} lit={lit} base={0.4} delay={0.9} size={0.26} light={1.6} distance={9} />
+      <Piece file="crates_stacked" position={[7.2, FLOOR, -0.6]} rotation={[0, -0.35, 0]} scale={1.2} tint={CRATE} />
+      <Piece file="keg" position={[-7.2, FLOOR, 1.4]} scale={1.05} tint={WOOD_DARK} />
+      <Piece file="barrel_large" position={[-7.0, FLOOR, 3.8]} scale={1.15} tint={WOOD} />
+      <Piece file="chair" position={[4.2, FLOOR, 1.2]} rotation={[0, 2.9, 0]} scale={1.2} tint={WOOD} />
     </Room>
   )
 }
@@ -106,22 +123,32 @@ export function GameRoom({ lit }) {
 // ---------------- Room IV — Projects ----------------
 export function ProjectsRoom({ lit }) {
   return (
-    <Room index={4} doorCol={0} wallKinds={['wall', 'wall', 'wall_cracked', 'wall']} tint="#c4b8a4" lit={lit} windowSide="right" windowRow={1}>
-      {/* a gallery: pillars down the room, the work laid out between them */}
-      <Piece file="pillar" position={[-3.9, FLOOR, -4.4]} scale={1.275} tint="#c9beac" />
-      <Piece file="pillar" position={[3.9, FLOOR, -4.4]} scale={1.275} tint="#c9beac" />
-      <Piece file="pillar" position={[-3.9, FLOOR, 1.6]} scale={1.275} tint="#c9beac" />
-      <Piece file="pillar" position={[3.9, FLOOR, 1.6]} scale={1.275} tint="#c9beac" />
-      <Piece file="trunk_large_A" position={[0.2, FLOOR, -5.0]} rotation={[0, 0.1, 0]} scale={1.25} tint="#a8906c" />
-      <Piece file="plate_stack" position={[0.2, FLOOR + 0.9, -5.0]} scale={1.05} tint="#d8d2c0" anchor="none" />
-      <Piece file="chest" position={[-6.0, FLOOR, -2.0]} rotation={[0, 1.3, 0]} scale={1.15} tint="#a8906c" />
-      <Piece file="chest" position={[6.0, FLOOR, -2.0]} rotation={[0, -1.3, 0]} scale={1.1} tint="#a08869" />
-      <Piece file="candle_triple" position={[-2.2, FLOOR, -2.6]} scale={1.25} tint="#b8ac92" />
-      <Flame position={[-2.2, FLOOR + 0.5, -2.6]} lit={lit} delay={0.5} size={0.28} light={1.9} distance={11} />
-      <Piece file="candle_lit" position={[2.6, FLOOR, -2.6]} scale={1.35} tint="#b8ac92" />
-      <Flame position={[2.6, FLOOR + 0.42, -2.6]} lit={lit} base={0.3} delay={0.75} size={0.28} light={1.8} distance={10} />
-      <Piece file="rubble_half" position={[5.4, FLOOR, 4.2]} rotation={[0, 0.8, 0]} scale={0.26} tint="#c2b8a5" />
-      <DoorTorch x={-7.65} lit={lit} />
+    <Room index={4} doorCol={0} lit={lit} windowSide="right" windowRow={1}>
+      <ListBoard
+        numeral="Room IV"
+        title="Projects"
+        subtitle="a gallery nobody dusted"
+        groups={[
+          { label: 'Contract Intelligence System', items: ['Python · Databricks · LLMs · Delta Lake'] },
+          { label: 'Automated SAP Invoice Validation', items: ['Python · AWS · Textract · Bedrock'] },
+          { label: 'Crypto Matching Engine', items: ['Python · FastAPI · WebSocket · PyTest'] },
+          { label: 'Agentic AI Tutor', items: ['Python · AI Agents · LLMs'] },
+          { label: 'Hybrid Recommendation System', items: ['Python · Scikit-learn · Pandas'] },
+          { label: 'SkimLit — NLP Paper Classifier', items: ['Python · TensorFlow · NLP'] },
+        ]}
+        foot="the frames below carry the links"
+      />
+      <BoardLights lit={lit} />
+      <Piece file="pillar" position={[-6.4, FLOOR, -3.6]} scale={1.275} tint={STONE} />
+      <Piece file="pillar" position={[6.4, FLOOR, -3.6]} scale={1.275} tint={STONE} />
+      <Piece file="pillar" position={[-6.4, FLOOR, 2.2]} scale={1.275} tint={STONE} />
+      <Piece file="pillar" position={[6.4, FLOOR, 2.2]} scale={1.275} tint={STONE} />
+      <Piece file="trunk_large_A" position={[-4.6, FLOOR, 0.4]} rotation={[0, 0.6, 0]} scale={1.25} tint={WOOD} />
+      <Piece file="plate_stack" position={[-4.6, FLOOR + 0.9, 0.4]} scale={1.05} tint="#d8d2c0" anchor="none" />
+      <Piece file="chest" position={[4.8, FLOOR, 0.6]} rotation={[0, -1.3, 0]} scale={1.15} tint={WOOD} />
+      <Piece file="candle_triple" position={[4.4, FLOOR, -1.8]} scale={1.25} tint={WAX} />
+      <Flame position={[4.4, FLOOR + 0.5, -1.8]} lit={lit} delay={0.9} size={0.26} light={1.6} distance={9} />
+      <Piece file="rubble_half" position={[-7.0, FLOOR, 4.4]} rotation={[0, 0.8, 0]} scale={0.26} tint="#c2b8a5" />
     </Room>
   )
 }
@@ -129,42 +156,63 @@ export function ProjectsRoom({ lit }) {
 // ---------------- Room V — Experience ----------------
 export function ExperienceRoom({ lit }) {
   return (
-    <Room index={5} doorCol={3} wallKinds={['wall', 'wall_cracked', 'wall', 'wall']} tint="#bfb3a1" lit={lit} windowSide="left" windowRow={1}>
-      {/* the record room — the chests are the filing, opened and left */}
-      <Piece file="chest" position={[-2.6, FLOOR, -5.2]} rotation={[0, 0.2, 0]} scale={1.2} tint="#a8906c" />
-      <Piece file="chest" position={[0.6, FLOOR, -5.3]} rotation={[0, -0.15, 0]} scale={1.15} tint="#a08869" />
-      <Piece file="trunk_large_A" position={[3.8, FLOOR, -5.1]} rotation={[0, 0.1, 0]} scale={1.2} tint="#a8906c" />
-      <Piece file="shelf_large" position={[-5.8, -0.35, -5.6]} scale={1.3} tint="#a8906c" anchor="none" />
-      <Piece file="table_small_decorated_A" position={[0.4, FLOOR, -1.6]} rotation={[0, -0.3, 0]} scale={1.3} tint="#a8906c" />
-      <Piece file="candle_lit" position={[0.4, FLOOR + 1.0, -1.6]} scale={1.35} tint="#b8ac92" anchor="none" />
-      <Flame position={[0.4, FLOOR + 1.4, -1.6]} lit={lit} base={0.36} delay={0.45} size={0.3} light={2.0} distance={11} />
-      <Piece file="chair" position={[-1.7, FLOOR, 0.2]} rotation={[0, 2.7, 0]} scale={1.2} tint="#a8906c" />
-      <Piece file="stool" position={[2.4, FLOOR, 0.6]} rotation={[0, 0.5, 0]} scale={1.15} tint="#9c845f" />
-      <Piece file="sword_shield_broken" position={[5.8, FLOOR, 2.8]} rotation={[0, -0.6, 0]} scale={1.15} tint="#b8ac92" />
-      <Piece file="crates_stacked" position={[-6.2, FLOOR, 2.2]} rotation={[0, 0.4, 0]} scale={1.1} tint="#b09878" />
-      <DoorTorch x={7.65} lit={lit} />
+    <Room index={5} doorCol={3} lit={lit} windowSide="left" windowRow={1}>
+      <ProseBoard
+        numeral="Room V"
+        title="Experience"
+        subtitle="the records room — everything filed"
+        lines={[
+          'Data Science Intern — Celebal Technologies',
+          'Oct 2025 – Present · Databricks contract',
+          'intelligence, SAP invoice validation on AWS.',
+          '',
+          'AI Research Intern — Coding Jr',
+          'Feb 2025 – Jun 2025 · backend for 3+ AI',
+          'copilot workflows, research across 20+ unicorns.',
+        ]}
+        foot="9+ certifications — NPTEL, Cisco, IBM, Red Hat, Oracle"
+      />
+      <BoardLights lit={lit} />
+      <Piece file="chest" position={[-6.2, FLOOR, -4.0]} rotation={[0, 0.9, 0]} scale={1.2} tint={WOOD} />
+      <Piece file="chest" position={[-6.6, FLOOR, -1.2]} rotation={[0, 1.3, 0]} scale={1.15} tint="#a08869" />
+      <Piece file="trunk_large_A" position={[6.4, FLOOR, -3.4]} rotation={[0, -0.9, 0]} scale={1.2} tint={WOOD} />
+      <Piece file="shelf_large" position={[7.4, -0.35, -0.6]} rotation={[0, -Math.PI / 2, 0]} scale={1.3} tint={WOOD} anchor="none" />
+      <Piece file="table_small_decorated_A" position={[-4.6, FLOOR, 1.0]} rotation={[0, -0.4, 0]} scale={1.3} tint={WOOD} />
+      <Piece file="candle_lit" position={[-4.6, FLOOR + 1.02, 1.0]} scale={1.3} tint={WAX} anchor="none" />
+      <Flame position={[-4.6, FLOOR + 1.42, 1.0]} lit={lit} base={0.35} delay={0.8} size={0.28} light={1.8} distance={10} />
+      <Piece file="chair" position={[4.6, FLOOR, 1.6]} rotation={[0, 2.7, 0]} scale={1.2} tint={WOOD} />
+      <Piece file="sword_shield_broken" position={[6.8, FLOOR, 3.6]} rotation={[0, -0.6, 0]} scale={1.15} tint={WAX} />
+      <Piece file="crates_stacked" position={[-7.2, FLOOR, 3.4]} rotation={[0, 0.4, 0]} scale={1.1} tint={CRATE} />
     </Room>
   )
 }
 
 // ---------------- Room VI — Contact ----------------
-// The last room. It keeps a doorway like the rest so the house doesn't end
-// in a flat wall, but nobody walks through it.
 export function ContactRoom({ lit }) {
   return (
-    <Room index={6} doorCol={1} wallKinds={['wall', 'wall_doorway', 'wall', 'wall_broken']} tint="#c4b8a4" lit={lit} windowSide="right" windowRow={0}>
-      <Piece file="table_small_decorated_A" position={[0, FLOOR, -2.2]} rotation={[0, 0.12, 0]} scale={1.4} tint="#a8906c" />
-      <Piece file="candle_triple" position={[0, FLOOR + 1.08, -2.2]} scale={1.3} tint="#b8ac92" anchor="none" />
-      <Flame position={[0, FLOOR + 1.56, -2.2]} lit={lit} base={0.4} delay={0.25} size={0.34} light={2.4} distance={13} />
-      <Piece file="chair" position={[-2.3, FLOOR, -0.4]} rotation={[0, 0.7, 0]} scale={1.2} tint="#a8906c" />
-      <Piece file="chair" position={[2.3, FLOOR, -0.4]} rotation={[0, -0.7, 0]} scale={1.2} tint="#a8906c" />
-      <Piece file="chest" position={[-5.6, FLOOR, -4.4]} rotation={[0, 1.1, 0]} scale={1.15} tint="#a8906c" />
-      <Piece file="crates_stacked" position={[6.0, FLOOR, -4.0]} rotation={[0, -0.4, 0]} scale={1.15} tint="#b09878" />
-      <Piece file="rubble_large" position={[6.4, FLOOR, 3.2]} rotation={[0, 1.1, 0]} scale={0.3} tint="#cfc6b4" />
-      <Piece file="torch_mounted" position={[-9.9, -0.62, -1.95]} rotation={[0, Math.PI / 2, 0]} scale={1.2} tint="#b8a488" anchor="none" />
-      <Flame position={[-9.62, 0.06, -1.95]} lit={lit} delay={0.7} size={0.42} light={2.1} distance={12} color="#ffab5e" />
-      <Piece file="torch_mounted" position={[9.9, -0.62, -1.95]} rotation={[0, -Math.PI / 2, 0]} scale={1.2} tint="#b8a488" anchor="none" />
-      <Flame position={[9.62, 0.06, -1.95]} lit={lit} delay={0.9} size={0.42} light={2.1} distance={12} color="#ffab5e" />
+    <Room index={6} doorCol={1} lit={lit} windowSide="right" windowRow={0}>
+      <ProseBoard
+        numeral="Room VI"
+        title="Contact"
+        subtitle="the telephone still works"
+        lines={[
+          'parasmotwani@gmail.com',
+          'linkedin.com/in/parasmotwani',
+          'github.com/parasmotwani',
+          '',
+          'Open to opportunities and collaborations.',
+        ]}
+        foot="leave word below — the house will pass it on"
+      />
+      <BoardLights lit={lit} />
+      <Piece file="table_small_decorated_A" position={[-5.2, FLOOR, -1.4]} rotation={[0, 0.4, 0]} scale={1.35} tint={WOOD} />
+      <Piece file="candle_triple" position={[-5.2, FLOOR + 1.04, -1.4]} scale={1.25} tint={WAX} anchor="none" />
+      <Flame position={[-5.2, FLOOR + 1.5, -1.4]} lit={lit} base={0.4} delay={0.3} size={0.3} light={2.0} distance={11} />
+      <Piece file="chair" position={[-6.4, FLOOR, 0.6]} rotation={[0, 0.7, 0]} scale={1.2} tint={WOOD} />
+      <Piece file="chair" position={[5.6, FLOOR, 0.2]} rotation={[0, -0.7, 0]} scale={1.2} tint={WOOD} />
+      <Piece file="chest" position={[6.2, FLOOR, -3.6]} rotation={[0, -1.1, 0]} scale={1.15} tint={WOOD} />
+      <Piece file="crates_stacked" position={[-7.2, FLOOR, 3.2]} rotation={[0, 0.4, 0]} scale={1.1} tint={CRATE} />
+      <Piece file="rubble_large" position={[7.0, FLOOR, 2.6]} rotation={[0, 1.1, 0]} scale={0.3} tint="#cfc6b4" />
     </Room>
   )
 }

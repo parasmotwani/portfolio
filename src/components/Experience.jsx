@@ -78,7 +78,7 @@ export default function Experience() {
       pin={false}
       className="room"
     >
-      <div className="chronicle">
+      <div className="chronicle" data-diegetic>
         <div className="chronicle-line" ref={lineRef} />
         {experiences.map((exp) => (
           <div className="chronicle-item" key={exp.role} data-reveal>

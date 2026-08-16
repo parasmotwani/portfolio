@@ -1,22 +1,21 @@
 import { useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
+import { hotspots } from './hotspots'
 
 // ============================================================
-// Where the interactive things in the manor actually are on screen.
+// A hotspot that rides its own 3D object.
 //
-// These used to be fixed CSS rectangles guessing at it — the lantern hook
-// was a 9vw × 34vh invisible band pinned to the right edge of the viewport
-// for the whole page, which is why hanging the lantern felt like clicking
-// anywhere would do it. A hotspot rides the object instead: it is exactly
-// where the thing is, it shrinks with distance, and it stops existing when
-// the object isn't on screen.
+// These used to be fixed CSS rectangles guessing at where a thing was —
+// the lantern hook was a 9vw × 34vh invisible band pinned to the right
+// edge of the viewport for the whole page, which is why hanging the
+// lantern felt like clicking anywhere would do it. This is exactly where
+// the object is, it shrinks with distance, and it stops existing when the
+// object isn't on screen.
 //
-// Mutable module state read from a rAF loop, like journey — nothing here
-// may cause a React render per frame.
+// Only the scene imports this file; the DOM half reads the plain state
+// module next to it (see hotspots.js for why that split matters).
 // ============================================================
-
-export const hotspots = Object.create(null)
 
 export function Hotspot({ name, reach = 26 }) {
   const ref = useRef()

@@ -41,7 +41,7 @@ export default function Skills() {
       className="room"
     >
       <Cobweb corner="tl" size={130} />
-      <div className="grimoire-rows">
+      <div className="grimoire-rows" data-diegetic>
         {categories.map((cat) => (
           <div className="spell-row" key={cat.title} data-reveal data-hover>
             <Sigil name={cat.sigil} />

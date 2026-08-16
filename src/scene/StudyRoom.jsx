@@ -5,8 +5,9 @@ import * as THREE from 'three'
 import { journey, roomOffset } from './journey'
 import { Flame } from './Flame'
 import { Piece, regrade } from './toonify'
-import { Inscription, roughText, erode, drawParchment } from './inscriptions'
-import { Hotspot } from './hotspots'
+import { Inscription, roughText } from './inscriptions'
+import { ProseBoard } from './RoomCopy'
+import { Hotspot } from './Hotspot'
 import { makeWebSheetTexture, SpiderModel } from './RoomDressing'
 
 // ============================================================
@@ -80,15 +81,17 @@ function Shell() {
         <planeGeometry args={[16, 14]} />
         <meshStandardMaterial map={plankD} normalMap={plankN} color="#9a8f7c" roughness={0.9} />
       </mesh>
-      {/* back wall around the window (opening x -3.0..-0.4, y -0.3..2.1)
-          and around the doorway to Room II (opening x 3.4..5.6, floor to
-          y 0.6) — the camera walks out through it */}
-      <Wall size={[4.5, 5.1]} position={[-5.25, 0.15, -6]} />
-      <Wall size={[3.8, 5.1]} position={[1.5, 0.15, -6]} />
-      <Wall size={[1.9, 5.1]} position={[6.55, 0.15, -6]} />
+      {/* Back wall: window hard left (opening x -6.3..-3.7), doorway to
+          Room II on the right (x 3.4..5.6), and the whole centre left
+          solid — that is where the room's copy hangs. With the window in
+          the middle the copy had to sit off to one side and kept being
+          blocked by whatever stood on the table. */}
+      <Wall size={[1.2, 5.1]} position={[-6.9, 0.15, -6]} />
+      <Wall size={[2.6, 0.6]} position={[-5.0, 2.4, -6]} />
+      <Wall size={[2.6, 2.1]} position={[-5.0, -1.35, -6]} />
+      <Wall size={[7.1, 5.1]} position={[-0.15, 0.15, -6]} />
       <Wall size={[2.2, 2.1]} position={[4.5, 1.65, -6]} />
-      <Wall size={[2.6, 0.6]} position={[-1.7, 2.4, -6]} />
-      <Wall size={[2.6, 2.1]} position={[-1.7, -1.35, -6]} />
+      <Wall size={[1.9, 5.1]} position={[6.55, 0.15, -6]} />
       {/* sides */}
       <Wall size={[14, 5.1]} position={[-7.5, 0.15, 0.4]} rotation={[0, Math.PI / 2, 0]} tint="#837e6c" />
       <Wall size={[14, 5.1]} position={[7.5, 0.15, 0.4]} rotation={[0, -Math.PI / 2, 0]} tint="#7d7867" />
@@ -123,7 +126,8 @@ function Shell() {
 // ---------- the window: blown-out daylight, one pane dead ----------
 function StudyWindow({ lit }) {
   return (
-    <group>
+    // authored around x=-1.7; shifted bodily to the new opening
+    <group position={[-3.3, 0, 0]}>
       {/* the same night as the entrance hall — you walk here through a
           doorway, so this cannot be a different time of day */}
       <mesh position={[-1.7, 0.9, -6.04]}>
@@ -175,14 +179,14 @@ function StudyWindow({ lit }) {
       {/* moonlight — cold and weak, the same moon as the hall's window.
           It shapes the room; it does not light it. The flames do that. */}
       <directionalLight
-        position={[-1.7, 1.5, -5.4]}
+        position={[-5.0, 1.5, -5.4]}
         target-position={[1.8, -2.4, 1.6]}
         color="#cfdae8"
         intensity={lit ? 1.0 : 0.62}
         castShadow
         shadow-mapSize={[1024, 1024]}
       />
-      <pointLight position={[-1.7, 0.9, -5.1]} color="#c8d4e2" intensity={lit ? 0.42 : 0.3} distance={9} decay={1.8} />
+      <pointLight position={[-5.0, 0.9, -5.1]} color="#c8d4e2" intensity={lit ? 0.42 : 0.3} distance={9} decay={1.8} />
       {/* volumetric shaft toward the table */}
       <mesh position={[-0.9, -0.7, -3.7]} rotation={[0.66, 0.14, 0]}>
         <planeGeometry args={[3.0, 5.4]} />
@@ -349,8 +353,10 @@ function Hutch({ glintRef }) {
 
 // ---------- round pedestal table + what was abandoned on it ----------
 function Table() {
+  // pushed left and forward, out of the sightline to the board on the
+  // back wall — dead centre it stood in front of the room's own copy
   return (
-    <group position={[-0.5, 0, -1.8]}>
+    <group position={[-2.6, 0, 1.2]}>
       <mesh position={[0, -1.28, 0]} castShadow receiveShadow>
         <cylinderGeometry args={[1.15, 1.15, 0.06, 28]} />
         <meshStandardMaterial color="#4a3a28" roughness={0.55} />
@@ -595,57 +601,36 @@ function StudySpider() {
 function StudyCopy() {
   return (
     <group>
-      <Inscription
-        position={[-4.7, 0.25, -5.92]}
-        rotation={[0, 0, -0.008]}
-        size={[5.1, 3.9]}
-        w={1000}
-        h={765}
-        draw={(g, w, h) => {
-          drawParchment(g, w, h, 7)
-          roughText(g, 'ROOM I', w / 2, 74, 30, '#7a4a20', 0.75, { font: '"JetBrains Mono", monospace' })
-          roughText(g, 'ABOUT', w / 2, 138, 62, '#33240f', 0.95)
-          g.strokeStyle = '#7a4a20'; g.globalAlpha = 0.55; g.lineWidth = 2
-          g.beginPath(); g.moveTo(w * 0.22, 168); g.lineTo(w * 0.78, 170); g.stroke()
-          g.globalAlpha = 1
-
-          const lede = [
-            'I build intelligent systems —',
-            'from agentic AI workflows to data',
-            'pipelines at production scale.',
-          ]
-          lede.forEach((line, i) => {
-            roughText(g, line, w / 2, 232 + i * 46, 34, '#43301a', 0.94, { font: '"IM Fell English", serif' })
-          })
-
-          const body = [
-            'Computer Science graduate, Manipal',
-            'University Jaipur — AI, Data Science',
-            'and Generative AI.',
-            '',
-            'Contract intelligence on Databricks.',
-            'Autonomous SAP workflows on AWS.',
-            'A co-founded ed-tech startup, and a',
-            'win at The Startup Mela 2.0.',
-          ]
-          body.forEach((line, i) => {
-            if (!line) return
-            roughText(g, line, w / 2, 410 + i * 32, 24, '#5a4126', 0.86, { font: '"IM Fell English", serif' })
-          })
-          erode(g, w, h, 150, 4)
-        }}
+      {/* the same board every other room carries, centred on the wall the
+          visitor faces when they come through the hall's doorway */}
+      <ProseBoard
+        at={[-0.15, 0.2, -5.88]}
+        size={[6.7, 4.0]}
+        numeral="Room I"
+        title="About"
+        subtitle="a study, long unused"
+        lines={[
+          'I build intelligent systems — from agentic',
+          'AI workflows to data pipelines at',
+          'production scale.',
+          '',
+          'Computer Science graduate, Manipal',
+          'University Jaipur — AI, Data Science and',
+          'Generative AI.',
+        ]}
+        foot="something in here is worth opening"
       />
-      {/* the nudge toward the easter egg, written where the drawer is */}
+      {/* the nudge toward the easter egg, chalked on the floor by the hutch */}
       <Inscription
         position={[3.7, -1.02, -3.4]}
         rotation={[-Math.PI / 2, 0, 0.12]}
-        size={[1.9, 0.5]}
+        size={[2.2, 0.58]}
         w={512}
         h={136}
         draw={(g, w, h) => {
           g.clearRect(0, 0, w, h)
-          roughText(g, 'the drawer is ajar', w / 2, h / 2 + 10, 34, '#d8d2c0', 0.5, {
-            font: 'italic 34px "IM Fell English", serif',
+          roughText(g, 'the drawer is ajar', w / 2, h / 2 + 12, 44, '#d8d2c0', 0.5, {
+            font: '"IM Fell English", serif', style: 'italic',
           })
         }}
       />
@@ -685,8 +670,8 @@ export default function StudyRoom({ lit }) {
       <Wardrobe />
       <Hutch glintRef={glintRef} />
       <Table />
-      <Chair position={[1.35, 0, -1.05]} rotY={-0.5} />
-      <Chair position={[-2.7, 0, -3.15]} rotY={3.5} />
+      <Chair position={[-1.2, 0, 2.6]} rotY={-0.6} />
+      <Chair position={[-4.4, 0, 0.2]} rotY={3.4} />
       <Chandelier lit={lit} swayRef={swayRef} />
       <StudyCopy />
       {/* the room's warm anchor. A chandelier four metres up lights the
@@ -694,10 +679,10 @@ export default function StudyRoom({ lit }) {
           height, close to the things someone was using. */}
       {/* kept to the right of the table: dead centre they stood between
           the camera and the sheet on the wall and blocked the copy */}
-      <Piece file="candle_triple" position={[0.35, -1.25, -1.35]} scale={1.15} tint="#b8ac92" anchor="none" />
-      <Flame position={[0.35, -0.82, -1.35]} lit={lit} base={0.45} delay={0.2} size={0.26} light={2.4} distance={11} />
-      <Piece file="candle_melted" position={[-0.95, -1.25, -2.3]} scale={0.9} tint="#a89f8a" anchor="none" />
-      <Flame position={[-0.95, -1.02, -2.3]} lit={lit} base={0.3} delay={0.9} size={0.18} light={1.2} distance={7} />
+      <Piece file="candle_triple" position={[-2.4, -1.25, 1.5]} scale={1.15} tint="#b8ac92" anchor="none" />
+      <Flame position={[-2.4, -0.82, 1.5]} lit={lit} base={0.45} delay={0.2} size={0.26} light={2.4} distance={11} />
+      <Piece file="candle_melted" position={[-3.4, -1.25, 0.7]} scale={0.9} tint="#a89f8a" anchor="none" />
+      <Flame position={[-3.4, -1.02, 0.7]} lit={lit} base={0.3} delay={0.9} size={0.18} light={1.2} distance={7} />
       <Debris />
       <StudyWebs />
       <StudySpider />

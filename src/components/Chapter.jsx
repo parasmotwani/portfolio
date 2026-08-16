@@ -131,7 +131,7 @@ export default function Chapter({ id, numeral, title, subtitle, pin = true, exit
 
   return (
     <section
-      className={`chapter ${className}${!immersive && room != null ? ' chapter--plated' : ''}`}
+      className={`chapter ${className}${!immersive && room != null ? ' chapter--plated' : ''}${immersive && room != null ? ' chapter--diegetic' : ''}`}
       id={id}
       ref={ref}
       style={immersive ? undefined : plateStyle(room)}
