@@ -5,6 +5,7 @@ import Chapter from './Chapter'
 import Cobweb from './Cobweb'
 import Spider from './Spider'
 import { journey } from '../scene/journey'
+import Reach from './Reach'
 import { useDevice } from '../hooks/useDevice'
 
 gsap.registerPlugin(ScrollTrigger)
@@ -125,6 +126,18 @@ function Booklet({ open, page, setPage, toggle }) {
     setPage((p) => Math.min(PAGES.length - 1, Math.max(0, p + (dx < 0 ? 1 : -1))))
   }
 
+  // Esc closes it, like anything else you can put down
+  useEffect(() => {
+    if (!open) return
+    const onKey = (e) => {
+      if (e.key === 'Escape') toggle()
+      if (e.key === 'ArrowRight') setPage((p) => Math.min(PAGES.length - 1, p + 1))
+      if (e.key === 'ArrowLeft') setPage((p) => Math.max(0, p - 1))
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [open, toggle, setPage])
+
   if (!open) return null
   return (
     <div className="booklet-backdrop" onClick={toggle}>
@@ -155,11 +168,23 @@ function Booklet({ open, page, setPage, toggle }) {
             <span className="booklet-pageno">{i + 1}</span>
           </div>
         ))}
-        <div className="booklet-nav">
-          <button data-hover disabled={page === 0} onClick={() => setPage((p) => p - 1)}>‹ back</button>
-          <button data-hover disabled={page === PAGES.length - 1} onClick={() => setPage((p) => p + 1)}>turn ›</button>
-          <button data-hover onClick={toggle}>put it back ✕</button>
-        </div>
+        <button
+          className="booklet-turn booklet-turn--back"
+          disabled={page === 0}
+          onClick={() => setPage((p) => p - 1)}
+          aria-label="Previous page"
+        />
+        <button
+          className="booklet-turn booklet-turn--fwd"
+          disabled={page === PAGES.length - 1}
+          onClick={() => setPage((p) => p + 1)}
+          aria-label="Next page"
+        />
+        <p className="booklet-caption">
+          {page === PAGES.length - 1
+            ? 'that is the end of it — put it back'
+            : 'turn the page'}
+        </p>
       </div>
     </div>
   )
@@ -240,31 +265,27 @@ export default function DrawerRoom() {
 
   return (
     <section className="study-stage" id="about" ref={ref}>
-      <div className="study-overlay" ref={overlayRef}>
-        <header className="study-head">
-          <span className="chapter-numeral">Room I</span>
-          <h2 className="chapter-title">About</h2>
-          <p className="chapter-sub">A study, long unused. Something in here is worth opening.</p>
-        </header>
-        <div className="study-copy">
-          <p className="about-lede">
-            I build <span className="gold">intelligent systems</span> — from
-            agentic AI workflows to data pipelines at production scale.
-          </p>
-          <p className="about-body">
-            Computer Science graduate from Manipal University Jaipur, focused
-            on AI, Data Science, and Generative AI. Contract intelligence on
-            Databricks; autonomous SAP workflows on AWS; a co-founded ed-tech
-            startup and a win at The Startup Mela 2.0.
-          </p>
-          <p className="study-hint">the hutch drawer is ajar — something pale inside…</p>
-        </div>
+      {/* The visible copy is inked on the sheet pinned to the study's back
+          wall (StudyCopy). This is the same text kept for screen readers,
+          search engines and anyone using find-in-page — a canvas texture is
+          none of those things. */}
+      <div className="sr-only">
+        <h2>About</h2>
+        <p>
+          I build intelligent systems — from agentic AI workflows to data
+          pipelines at production scale.
+        </p>
+        <p>
+          Computer Science graduate from Manipal University Jaipur, focused
+          on AI, Data Science, and Generative AI. Contract intelligence on
+          Databricks; autonomous SAP workflows on AWS; a co-founded ed-tech
+          startup and a win at The Startup Mela 2.0.
+        </p>
       </div>
-      <button
-        className="drawer-hotspot"
+      <Reach
+        name="drawer"
         onClick={toggle}
-        data-hover
-        aria-label="An old drawer, slightly open"
+        label="An old drawer, slightly open"
         title="Something is in the drawer"
       />
       <Booklet open={open} page={page} setPage={setPage} toggle={toggle} />

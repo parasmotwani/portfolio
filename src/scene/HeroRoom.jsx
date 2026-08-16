@@ -2,6 +2,7 @@ import { useMemo, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { journey, roomOffset } from './journey'
+import { Hotspot } from './hotspots'
 import { Piece, preloadPieces } from './toonify'
 import { Flame } from './Flame'
 import { Inscription, roughText, erode, drawSigil, drawParchment, drawNightScene } from './inscriptions'
@@ -323,7 +324,14 @@ function LanternOnHook({ lit }) {
   })
 
   return (
-    <group position={[9.88, 0.55, -3.0]} rotation={[0, -Math.PI / 2, 0]}>
+    // On the right-hand pillar, facing the visitor. Mounted flush to the
+    // right wall it sat near x=10 and fell outside the frustum on any
+    // window narrower than about 16:9 — the one thing the house asks you
+    // to find was off screen. A pillar is where you'd hang a lantern
+    // anyway, and it stays framed at every aspect ratio.
+    <group position={[4.1, 0.4, -4.92]}>
+      {/* the DOM reach rides this, so it is always exactly on the hook */}
+      <Hotspot name="hook" reach={30} />
       {/* iron backplate + arm + upturned hook */}
       <mesh position={[0, 0.06, -0.03]}>
         <boxGeometry args={[0.09, 0.42, 0.05]} />

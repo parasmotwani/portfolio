@@ -50,7 +50,7 @@ await page.goto(URL, { waitUntil: 'networkidle' })
 await sleep(3000)
 
 // hang the lantern: the plates are the lit house
-await page.click('.lantern-hook-reach', { force: true })
+await page.click('button[aria-label*="hook"]', { force: true })
 await sleep(3500)
 
 // strip every DOM layer — the plate is scenery only, the copy stays live

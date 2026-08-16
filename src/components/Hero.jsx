@@ -132,8 +132,11 @@ export default function Hero() {
         </p>
       </div>
 
-      <div className="hero-foot">
-        <span>scroll — leave the room when you're ready</span>
+      {/* The affordance without the sentence. A line of small-caps mono
+          telling the visitor to scroll is website furniture standing in
+          the middle of a room; a mark that falls like ink says the same
+          thing and belongs to the house. */}
+      <div className="hero-foot" aria-hidden="true">
         <div className="quill" />
       </div>
     </section>

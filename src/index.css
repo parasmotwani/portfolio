@@ -228,16 +228,47 @@ button {
 
 /* the reach for the iron hook: invisible, found with the beam like
    everything else in the dark */
-.lantern-hook-reach {
+/* A hotspot on a thing in the room. Positioned every frame from the 3D
+   object it belongs to (see scene/hotspots.jsx), so it is never a guess. */
+.reach {
   position: fixed;
-  right: 0;
-  top: 28vh;
-  width: 9vw;
-  height: 34vh;
+  top: 0;
+  left: 0;
   z-index: 2400; /* below the darkness — the beam must find it */
-  background: transparent;
   border: none;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 198, 118, 0) 42%, rgba(255, 198, 118, 0) 100%);
+  opacity: 0;
   cursor: pointer;
+  transition: background 0.35s ease, opacity 0.4s ease;
+  will-change: transform;
+}
+
+.reach:hover {
+  background: radial-gradient(circle,
+    rgba(255, 198, 118, 0.16) 0%,
+    rgba(255, 186, 96, 0.07) 45%,
+    rgba(255, 176, 84, 0) 72%);
+}
+
+.reach:focus-visible {
+  outline: none;
+  background: radial-gradient(circle,
+    rgba(255, 198, 118, 0.2) 0%,
+    rgba(255, 176, 84, 0) 72%);
+}
+
+/* copy that belongs to a room is inked into the room; this keeps the same
+   words reachable by screen readers, search and find-in-page */
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* ============================================================
@@ -482,14 +513,7 @@ button {
   bottom: 34px;
   left: 0; right: 0;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  font-family: var(--font-mono);
-  font-size: 0.58rem;
-  letter-spacing: 0.35em;
-  text-transform: uppercase;
-  color: var(--ivory-mute);
+  justify-content: center;
 }
 
 .hero-foot .quill {
@@ -861,7 +885,7 @@ button {
   font-size: 0.56rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--ivory-mute);
+  color: rgba(255, 176, 84, 0.4);
   text-align: right;
 }
 
@@ -881,9 +905,13 @@ button {
   pointer-events: none;
 }
 
+/* This HUD belongs to the machine, not to the website. Amber phosphor
+   burned onto the screen reads as part of the game; a bordered button on
+   a translucent slab reads as a dialog someone put over the room. */
 .world-hud span {
-  background: rgba(13, 11, 8, 0.75);
-  padding: 6px 10px;
+  padding: 0;
+  color: rgba(255, 176, 84, 0.46);
+  text-shadow: 0 0 8px rgba(255, 150, 60, 0.3);
 }
 
 .world-hud button {
@@ -892,13 +920,15 @@ button {
   font-size: 0.56rem;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: var(--ivory-dim);
-  background: rgba(13, 11, 8, 0.75);
-  border: 1px solid var(--gold-faint);
-  padding: 6px 12px;
+  color: rgba(255, 176, 84, 0.46);
+  background: none;
+  border: none;
+  padding: 4px 2px;
+  text-shadow: 0 0 8px rgba(255, 150, 60, 0.3);
+  transition: color var(--fast);
 }
 
-.world-hud button:hover { color: var(--gold); border-color: var(--gold); }
+.world-hud button:hover { color: rgba(255, 205, 140, 0.95); }
 
 .world-dpad {
   position: absolute;
@@ -1858,22 +1888,41 @@ html.lights-off .corner-whisper {
 
 .scene-drawer:hover .drawer-glint { opacity: 1; animation: none; }
 
-/* --- the booklet (easter egg) --- */
+/* --- the notebook from the drawer (easter egg) ---
+   A real notebook, not a dialog: ruled paper, a stitched spine, a hand
+   that wrote it. It is tilted and offset rather than centred and square,
+   because a book someone left in a drawer was never placed by a layout
+   engine. Pages turn by clicking their own halves — a row of bordered
+   buttons underneath was the single most page-like thing about it. */
 .booklet-backdrop {
   position: fixed;
   inset: 0;
   z-index: 2000;
-  background: rgba(5, 4, 3, 0.82);
+  background:
+    radial-gradient(ellipse 60% 60% at 50% 46%, rgba(10, 7, 4, 0.72), rgba(6, 4, 3, 0.93) 78%);
   display: flex;
   align-items: center;
   justify-content: center;
+  animation: bookletIn 0.5s ease both;
+}
+
+@keyframes bookletIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .booklet {
   position: relative;
-  width: min(480px, 90vw);
-  height: min(600px, 82vh);
-  perspective: 1600px;
+  width: min(470px, 88vw);
+  height: min(580px, 78vh);
+  perspective: 1800px;
+  transform: rotate(-1.4deg);
+  animation: bookletRise 0.55s cubic-bezier(0.22, 1, 0.3, 1) both;
+}
+
+@keyframes bookletRise {
+  from { transform: rotate(-1.4deg) translateY(26px) scale(0.97); opacity: 0; }
+  to   { transform: rotate(-1.4deg) translateY(0) scale(1); opacity: 1; }
 }
 
 /* worn leather binding under the pages */
@@ -1903,27 +1952,31 @@ html.lights-off .corner-whisper {
   opacity: 0.8;
 }
 
-/* aged parchment: warm heart, tea stains, scorched edges, uneven cut */
+/* Ruled paper. The age lives in a vignette at the edges — the old version
+   washed six brown radials across the whole sheet, which turned the paper
+   into a dark slab you could not read ink on. */
 .booklet-page {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse 120% 100% at 50% 45%, rgba(246, 238, 214, 0.5), transparent 70%),
-    radial-gradient(ellipse 90% 70% at 10% 4%, rgba(88, 60, 28, 0.4), transparent 42%),
-    radial-gradient(ellipse 80% 60% at 94% 8%, rgba(88, 60, 28, 0.34), transparent 44%),
-    radial-gradient(ellipse 100% 55% at 50% 103%, rgba(70, 46, 20, 0.42), transparent 48%),
-    radial-gradient(ellipse 55% 45% at 103% 62%, rgba(88, 60, 28, 0.3), transparent 55%),
-    radial-gradient(ellipse 30% 22% at 26% 74%, rgba(120, 90, 44, 0.18), transparent 70%),
-    var(--paper);
-  color: var(--ink-on-paper);
-  padding: clamp(24px, 5vw, 44px);
-  border-radius: 2% 5% 3% 6% / 5% 3% 6% 3%;
+    /* the margin rule, drawn once down the left */
+    linear-gradient(90deg, transparent 52px, rgba(150, 60, 48, 0.32) 52px 53px, transparent 53px),
+    /* feint ruled lines */
+    repeating-linear-gradient(180deg,
+      transparent 0 33px,
+      rgba(88, 104, 120, 0.16) 33px 34px),
+    /* age gathers at the edges only */
+    radial-gradient(ellipse 130% 120% at 50% 50%, transparent 52%, rgba(112, 82, 40, 0.3) 88%),
+    #efe6d0;
+  background-position: 0 0, 0 74px, 0 0, 0 0;
+  color: #3f3524;
+  padding: 58px 40px 44px 68px;
+  border-radius: 1px 4px 5px 2px / 3px 2px 4px 3px;
   box-shadow:
-    0 18px 50px rgba(0, 0, 0, 0.8),
-    inset 0 0 70px rgba(74, 52, 24, 0.4),
-    inset 0 0 14px rgba(58, 38, 16, 0.35);
+    0 20px 54px rgba(0, 0, 0, 0.72),
+    inset -14px 0 26px rgba(96, 72, 36, 0.14);
   transform-origin: left center;
-  transition: transform 0.65s cubic-bezier(0.4, 0.05, 0.3, 1);
+  transition: transform 0.7s cubic-bezier(0.4, 0.05, 0.3, 1);
   backface-visibility: hidden;
   overflow: hidden;
 }
@@ -1944,22 +1997,21 @@ html.lights-off .corner-whisper {
   opacity: 0.55;
 }
 
-/* the cover: cracked dark leather, faded gilt scrawl */
+/* the cover: worn board, no ruling, no border box */
 .booklet-page--cover {
   background:
-    radial-gradient(ellipse 120% 90% at 50% 28%, rgba(96, 62, 30, 0.5), transparent 70%),
-    radial-gradient(ellipse 140% 100% at 50% 112%, rgba(0, 0, 0, 0.6), transparent 60%),
-    linear-gradient(160deg, #2c1c0e, #1a1007 55%, #241609);
+    radial-gradient(ellipse 100% 80% at 50% 30%, rgba(126, 92, 48, 0.22), transparent 72%),
+    radial-gradient(ellipse 130% 110% at 50% 108%, rgba(0, 0, 0, 0.42), transparent 62%),
+    linear-gradient(165deg, #6a5334, #4a3a22 58%, #5a4629);
+  padding: 40px;
   box-shadow:
-    0 18px 50px rgba(0, 0, 0, 0.85),
-    inset 0 0 60px rgba(0, 0, 0, 0.55),
-    inset 0 0 4px rgba(214, 178, 116, 0.2);
+    0 22px 56px rgba(0, 0, 0, 0.8),
+    inset 0 0 46px rgba(0, 0, 0, 0.32);
 }
 
-.booklet-page--cover .scrawl { color: #c9a45c; }
-.booklet-page--cover .scrawl-note { color: #9a5c3c; }
-.booklet-page--cover .booklet-pageno { color: rgba(214, 178, 116, 0.4); }
-.booklet-page--cover .booklet-cover { border-color: rgba(214, 178, 116, 0.28); }
+.booklet-page--cover .scrawl { color: #e6d6a8; }
+.booklet-page--cover .scrawl-note { color: #cbb083; }
+.booklet-page--cover .booklet-pageno { color: rgba(230, 214, 168, 0.35); }
 
 .booklet-cover {
   height: 100%;
@@ -1967,72 +2019,90 @@ html.lights-off .corner-whisper {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 22px;
-  border: 1px solid rgba(43, 35, 23, 0.35);
+  gap: 16px;
 }
 
+/* the hand that wrote it — kept for the cover and the entry headings only,
+   never for running text, where it stops being charming and starts being
+   unreadable */
 .scrawl {
   font-family: 'Homemade Apple', cursive;
-  font-size: clamp(1.05rem, 2.6vw, 1.45rem);
-  color: #3a2e1c;
-  transform: rotate(-2deg);
+  font-size: clamp(1rem, 2.4vw, 1.3rem);
+  line-height: 1.5;
+  color: #4a3b22;
+  transform: rotate(-1.6deg);
 }
 
 .scrawl-note {
-  font-family: 'Homemade Apple', cursive;
-  font-size: 0.8rem;
-  color: #7e2a22;
-  transform: rotate(1.5deg);
+  font-family: var(--font-flavor);
+  font-style: italic;
+  font-size: 0.88rem;
+  color: #b9a074;
+  transform: rotate(0.8deg);
 }
 
-.booklet-body h5.scrawl { margin-bottom: 22px; font-size: 1.25rem; }
+.booklet-body h5.scrawl {
+  margin-bottom: 26px;
+  font-size: 1.18rem;
+}
 
+/* the entries themselves: a readable serif at a size a person would
+   actually write, sitting on the rule */
 .booklet-body p {
-  font-size: 0.98rem;
-  line-height: 1.65;
-  margin-bottom: 14px;
+  font-family: var(--font-flavor);
+  font-size: 1.02rem;
+  line-height: 33px;
+  margin-bottom: 12px;
+  color: #45392a;
 }
 
 .booklet-stats {
-  margin-top: 20px;
-  font-family: var(--font-mono);
-  font-size: 0.66rem;
-  letter-spacing: 0.1em;
-  color: #5d5137;
+  margin-top: 22px;
+  font-family: var(--font-flavor);
+  font-style: italic;
+  font-size: 0.86rem;
+  line-height: 33px;
+  color: #7d6b4a;
 }
 
 .booklet-pageno {
   position: absolute;
-  bottom: 12px;
-  right: 18px;
-  font-family: var(--font-mono);
-  font-size: 0.6rem;
-  color: #5d5137;
+  bottom: 16px;
+  right: 24px;
+  font-family: 'Homemade Apple', cursive;
+  font-size: 0.72rem;
+  color: #8a7854;
 }
 
-.booklet-nav {
+/* turn zones: the left and right halves of the page itself */
+.booklet-turn {
   position: absolute;
-  bottom: -52px;
+  top: 0;
+  bottom: 0;
+  width: 34%;
+  z-index: 40;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.booklet-turn--back { left: 0; }
+.booklet-turn--fwd { right: 0; }
+.booklet-turn:disabled { cursor: default; }
+
+/* the only instruction, in the room's own voice, off the paper */
+.booklet-caption {
+  position: absolute;
+  bottom: -38px;
   left: 0;
   right: 0;
-  display: flex;
-  justify-content: center;
-  gap: 14px;
+  text-align: center;
+  font-family: var(--font-flavor);
+  font-style: italic;
+  font-size: 0.86rem;
+  color: rgba(168, 159, 138, 0.55);
+  pointer-events: none;
 }
-
-.booklet-nav button {
-  font-family: var(--font-mono);
-  font-size: 0.62rem;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: var(--ivory-dim);
-  border: 1px solid var(--gold-faint);
-  padding: 8px 16px;
-  background: rgba(13, 11, 8, 0.9);
-}
-
-.booklet-nav button:hover:not(:disabled) { color: var(--gold); border-color: var(--gold); }
-.booklet-nav button:disabled { opacity: 0.3; }
 
 /* --- the game room: cinematic composition --- */
 .gameroom-scene {
@@ -2205,34 +2275,10 @@ html.lights-off .corner-whisper {
   animation: whisperFlicker 6s ease-in-out infinite;
 }
 
-.drawer-hotspot {
-  position: absolute;
-  right: 4%;
-  top: 46%;
-  width: 16%;
-  height: 24%;
-  z-index: 2;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-}
-
-.drawer-hotspot::after {
-  content: '';
-  position: absolute;
-  inset: 16%;
-  border: 1px solid rgba(212, 169, 78, 0);
-  border-radius: 8px;
-  transition: border-color 0.3s;
-}
-
-.drawer-hotspot:hover::after { border-color: rgba(212, 169, 78, 0.35); }
-
 @media (prefers-reduced-motion: reduce) {
   .study-hint { animation: none; }
 }
 
-/* --- strike-a-light: the only ceremony before the dark --- */
 /* The static track's scenery — the baked plate of the room the immersive
    track walks through. Fixed attachment on desktop lets the copy scroll
    over a held image; phones fall back to scroll (iOS never supported it

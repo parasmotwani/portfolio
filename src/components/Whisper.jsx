@@ -8,7 +8,7 @@ export default function Whisper() {
       the machines kept running.
       {!lit && (
         <span className="whisper-hint">
-          …there's an iron hook on the right wall. hang your lantern.
+          …there's an iron hook on the right-hand pillar. hang your lantern.
         </span>
       )}
     </div>

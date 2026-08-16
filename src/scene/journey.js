@@ -47,8 +47,8 @@ export const ROOMS = [
     // shifted right so its own right wall (local 7.5) still contains the
     // hall's doorway at world x 7.65
     fov: 52, front: 7.4, back: -6, x: 2.2, sway: 0.8,
-    eye: [5.0, -0.4, 5.4],
-    look: [-1.2, -0.4, -2.4],
+    eye: [4.4, -0.3, 5.0],
+    look: [-2.4, -0.15, -3.2],
     exit: [3.2, -0.35, 1.0],
     lookExit: [4.5, -0.85, -7.0],
     door: [4.5, -0.8, -5.7],

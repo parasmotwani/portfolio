@@ -4,7 +4,9 @@ import { useTexture } from '@react-three/drei'
 import * as THREE from 'three'
 import { journey, roomOffset } from './journey'
 import { Flame } from './Flame'
-import { regrade } from './toonify'
+import { Piece, regrade } from './toonify'
+import { Inscription, roughText, erode, drawParchment } from './inscriptions'
+import { Hotspot } from './hotspots'
 import { makeWebSheetTexture, SpiderModel } from './RoomDressing'
 
 // ============================================================
@@ -301,6 +303,7 @@ function Hutch({ glintRef }) {
       ))}
       {/* THE DRAWER — pulled part-way, paper catching the light */}
       <group position={[-0.55, -1.24, 0]}>
+        <Hotspot name="drawer" reach={22} />
         <mesh position={[0, 0, 0.3]} castShadow>
           <boxGeometry args={[0.95, 0.26, 0.6]} />
           <meshStandardMaterial color="#180f07" roughness={0.9} />
@@ -584,6 +587,72 @@ function StudySpider() {
 }
 
 // ---------- the room ----------
+// The room's copy, pinned to the back wall beside the window. It lives in
+// the scene rather than in a panel floating over it: a sheet on the wall is
+// something the visitor walks up to, a centred div is something the site
+// puts in front of their face. Unlit material, so it stays readable no
+// matter how dark the study gets.
+function StudyCopy() {
+  return (
+    <group>
+      <Inscription
+        position={[-4.7, 0.25, -5.92]}
+        rotation={[0, 0, -0.008]}
+        size={[5.1, 3.9]}
+        w={1000}
+        h={765}
+        draw={(g, w, h) => {
+          drawParchment(g, w, h, 7)
+          roughText(g, 'ROOM I', w / 2, 74, 30, '#7a4a20', 0.75, { font: '"JetBrains Mono", monospace' })
+          roughText(g, 'ABOUT', w / 2, 138, 62, '#33240f', 0.95)
+          g.strokeStyle = '#7a4a20'; g.globalAlpha = 0.55; g.lineWidth = 2
+          g.beginPath(); g.moveTo(w * 0.22, 168); g.lineTo(w * 0.78, 170); g.stroke()
+          g.globalAlpha = 1
+
+          const lede = [
+            'I build intelligent systems —',
+            'from agentic AI workflows to data',
+            'pipelines at production scale.',
+          ]
+          lede.forEach((line, i) => {
+            roughText(g, line, w / 2, 232 + i * 46, 34, '#43301a', 0.94, { font: '"IM Fell English", serif' })
+          })
+
+          const body = [
+            'Computer Science graduate, Manipal',
+            'University Jaipur — AI, Data Science',
+            'and Generative AI.',
+            '',
+            'Contract intelligence on Databricks.',
+            'Autonomous SAP workflows on AWS.',
+            'A co-founded ed-tech startup, and a',
+            'win at The Startup Mela 2.0.',
+          ]
+          body.forEach((line, i) => {
+            if (!line) return
+            roughText(g, line, w / 2, 410 + i * 32, 24, '#5a4126', 0.86, { font: '"IM Fell English", serif' })
+          })
+          erode(g, w, h, 150, 4)
+        }}
+      />
+      {/* the nudge toward the easter egg, written where the drawer is */}
+      <Inscription
+        position={[3.7, -1.02, -3.4]}
+        rotation={[-Math.PI / 2, 0, 0.12]}
+        size={[1.9, 0.5]}
+        w={512}
+        h={136}
+        draw={(g, w, h) => {
+          g.clearRect(0, 0, w, h)
+          roughText(g, 'the drawer is ajar', w / 2, h / 2 + 10, 34, '#d8d2c0', 0.5, {
+            font: 'italic 34px "IM Fell English", serif',
+          })
+        }}
+      />
+    </group>
+  )
+}
+
 export default function StudyRoom({ lit }) {
   const group = useRef()
   const swayRef = useRef()
@@ -619,6 +688,16 @@ export default function StudyRoom({ lit }) {
       <Chair position={[1.35, 0, -1.05]} rotY={-0.5} />
       <Chair position={[-2.7, 0, -3.15]} rotY={3.5} />
       <Chandelier lit={lit} swayRef={swayRef} />
+      <StudyCopy />
+      {/* the room's warm anchor. A chandelier four metres up lights the
+          ceiling; what makes a room feel occupied is a flame at table
+          height, close to the things someone was using. */}
+      {/* kept to the right of the table: dead centre they stood between
+          the camera and the sheet on the wall and blocked the copy */}
+      <Piece file="candle_triple" position={[0.35, -1.25, -1.35]} scale={1.15} tint="#b8ac92" anchor="none" />
+      <Flame position={[0.35, -0.82, -1.35]} lit={lit} base={0.45} delay={0.2} size={0.26} light={2.4} distance={11} />
+      <Piece file="candle_melted" position={[-0.95, -1.25, -2.3]} scale={0.9} tint="#a89f8a" anchor="none" />
+      <Flame position={[-0.95, -1.02, -2.3]} lit={lit} base={0.3} delay={0.9} size={0.18} light={1.2} distance={7} />
       <Debris />
       <StudyWebs />
       <StudySpider />
