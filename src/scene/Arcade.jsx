@@ -25,7 +25,8 @@ export default function Arcade({ lit, position = [0, -2.4, -4.4], rotation = [0,
     const t = clock.elapsedTime
     // a tube that has been left on for a very long time
     const flick = 0.82 + Math.sin(t * 9.1) * 0.03 + Math.sin(t * 21.3) * 0.02
-    if (glow.current) glow.current.intensity = (lit ? 1.5 : 1.05) * flick
+    // this is the ONLY light in Room III, so it has to reach the walls
+    if (glow.current) glow.current.intensity = (lit ? 26 : 20) * flick
     // a whisper of phosphor bloom, not a wash — at any strength this
     // overlay simply hides the game it is sitting on
     if (scan.current) scan.current.material.opacity = 0.05 + Math.sin(t * 2.2) * 0.02
@@ -86,7 +87,9 @@ export default function Arcade({ lit, position = [0, -2.4, -4.4], rotation = [0,
         <meshBasicMaterial color="#ffb04e" transparent opacity={0.05} toneMapped={false} />
       </mesh>
       {/* the tube's own light, thrown onto the room */}
-      <pointLight ref={glow} position={[0, 1.78, 1.15]} color="#ffb45e" distance={9} decay={1.7} />
+      <pointLight ref={glow} position={[0, 1.78, 1.15]} color="#ffb45e" distance={17} decay={1.5} castShadow />
+      {/* spill from the marquee, so the cabinet reads as lit from within */}
+      <pointLight position={[0, 2.42, 0.7]} color="#c98a2e" intensity={lit ? 5 : 3.6} distance={7} decay={2} />
 
       {/* control panel */}
       <mesh position={[0, 1.02, 0.78]} rotation={[-0.34, 0, 0]} castShadow>

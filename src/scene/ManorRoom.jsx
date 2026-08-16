@@ -46,24 +46,45 @@ export default function ManorRoom({
 
   return (
     <group>
-      {/* Every room gets the entrance hall's lighting model, not just its
-          materials: weak cold moonlight through one arched window to shape
-          the space, and nothing else that isn't a flame. Rooms lit only by
-          their own candles came out near-black.
-          A `dark` room opts out entirely — it is lit by whatever is standing
-          in it and nothing else. */}
-      <hemisphereLight args={['#8fa0b8', '#2c2820', dark ? 0.035 : (lit ? 0.3 : 0.15)]} />
+      {/* Light in this house falls off. It used to be a flat hemisphere
+          plus a DIRECTIONAL light, and a directional has no distance
+          term at all — every surface in the room received it equally, so
+          rooms read as uniformly lit and the flames, which do fall off,
+          contributed nothing you could see. Now:
+
+          - the hemisphere is a floor, not a light. Just enough that deep
+            shadow is very dark rather than pure black.
+          - moonlight is a spot AT the window with a distance term, so it
+            pools on the floor it actually reaches and dies before the far
+            wall.
+          - everything else in the room is a flame, and flames already
+            burn at inverse-square (Flame.jsx, decay 2).
+
+          A `dark` room has no window at all and is lit purely by what is
+          standing in it. */}
+      <hemisphereLight args={['#8fa0b8', '#2c2820', dark ? 0.02 : 0.06]} />
       {!dark && (
         <>
-          <directionalLight
-            position={[winX, 1.6, winZ]}
-            target-position={[winX + inward * 8, -2.4, winZ + 2]}
+          <spotLight
+            position={[winX + inward * 0.2, 2.0, winZ]}
+            target-position={[winX + inward * 6.5, -2.4, winZ + 1.2]}
             color={MOON}
-            intensity={lit ? 1.05 : 0.72}
+            intensity={lit ? 42 : 30}
+            distance={20}
+            decay={1.55}
+            angle={0.95}
+            penumbra={0.92}
             castShadow
             shadow-mapSize={[1024, 1024]}
           />
-          <pointLight position={[winX + inward * 0.6, 0.5, winZ]} color={MOON_FILL} intensity={lit ? 0.5 : 0.36} distance={11} decay={1.7} />
+          {/* the sill itself catching light, tight and local */}
+          <pointLight
+            position={[winX + inward * 0.5, 0.5, winZ]}
+            color={MOON_FILL}
+            intensity={lit ? 5 : 3.4}
+            distance={7}
+            decay={2}
+          />
         </>
       )}
       {/* back wall — one panel of it is the way out */}
