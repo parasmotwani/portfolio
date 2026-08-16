@@ -4,6 +4,7 @@ import ManorRoom, { cols, FLOOR } from './ManorRoom'
 import { Piece, preloadPieces } from './toonify'
 import { Flame } from './Flame'
 import { ProseBoard, ListBoard } from './RoomCopy'
+import { Hotspot } from './Hotspot'
 import Arcade from './Arcade'
 import { journey, roomOffset, roomShift } from './journey'
 import { WOOD, WOOD_DARK, STONE, CRATE, WAX, IRON, FLAME_WARM, CANDLE_LIGHT, CANDLE_DIST } from './palette'
@@ -200,8 +201,12 @@ export function ContactRoom({ lit }) {
           '',
           'Open to opportunities and collaborations.',
         ]}
-        foot="leave word below, the house will pass it on"
+        action="Contact me"
+        foot="the house will pass it on"
       />
+      {/* rides the drawn control on the board, so the button the visitor
+          sees and the thing they click are the same object */}
+      <Hotspot name="contact" reach={30} position={[0, -0.66, -5.3]} />
       <BoardLights lit={lit} />
       <Piece file="table_small_decorated_A" position={[-5.2, FLOOR, -1.4]} rotation={[0, 0.4, 0]} scale={1.35} tint={WOOD} />
       <Piece file="candle_triple" position={[-5.2, FLOOR + 1.04, -1.4]} scale={1.25} tint={WAX} anchor="none" />

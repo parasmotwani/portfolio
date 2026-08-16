@@ -2444,3 +2444,84 @@ html.lights-on .cursor-ring { opacity: 1; }
   border-left-color: var(--gold);
   background: rgba(212, 169, 78, 0.08);
 }
+
+/* The letter: the contact form, opened from the board's own control.
+   Same pattern as the booklet and the machine — a thing in the room is
+   pressed, and the real interface comes up on its own dark ground where
+   nothing behind it reads through. The fields are ordinary inputs, so
+   autofill, paste, keyboard and screen readers all still work; that is
+   the whole reason this is a panel and not a canvas. */
+.letter-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1600;
+  display: grid;
+  place-items: center;
+  padding: clamp(16px, 4vw, 48px);
+  background: rgba(6, 5, 3, 0.9);
+  backdrop-filter: blur(7px);
+  animation: letterIn 0.32s var(--ease-out);
+}
+@keyframes letterIn { from { opacity: 0 } to { opacity: 1 } }
+
+.letter {
+  position: relative;
+  width: min(940px, 100%);
+  max-height: 88vh;
+  overflow-y: auto;
+  padding: clamp(26px, 4vw, 46px);
+  background:
+    radial-gradient(ellipse 120% 100% at 50% 0%, rgba(212, 169, 78, 0.06), transparent 70%),
+    #100d09;
+  border: 1px solid var(--gold-faint);
+  outline: 3px solid rgba(212, 169, 78, 0.06);
+  outline-offset: 6px;
+  box-shadow: 0 40px 90px rgba(0, 0, 0, 0.8);
+}
+
+.letter-head {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 3.4vw, 2.1rem);
+  letter-spacing: 0.06em;
+  color: var(--gold);
+  text-align: center;
+  margin-bottom: 6px;
+}
+.letter-head::after {
+  content: '';
+  display: block;
+  width: 46%;
+  height: 1px;
+  margin: 16px auto 26px;
+  background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+}
+
+.letter-close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  width: 34px;
+  height: 34px;
+  font-size: 0.9rem;
+  color: var(--gold-dim);
+  background: transparent;
+  border: 1px solid var(--gold-faint);
+  cursor: pointer;
+}
+.letter-close:hover { color: var(--gold); border-color: var(--gold-dim); }
+
+/* inside the letter the two columns stack on narrow screens */
+.letter .contact-grid { margin-top: 0; }
+@media (max-width: 760px) {
+  .letter .contact-grid { grid-template-columns: 1fr; }
+}
+
+/* Everything inside the letter is visible the moment it opens. The form and
+   the link list are marked [data-reveal] for the scroll choreography, which
+   parks them at opacity 0 until their trigger fires — and inside a modal
+   that trigger never comes, so the panel opened empty. */
+.letter [data-reveal] {
+  opacity: 1 !important;
+  transform: none !important;
+  filter: none !important;
+}

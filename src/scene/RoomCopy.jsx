@@ -63,7 +63,11 @@ function head(g, numeral, title, subtitle) {
 
 // Heading + running prose. Used where a room has something to say rather
 // than something to list.
-export function ProseBoard({ numeral, title, subtitle, lines, foot, at = AT, size = SIZE }) {
+// `action` draws a framed label low on the board — the visible half of a
+// control. A Hotspot goes over it in the room, so the button is part of the
+// scenery rather than a DOM card floating in front of it, and pressing it
+// opens the real form on top of everything.
+export function ProseBoard({ numeral, title, subtitle, lines, foot, action, at = AT, size = SIZE }) {
   const { cw, ch } = boardCanvas(size)
   return (
     <Inscription
@@ -78,6 +82,18 @@ export function ProseBoard({ numeral, title, subtitle, lines, foot, at = AT, siz
           if (!line) return
           roughText(g, line, W / 2, 290 + i * 46, 33, INK_BODY, 0.93, { font: SERIF })
         })
+        if (action) {
+          const bw = 430, bh = 78, bx = W / 2 - bw / 2, by = H - 186
+          g.strokeStyle = INK_RED
+          g.globalAlpha = 0.62
+          g.lineWidth = 3
+          g.strokeRect(bx, by, bw, bh)
+          g.globalAlpha = 0.16
+          g.fillStyle = INK_RED
+          g.fillRect(bx, by, bw, bh)
+          g.globalAlpha = 1
+          roughText(g, action, W / 2, by + 52, 36, INK_RED, 0.95, { font: SERIF })
+        }
         if (foot) {
           roughText(g, foot, W / 2, H - 52, 30, INK_SOFT, 0.75, { font: SERIF, style: 'italic' })
         }
