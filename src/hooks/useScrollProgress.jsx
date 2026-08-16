@@ -32,6 +32,20 @@ export function ScrollProvider({ children }) {
     })
   }, [])
 
+  // Lenis drives its own scroll, so `overflow: hidden` alone does not stop
+  // it — the class is the signal and this is what acts on it.
+  useEffect(() => {
+    const el = document.documentElement
+    const obs = new MutationObserver(() => {
+      const locked = el.classList.contains('overflow-lock')
+      const l = lenisRef.current
+      if (!l) return
+      if (locked) l.stop(); else l.start()
+    })
+    obs.observe(el, { attributes: true, attributeFilter: ['class'] })
+    return () => obs.disconnect()
+  }, [])
+
   useEffect(() => {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 

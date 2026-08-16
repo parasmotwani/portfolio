@@ -264,15 +264,25 @@ button {
    nothing hovers in front of the room repeating what it already says.
    Anything interactive (project links, the contact form, the machine in
    Room III) is NOT marked and stays visible. */
-.chapter--diegetic .chapter-head,
-.chapter--diegetic [data-diegetic] {
-  position: absolute;
-  width: 1px; height: 1px;
-  padding: 0; margin: -1px;
-  overflow: hidden;
+/* In a room, the DOM says NOTHING. The walls carry the copy.
+   This used to hide only .chapter-head, which left every section's actual
+   body — the contact heading and form, the project cards, the experience
+   list — rendering on top of the room. That is the hovering text, and on
+   the contact board it sat over the "Contact me" control and swallowed the
+   clicks. Everything is taken out of the picture now and kept for screen
+   readers and search; the exceptions are the things that ARE the
+   interaction: the in-room controls and the panels they open. */
+.chapter--diegetic > *:not(.reach):not(.letter-backdrop):not(.room-shade):not(.booklet-backdrop):not(.crt-backdrop):not(.gameroom-scene) {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
   clip-path: inset(50%);
   white-space: nowrap;
   border: 0;
+  pointer-events: none;
 }
 
 /* copy that belongs to a room is inked into the room; this keeps the same
@@ -2524,4 +2534,49 @@ html.lights-on .cursor-ring { opacity: 1; }
   opacity: 1 !important;
   transform: none !important;
   filter: none !important;
+}
+
+/* The game's canvas has to keep real layout size even while stowed: it is
+   the source texture for the cabinet's screen, and a 1px canvas draws a
+   1px attract card. Hidden by opacity, not by collapsing. */
+.chapter--diegetic > .gameroom-scene { pointer-events: none; }
+.chapter--diegetic > .gameroom-scene .crt-unit--stowed { pointer-events: none; }
+.chapter--diegetic > .gameroom-scene .crt-unit.expanded { pointer-events: auto; }
+
+/* Nothing scrolls while an overlay owns the screen. Playing the game with
+   the page still moving underneath means a stray wheel nudge slides the
+   room out from behind the cabinet mid-game; the same goes for the book
+   and the letter. Lenis is told to stop as well, since it drives its own
+   scroll and ignores overflow alone. */
+html.overflow-lock,
+html.overflow-lock body {
+  overflow: hidden !important;
+  touch-action: none;
+}
+
+/* The site draws its own cursor (a gold dot with a lagging ring) and
+   carries a lantern besides. The OS arrow on top of that is a third
+   pointer competing with two the house already provides. */
+html.lenis, html.lenis * { cursor: none; }
+/* …but never take the cursor away from something a visitor has to type in
+   or aim at precisely. */
+html.lenis input,
+html.lenis textarea,
+html.lenis select,
+html.lenis .letter,
+html.lenis .letter * { cursor: auto; }
+html.lenis a,
+html.lenis button,
+html.lenis [role="button"],
+html.lenis [data-hover] { cursor: none; }
+
+/* No shade over a room of the manor. The shade is a full-bleed black panel
+   used to close a section before the next one opens — it belongs to the
+   old cut-to-black transitions. Rooms are walked into through doorways
+   now, so the panel has nothing to do but sit there at whatever opacity a
+   half-finished scrub left it, which is the dark band across the middle of
+   the game room and the darkness lines elsewhere. */
+.chapter--diegetic .room-shade,
+.hero--diegetic .room-shade {
+  display: none !important;
 }

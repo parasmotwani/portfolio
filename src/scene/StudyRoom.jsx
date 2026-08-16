@@ -251,18 +251,23 @@ function Wardrobe() {
 }
 
 // ---------- the hutch: shelves of what was left, and THE drawer ----------
-// Right wall, set back. This has to satisfy two things that pull against
-// each other: clear of the walk (Room I leaves by the door at x 4.5, and
-// the curve from z 1.0 to z -5.7 passes x ~3.9 at mid-room), and still in
-// frame (the camera centres on x -0.15, so anything past x ~5 at close
-// range falls off the right edge, and anything nearer than z ~2 fills half
-// the shot and covers the board). Pushed to the wall at x 6.1 and set back
-// to z -1.5 it clears the path by over two units and still reads.
+// Right wall, pushed as far back into the corner as the wall allows.
+//
+// KNOWN ISSUE: the camera still passes close to this on the way out.
+// Room I leaves by the door at x 4.5 and the walk curve owns roughly
+// x 3..5 from z 1 back to z -5.7, while the right wall is at x 7.5 —
+// about three units, most of it the camera's. Moving the hutch left or
+// back far enough to clear the path puts it outside the frame or into
+// the wardrobe's shadow, where an unlit cabinet in a now genuinely dark
+// room simply cannot be seen, and the easter egg disappears. The real
+// fix is to move Room I's DOORWAY left (doorCol) so the walk and the
+// furniture stop sharing the same three units, which is a change to the
+// room shell rather than the dressing.
 function Hutch({ glintRef, leakRef }) {
   const wood = { color: '#2e2114', roughness: 0.8 }
   const woodDark = { color: '#221709', roughness: 0.85 }
   return (
-    <group position={[6.1, 0, -1.5]} rotation={[0, -Math.PI / 2, 0]}>
+    <group position={[6.3, 0, -2.9]} rotation={[0, -Math.PI / 2, 0]}>
       {/* lower cabinet + counter */}
       <mesh position={[0, -1.72, 0]} castShadow receiveShadow>
         <boxGeometry args={[3.0, 1.35, 0.85]} />
@@ -333,7 +338,7 @@ function Hutch({ glintRef, leakRef }) {
             scenery — this is the difference between an object you notice
             and one you walk past. Warm, weak, and slowly breathing, so it
             draws the eye without announcing itself as UI. */}
-        <pointLight ref={leakRef} position={[0, 0.02, 0.62]} color="#f0c98a" intensity={0} distance={5.5} decay={1.8} />
+        <pointLight ref={leakRef} position={[0, 0.05, 0.7]} color="#f0c98a" intensity={0} distance={4.2} decay={1.9} />
         <mesh ref={glintRef} position={[0.1, 0.16, 0.5]} rotation={[-1.25, 0.1, 0.08]}>
           <planeGeometry args={[0.46, 0.14]} />
           <meshStandardMaterial
@@ -634,20 +639,10 @@ function StudyCopy() {
         ]}
         foot="something in here is worth opening"
       />
-      {/* the nudge toward the easter egg, chalked on the floor by the hutch */}
-      <Inscription
-        position={[3.7, -1.02, -3.4]}
-        rotation={[-Math.PI / 2, 0, 0.12]}
-        size={[2.2, 0.58]}
-        w={512}
-        h={136}
-        draw={(g, w, h) => {
-          g.clearRect(0, 0, w, h)
-          roughText(g, 'the drawer is ajar', w / 2, h / 2 + 12, 44, '#d8d2c0', 0.5, {
-            font: '"IM Fell English", serif', style: 'italic',
-          })
-        }}
-      />
+      {/* The chalk nudge is gone. It sat flat on the floor mid-room, which
+          from the room's camera reads as a smear of stray text lying in
+          the air rather than writing on boards — and the drawer now leaks
+          light, which says the same thing without words. */}
     </group>
   )
 }
@@ -673,7 +668,7 @@ export default function StudyRoom({ lit }) {
       swayRef.current.rotation.x = Math.sin(t * 0.38 + 1) * 0.03
     }
     if (leakRef.current) {
-      leakRef.current.intensity = 6.5 + Math.sin(t * 1.6) * 2.2
+      leakRef.current.intensity = 5.4 + Math.sin(t * 1.6) * 1.8
     }
     if (glintRef.current) {
       glintRef.current.material.emissiveIntensity = 0.5 + Math.sin(t * 2.1) * 0.3

@@ -62,6 +62,12 @@ export default function Contact() {
 
   useEffect(() => {
     if (!open) return
+    document.documentElement.classList.add('overflow-lock')
+    return () => document.documentElement.classList.remove('overflow-lock')
+  }, [open])
+
+  useEffect(() => {
+    if (!open) return
     const onKey = (e) => { if (e.key === 'Escape') setOpen(false) }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)

@@ -129,6 +129,12 @@ function Booklet({ open, page, setPage, toggle }) {
   // Esc closes it, like anything else you can put down
   useEffect(() => {
     if (!open) return
+    document.documentElement.classList.add('overflow-lock')
+    return () => document.documentElement.classList.remove('overflow-lock')
+  }, [open])
+
+  useEffect(() => {
+    if (!open) return
     const onKey = (e) => {
       if (e.key === 'Escape') toggle()
       if (e.key === 'ArrowRight') setPage((p) => Math.min(PAGES.length - 1, p + 1))

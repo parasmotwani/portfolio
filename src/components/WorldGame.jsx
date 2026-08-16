@@ -149,6 +149,15 @@ export default function WorldGame() {
     screen.canvas = canvasRef.current
     return () => { screen.canvas = null }
   }, [])
+
+  // While you are playing, the page must not move under you. WASD does not
+  // scroll, but a trackpad or a wheel nudge did — you would be mid-game and
+  // the room would slide away behind the cabinet.
+  useEffect(() => {
+    if (!playing) return
+    document.documentElement.classList.add('overflow-lock')
+    return () => document.documentElement.classList.remove('overflow-lock')
+  }, [playing])
   const [panel, setPanel] = useState(null) // building object or null
   const [prompt, setPrompt] = useState(null) // label of nearby building
   const stateRef = useRef({
