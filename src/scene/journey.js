@@ -67,10 +67,12 @@ export const ROOMS = [
     door: [-7.65, -0.85, -5.9],
   },
   {
+    // no board on the wall here — the camera faces the machine, which is
+    // the only lit thing in the room
     id: 'world',
     fov: 55, front: 9.3, back: -6, x: 0, sway: 0.85,
-    eye: [-0.2, -0.15, 6.6],
-    look: [0, 0.15, -5.36],
+    eye: [-0.6, -0.3, 4.6],
+    look: [-1.2, -0.85, -4.2],
     exit: [4.6, -0.4, 0.6],
     lookExit: [7.65, -0.9, -7.0],
     door: [7.65, -0.85, -5.9],

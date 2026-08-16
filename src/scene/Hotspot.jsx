@@ -17,7 +17,7 @@ import { hotspots } from './hotspots'
 // module next to it (see hotspots.js for why that split matters).
 // ============================================================
 
-export function Hotspot({ name, reach = 26 }) {
+export function Hotspot({ name, reach = 26, position = [0, 0, 0] }) {
   const ref = useRef()
   const v = useMemo(() => new THREE.Vector3(), [])
 
@@ -41,5 +41,5 @@ export function Hotspot({ name, reach = 26 }) {
     h.size = THREE.MathUtils.clamp((size.height * 1.1) / dist, 54, 190)
   })
 
-  return <object3D ref={ref} />
+  return <object3D ref={ref} position={position} />
 }

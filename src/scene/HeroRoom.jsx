@@ -378,31 +378,34 @@ function LanternOnHook({ lit }) {
 function WallInscriptions() {
   return (
     <group>
-      {/* the proclamation — name, title and summary inked large on one
-          clear parchment, centred on the back wall. The first thing the
-          visitor reads once the room takes the light. */}
+      {/* The proclamation — name, title and summary, centred on the back
+          wall. Height is capped so the sheet stays UNDER the ceiling beams
+          at y 2.55: made any taller it pokes through the ceiling plane and
+          gets sliced flat across the top, which is what was cutting the
+          name. Text also keeps inside PARCHMENT_SAFE — the paper does not
+          fill its own canvas. */}
       <Inscription
-        position={[0, 0.3, -5.42]}
-        size={[7.4, 4.0]}
-        w={1200}
-        h={648}
+        position={[0, 0.02, -5.42]}
+        size={[8.6, 4.6]}
+        w={1290}
+        h={690}
         draw={(g, w, h) => {
           drawParchment(g, w, h, 3)
-          roughText(g, 'PARAS', w / 2, h * 0.21, 140, '#33240f', 0.97)
-          roughText(g, 'MOTWANI', w / 2, h * 0.4, 140, '#33240f', 0.97)
+          roughText(g, 'PARAS', w / 2, 205, 108, '#33240f', 0.97)
+          roughText(g, 'MOTWANI', w / 2, 320, 108, '#33240f', 0.97)
           g.strokeStyle = '#7a4a20'
           g.globalAlpha = 0.7
           g.lineWidth = 3.5
-          g.beginPath(); g.moveTo(w * 0.2, h * 0.49); g.lineTo(w * 0.8, h * 0.5); g.stroke()
+          g.beginPath(); g.moveTo(w * 0.22, 360); g.lineTo(w * 0.78, 362); g.stroke()
           g.globalAlpha = 1
-          roughText(g, 'AI & DATA SCIENCE ENGINEER', w / 2, h * 0.585, 50, '#7a2f22', 0.96)
+          roughText(g, 'AI & DATA SCIENCE ENGINEER', w / 2, 424, 44, '#7a2f22', 0.96)
           const sum = [
             'I build intelligent systems — agentic AI',
             'workflows · contract intelligence · Databricks',
             'autonomous data pipelines · AWS',
           ]
           sum.forEach((line, i) => {
-            roughText(g, line, w / 2, h * (0.7 + i * 0.095), 34, '#43301a', 0.9, { font: '"IM Fell English", serif' })
+            roughText(g, line, w / 2, 494 + i * 46, 31, '#43301a', 0.9, { font: '"IM Fell English", serif' })
           })
           erode(g, w, h, 200, 5)
         }}
@@ -423,12 +426,12 @@ function WallInscriptions() {
             ['B.Tech CSE — Manipal Univ. Jaipur', 3.1],
           ]
           lines.forEach(([txt, i]) => {
-            roughText(g, txt, 58, 128 + i * 84, 42, '#43301a', 0.92, { align: 'left', rot: -0.006 * (i + 1), font: '"IM Fell English", serif' })
+            roughText(g, txt, 100, 150 + i * 82, 40, '#43301a', 0.92, { align: 'left', rot: -0.006 * (i + 1), font: '"IM Fell English", serif' })
           })
           g.strokeStyle = '#43301a'
           g.globalAlpha = 0.6
           g.lineWidth = 2
-          g.beginPath(); g.moveTo(56, 152); g.lineTo(392, 158); g.stroke()
+          g.beginPath(); g.moveTo(98, 174); g.lineTo(430, 180); g.stroke()
           g.globalAlpha = 1
           erode(g, w, h, 260, 21)
         }}
@@ -447,12 +450,14 @@ function WallInscriptions() {
           erode(g, w, h, 320, 33)
         }}
       />
-      {/* the summoning circle: a neural network, chalked on the clear
-          centre boards in front of the proclamation */}
+      {/* The summoning circle: a neural network, chalked on the clear
+          centre boards. Set back from the camera so the ring of terms
+          around it stays whole — at z 1.5 the near half ran off the
+          bottom of the frame. */}
       <Inscription
-        position={[0, -2.185, 1.5]}
+        position={[0, -2.185, -1.4]}
         rotation={[-Math.PI / 2, 0, 0.42]}
-        size={[4.6, 4.6]}
+        size={[4.4, 4.4]}
         w={1024}
         h={1024}
         opacity={0.62}

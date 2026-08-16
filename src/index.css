@@ -1969,66 +1969,62 @@ html.lights-off .corner-whisper {
   opacity: 0.8;
 }
 
-/* Ruled paper. The age lives in a vignette at the edges — the old version
-   washed six brown radials across the whole sheet, which turned the paper
-   into a dark slab you could not read ink on. */
+/* Vellum, not ruled paper. Feint blue rules and a red margin are the two
+   things that say "modern exercise book" more than anything else — an old
+   volume has neither. The age is in the mottling and the darkened edges,
+   and the text is set as it would have been printed. */
 .booklet-page {
   position: absolute;
   inset: 0;
   background:
-    /* the margin rule, drawn once down the left */
-    linear-gradient(90deg, transparent 52px, rgba(150, 60, 48, 0.32) 52px 53px, transparent 53px),
-    /* feint ruled lines */
-    repeating-linear-gradient(180deg,
-      transparent 0 33px,
-      rgba(88, 104, 120, 0.16) 33px 34px),
-    /* age gathers at the edges only */
-    radial-gradient(ellipse 130% 120% at 50% 50%, transparent 52%, rgba(112, 82, 40, 0.3) 88%),
-    #efe6d0;
-  background-position: 0 0, 0 74px, 0 0, 0 0;
-  color: #3f3524;
-  padding: 58px 40px 44px 68px;
-  border-radius: 1px 4px 5px 2px / 3px 2px 4px 3px;
+    /* foxing: small brown blooms scattered over the leaf */
+    radial-gradient(ellipse 8% 5% at 22% 18%, rgba(140, 100, 48, 0.22), transparent 70%),
+    radial-gradient(ellipse 6% 4% at 78% 34%, rgba(126, 88, 40, 0.2), transparent 72%),
+    radial-gradient(ellipse 10% 6% at 62% 76%, rgba(132, 94, 44, 0.18), transparent 74%),
+    radial-gradient(ellipse 7% 5% at 32% 62%, rgba(120, 86, 42, 0.15), transparent 72%),
+    /* the leaf darkens toward the edges where hands and air got at it */
+    radial-gradient(ellipse 128% 118% at 50% 50%, transparent 46%, rgba(104, 74, 34, 0.42) 92%),
+    /* gutter shadow at the spine */
+    linear-gradient(90deg, rgba(78, 54, 24, 0.34) 0%, transparent 12%),
+    #e9dcbb;
+  color: #3a2c18;
+  padding: 62px 54px 52px 62px;
+  border-radius: 2px 7px 5px 3px / 5px 3px 7px 4px;
   box-shadow:
-    0 20px 54px rgba(0, 0, 0, 0.72),
-    inset -14px 0 26px rgba(96, 72, 36, 0.14);
+    0 22px 58px rgba(0, 0, 0, 0.76),
+    inset -18px 0 30px rgba(96, 68, 30, 0.16);
   transform-origin: left center;
-  transition: transform 0.7s cubic-bezier(0.4, 0.05, 0.3, 1);
+  transition: transform 0.72s cubic-bezier(0.4, 0.05, 0.3, 1);
   backface-visibility: hidden;
   overflow: hidden;
 }
 
-.booklet-page.turned { transform: rotateY(-165deg); }
+.booklet-page.turned { transform: rotateY(-166deg); }
 
-/* dust + foxing speckle */
-.booklet-page::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background-image:
-    radial-gradient(rgba(43, 35, 23, 0.16) 1px, transparent 1.4px),
-    radial-gradient(rgba(94, 62, 26, 0.22) 1.4px, transparent 2px);
-  background-size: 90px 70px, 150px 110px;
-  background-position: 0 0, 40px 30px;
-  opacity: 0.55;
-}
-
-/* the cover: worn board, no ruling, no border box */
+/* The cover: dark blind-tooled leather with a gilt rule stamped into it,
+   worn through at the corners — not a card. */
 .booklet-page--cover {
   background:
-    radial-gradient(ellipse 100% 80% at 50% 30%, rgba(126, 92, 48, 0.22), transparent 72%),
-    radial-gradient(ellipse 130% 110% at 50% 108%, rgba(0, 0, 0, 0.42), transparent 62%),
-    linear-gradient(165deg, #6a5334, #4a3a22 58%, #5a4629);
-  padding: 40px;
+    radial-gradient(ellipse 30% 22% at 6% 5%, rgba(150, 120, 74, 0.28), transparent 70%),
+    radial-gradient(ellipse 26% 20% at 95% 96%, rgba(140, 112, 68, 0.24), transparent 72%),
+    radial-gradient(ellipse 110% 90% at 50% 34%, rgba(92, 58, 26, 0.38), transparent 74%),
+    linear-gradient(158deg, #3d2a16, #241708 58%, #33220f);
+  padding: 54px;
   box-shadow:
-    0 22px 56px rgba(0, 0, 0, 0.8),
-    inset 0 0 46px rgba(0, 0, 0, 0.32);
+    0 24px 60px rgba(0, 0, 0, 0.86),
+    inset 0 0 60px rgba(0, 0, 0, 0.5);
 }
 
-.booklet-page--cover .scrawl { color: #e6d6a8; }
-.booklet-page--cover .scrawl-note { color: #cbb083; }
-.booklet-page--cover .booklet-pageno { color: rgba(230, 214, 168, 0.35); }
+.booklet-page--cover .booklet-cover {
+  border: 1px solid rgba(198, 160, 96, 0.26);
+  outline: 3px solid rgba(198, 160, 96, 0.09);
+  outline-offset: 5px;
+  padding: 34px 20px;
+}
+
+.booklet-page--cover .scrawl { color: #d8bb7e; }
+.booklet-page--cover .scrawl-note { color: #a98d5c; }
+.booklet-page--cover .booklet-pageno { color: rgba(216, 187, 126, 0.3); }
 
 .booklet-cover {
   height: 100%;
@@ -2036,59 +2032,77 @@ html.lights-off .corner-whisper {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 16px;
+  gap: 18px;
+  text-align: center;
 }
 
-/* the hand that wrote it — kept for the cover and the entry headings only,
-   never for running text, where it stops being charming and starts being
-   unreadable */
+/* The hand is gone. A volume this old is SET, not handwritten — the
+   handwriting face was the single most modern-looking thing about it. */
 .scrawl {
-  font-family: 'Homemade Apple', cursive;
-  font-size: clamp(1rem, 2.4vw, 1.3rem);
+  font-family: var(--font-display);
+  font-size: clamp(1.1rem, 2.6vw, 1.55rem);
+  letter-spacing: 0.09em;
   line-height: 1.5;
-  color: #4a3b22;
-  transform: rotate(-1.6deg);
+  color: #3f3018;
 }
 
 .scrawl-note {
   font-family: var(--font-flavor);
   font-style: italic;
-  font-size: 0.88rem;
-  color: #b9a074;
-  transform: rotate(0.8deg);
+  font-size: 0.9rem;
+  color: #8d7550;
 }
 
 .booklet-body h5.scrawl {
-  margin-bottom: 26px;
-  font-size: 1.18rem;
+  margin-bottom: 6px;
+  font-size: 1.3rem;
 }
 
-/* the entries themselves: a readable serif at a size a person would
-   actually write, sitting on the rule */
+/* a rule under the heading, the way a printed leaf carries one */
+.booklet-body h5.scrawl::after {
+  content: '';
+  display: block;
+  width: 62%;
+  height: 1px;
+  margin: 14px auto 22px;
+  background: linear-gradient(90deg, transparent, rgba(96, 68, 30, 0.5), transparent);
+}
+
 .booklet-body p {
   font-family: var(--font-flavor);
-  font-size: 1.02rem;
-  line-height: 33px;
-  margin-bottom: 12px;
-  color: #45392a;
+  font-size: 1.04rem;
+  line-height: 1.72;
+  margin-bottom: 15px;
+  color: #3d3020;
+  text-align: justify;
+  hyphens: auto;
 }
 
+/* No illuminated initial. It is the right period detail, but ::first-letter
+   takes exactly one character — and this leaf opens on "AI", so it set a
+   dropped "A" beside a stranded "I". A drop cap needs prose that starts
+   with a word, and the copy here is technical by rule. */
+
 .booklet-stats {
-  margin-top: 22px;
+  margin-top: 20px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(96, 68, 30, 0.26);
   font-family: var(--font-flavor);
   font-style: italic;
-  font-size: 0.86rem;
-  line-height: 33px;
-  color: #7d6b4a;
+  font-size: 0.88rem;
+  color: #6f5c3c;
 }
 
 .booklet-pageno {
   position: absolute;
-  bottom: 16px;
-  right: 24px;
-  font-family: 'Homemade Apple', cursive;
-  font-size: 0.72rem;
-  color: #8a7854;
+  bottom: 18px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  letter-spacing: 0.22em;
+  color: #8a7450;
 }
 
 /* turn zones: the left and right halves of the page itself */
@@ -2369,4 +2383,15 @@ html.lights-on .cursor-ring { opacity: 1; }
   opacity: 0;
   pointer-events: none;
   z-index: 6;
+}
+
+/* In the immersive track the machine standing in Room III is the control:
+   its own hotspot starts the game. The CRT stays mounted (the idle demo
+   draws into it) but out of the room until the visitor is playing —
+   before, a screen hovered in mid-air in front of a room that already
+   contained one. */
+.crt-unit--stowed {
+  opacity: 0;
+  pointer-events: none;
+  transform: rotate(-1.6deg) scale(0.96);
 }

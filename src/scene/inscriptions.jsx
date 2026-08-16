@@ -83,6 +83,14 @@ export function Inscription({ draw, w = 1024, h = 512, position, rotation = [0, 
 }
 
 // an aged sheet nailed to the wall — the writing surface of the house
+// The paper does NOT fill its canvas. drawParchment insets by `m`, jitters
+// the torn edge by ±8, strokes 10px outside that, and drops nail dots at
+// m+16. Anything drawn nearer than this to a canvas edge lands off the
+// sheet, on transparent background — which is what sliced the top off the
+// entrance's name and ate the first letters of the working notes.
+// Keep text inside this margin.
+export const PARCHMENT_SAFE = 78
+
 export function drawParchment(g, w, h, seed = 3) {
   const m = 26
   let s = seed

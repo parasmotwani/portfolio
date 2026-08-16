@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { WOOD_DARK, IRON } from './palette'
+import { Hotspot } from './Hotspot'
 
 // ============================================================
 // The machine the Game Room is named for.
@@ -46,6 +47,10 @@ export default function Arcade({ lit, position = [0, -2.4, -4.4], rotation = [0,
           <meshStandardMaterial {...trim} />
         </mesh>
       ))}
+
+      {/* the DOM reach rides the screen, so clicking the machine is what
+          starts the game — there is no card floating in the room to press */}
+      <Hotspot name="arcade" reach={26} position={[0, 1.78, 0.7]} />
 
       {/* the recessed screen */}
       <mesh position={[0, 1.78, 0.62]}>

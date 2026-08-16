@@ -180,11 +180,6 @@ function Booklet({ open, page, setPage, toggle }) {
           onClick={() => setPage((p) => p + 1)}
           aria-label="Next page"
         />
-        <p className="booklet-caption">
-          {page === PAGES.length - 1
-            ? 'that is the end of it — put it back'
-            : 'turn the page'}
-        </p>
       </div>
     </div>
   )

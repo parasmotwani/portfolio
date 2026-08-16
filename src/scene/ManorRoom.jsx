@@ -27,6 +27,7 @@ export default function ManorRoom({
   doorCol,
   wallKinds,
   lit = false,
+  dark = false,
   windowSide = 'left',
   windowRow = 0,
   tint = WALL,
@@ -48,17 +49,23 @@ export default function ManorRoom({
       {/* Every room gets the entrance hall's lighting model, not just its
           materials: weak cold moonlight through one arched window to shape
           the space, and nothing else that isn't a flame. Rooms lit only by
-          their own candles came out near-black. */}
-      <hemisphereLight args={['#8fa0b8', '#2c2820', lit ? 0.3 : 0.15]} />
-      <directionalLight
-        position={[winX, 1.6, winZ]}
-        target-position={[winX + inward * 8, -2.4, winZ + 2]}
-        color={MOON}
-        intensity={lit ? 1.05 : 0.72}
-        castShadow
-        shadow-mapSize={[1024, 1024]}
-      />
-      <pointLight position={[winX + inward * 0.6, 0.5, winZ]} color={MOON_FILL} intensity={lit ? 0.5 : 0.36} distance={11} decay={1.7} />
+          their own candles came out near-black.
+          A `dark` room opts out entirely — it is lit by whatever is standing
+          in it and nothing else. */}
+      <hemisphereLight args={['#8fa0b8', '#2c2820', dark ? 0.035 : (lit ? 0.3 : 0.15)]} />
+      {!dark && (
+        <>
+          <directionalLight
+            position={[winX, 1.6, winZ]}
+            target-position={[winX + inward * 8, -2.4, winZ + 2]}
+            color={MOON}
+            intensity={lit ? 1.05 : 0.72}
+            castShadow
+            shadow-mapSize={[1024, 1024]}
+          />
+          <pointLight position={[winX + inward * 0.6, 0.5, winZ]} color={MOON_FILL} intensity={lit ? 0.5 : 0.36} distance={11} decay={1.7} />
+        </>
+      )}
       {/* back wall — one panel of it is the way out */}
       {xs.map((x, i) => {
         const isDoor = i === doorCol
@@ -80,23 +87,25 @@ export default function ManorRoom({
       {zs.map((z, i) => (
         <Piece
           key={`l${i}`}
-          file={windowSide === 'left' && i === windowRow ? 'wall_archedwindow_open' : (i === 0 ? 'wall_cracked' : 'wall')}
+          file={!dark && windowSide === 'left' && i === windowRow ? 'wall_archedwindow_open' : (i === 0 ? 'wall_cracked' : 'wall')}
           position={[leftX, FLOOR, z]} rotation={[0, Math.PI / 2, 0]} scale={S} tint={tint}
         />
       ))}
       {zs.map((z, i) => (
         <Piece
           key={`r${i}`}
-          file={windowSide === 'right' && i === windowRow ? 'wall_archedwindow_open' : (i === 1 ? 'wall_shelves' : 'wall')}
+          file={!dark && windowSide === 'right' && i === windowRow ? 'wall_archedwindow_open' : (i === 1 ? 'wall_shelves' : 'wall')}
           position={[rightX, FLOOR, z]} rotation={[0, -Math.PI / 2, 0]} scale={S} tint={tint}
         />
       ))}
 
       {/* the night beyond the window */}
-      <mesh position={[winX - inward * 0.12, 0.35, winZ]} rotation={[0, inward * Math.PI / 2, 0]}>
-        <planeGeometry args={[4.4, 3.6]} />
-        <meshBasicMaterial color={NIGHT_GLASS} toneMapped={false} />
-      </mesh>
+      {!dark && (
+        <mesh position={[winX - inward * 0.12, 0.35, winZ]} rotation={[0, inward * Math.PI / 2, 0]}>
+          <planeGeometry args={[4.4, 3.6]} />
+          <meshBasicMaterial color={NIGHT_GLASS} toneMapped={false} />
+        </mesh>
+      )}
 
       {/* floor */}
       {xs.map((x) => zs.map((z) => (
